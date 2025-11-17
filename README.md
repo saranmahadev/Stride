@@ -132,7 +132,7 @@ We combine **OpenSpec’s clarity**, **SpecKit’s rigor**, and **agile velocity
 ### Sprint Workflow Diagram
 
 ```mermaid
-flowchart TD
+graph TD
     Start([Developer Starts Feature]) --> Init[/stride:init<br/>Initialize Context/]
     Init --> Plan[/stride:plan<br/>Create Sprint Plan/]
     Plan --> Proposed[(proposed/<br/>SPRINT-ID)]
@@ -147,9 +147,9 @@ flowchart TD
     
     Active --> Progress{Check<br/>Progress}
     Progress -->|Monitor| Watch[stride watch<br/>Live Updates]
-    Progress -->|Status| Status[stride status<br/>Dashboard]
+    Progress -->|Status| StatusCmd[stride status<br/>Dashboard]
     Watch --> Active
-    Status --> Active
+    StatusCmd --> Active
     
     Active --> Feedback{Need<br/>Changes?}
     Feedback -->|Yes| ApplyFeedback[/stride:feedback<br/>Apply Corrections/]
@@ -191,7 +191,7 @@ flowchart TD
 ### CLI Monitoring Flow
 
 ```mermaid
-flowchart LR
+graph LR
     User([Developer]) --> CLI{Stride CLI}
     
     CLI --> Setup[Setup Commands]
@@ -240,7 +240,7 @@ flowchart LR
 ### Multi-Agent Integration
 
 ```mermaid
-flowchart TD
+graph TD
     Stride[Stride Framework] --> Agents{AI Agent Layer}
     
     Agents --> Claude[Claude Code]

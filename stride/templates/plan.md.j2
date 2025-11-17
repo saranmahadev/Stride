@@ -1,0 +1,95 @@
+---
+id: {{ sprint_id }}
+title: {{ title }}
+estimated_duration: {{ duration_days }} days
+estimated_hours: {{ estimated_hours }}
+risk_level: {{ risk_level }}
+created: {{ created }}
+---
+
+# Sprint Plan: {{ title }}
+
+## Task Breakdown
+
+### Task 1: [Task Name]
+**Estimated Time:** X hours  
+**Priority:** High/Medium/Low  
+**Dependencies:** None
+
+**Description:**
+What needs to be done.
+
+**Acceptance Criteria:**
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+---
+
+### Task 2: [Task Name]
+**Estimated Time:** X hours  
+**Priority:** High/Medium/Low  
+**Dependencies:** Task 1
+
+**Description:**
+What needs to be done.
+
+**Acceptance Criteria:**
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+---
+
+## Technical Approach
+
+### Architecture
+Describe the technical architecture and design decisions.
+
+### Key Components
+- Component 1: Description
+- Component 2: Description
+
+### Technologies/Libraries
+- Technology 1
+- Technology 2
+
+## Risk Assessment
+
+### High Risks
+- **Risk 1:** Description and mitigation strategy
+- **Risk 2:** Description and mitigation strategy
+
+### Medium Risks
+- **Risk 3:** Description and mitigation strategy
+
+### Dependencies
+- External dependency 1
+- External dependency 2
+
+## Testing Strategy
+
+### Unit Tests
+- Test scenario 1
+- Test scenario 2
+
+### Integration Tests
+- Test scenario 1
+- Test scenario 2
+
+### Manual Testing
+- Manual test steps
+
+## Timeline
+
+```mermaid
+gantt
+    title Sprint Timeline
+    dateFormat  YYYY-MM-DD
+    section Tasks
+    Task 1           :task1, {{ start_date }}, 2d
+    Task 2           :task2, after task1, 3d
+    Task 3           :task3, after task2, 2d
+```
+
+## Notes
+
+Additional planning notes, considerations, or open questions.

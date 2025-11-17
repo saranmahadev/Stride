@@ -1,0 +1,48 @@
+# Stride Default Configuration
+# This file contains default settings for Stride projects
+
+project:
+  name: "My Project"
+  version: "0.1.0"
+  agents:
+    - "Claude Code"
+    - "GitHub Copilot"
+  validation:
+    enabled: true
+    strict_mode: false
+    auto_lint: false
+    auto_test: false
+    min_test_coverage: 80
+
+sprint:
+  default_duration_days: 14
+  auto_retrospective: true
+  require_approval: false
+  
+user:
+  email: ""
+  name: ""
+
+templates:
+  proposal: "proposal.md.j2"
+  plan: "plan.md.j2"
+  implementation: "implementation.md.j2"
+  retrospective: "retrospective.md.j2"
+
+# AI Agent specific configurations
+agents:
+  claude_code:
+    enabled: true
+    model: "claude-3-5-sonnet"
+    
+  github_copilot:
+    enabled: true
+    
+  windsurf:
+    enabled: false
+    
+  gemini_cli:
+    enabled: false
+    
+  kilo_code:
+    enabled: false

@@ -1,0 +1,151 @@
+---
+name: {{ project_name }}
+created: {{ timestamp }}
+agents: {{ agent_ids }}
+version: "1.0.0"
+---
+
+# {{ project_name }}
+
+> **Created:** {{ timestamp }}  
+> **Methodology:** Stride (Sprint-Powered, Spec-Driven Development)
+
+---
+
+## Overview
+
+*Provide a brief description of your project here.*
+
+This project follows the Stride methodology, using sprint-based development with AI agent assistance.
+
+---
+
+## Development Approach
+
+### Stride Methodology
+
+This project uses **Stride** for structured, AI-assisted development:
+
+- **📋 Sprints** - Feature work is organized into sprints with clear status tracking
+- **📝 Specs** - Detailed specifications guide implementation
+- **🤖 AI Agents** - Multiple AI assistants collaborate on development
+- **🔄 Iterative** - Continuous improvement through retrospectives
+
+### Sprint Workflow
+
+1. **Proposed** - New feature ideas and sprint proposals
+2. **Active** - Currently in development
+3. **Blocked** - Waiting on dependencies or decisions
+4. **Review** - Ready for review and testing
+5. **Completed** - Finished and merged
+6. **Archived** - Completed sprints moved to archive
+
+---
+
+## AI Agents
+
+This project uses {{ agents|length }} AI agent(s) for development:
+
+{% for agent in agents %}
+- **{{ agent.name }}** - {{ agent.description }}
+{% endfor %}
+
+See [AGENTS.md](../AGENTS.md) for detailed information about each agent and best practices.
+
+---
+
+## Project Structure
+
+```
+.
+├── stride/                  # Stride framework directory
+│   ├── sprints/            # Sprint files organized by status
+│   │   ├── proposed/
+│   │   ├── active/
+│   │   ├── blocked/
+│   │   ├── review/
+│   │   └── completed/
+│   ├── specs/              # Technical specifications
+│   ├── introspection/      # Project retrospectives
+│   └── project.md          # This file
+├── stride.config.yaml      # Project configuration
+└── AGENTS.md              # AI agent documentation
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+*List your project's prerequisites here*
+
+### Installation
+
+*Add installation instructions*
+
+### Development Workflow
+
+1. **Start a new feature:**
+   ```bash
+   stride create
+   ```
+
+2. **View active sprints:**
+   ```bash
+   stride list --status active
+   ```
+
+3. **Move sprint to next status:**
+   ```bash
+   stride move <SPRINT-ID> <STATUS>
+   ```
+
+4. **Check sprint status:**
+   ```bash
+   stride status <SPRINT-ID>
+   ```
+
+---
+
+## Configuration
+
+Project configuration is managed in `stride.config.yaml`. View or modify settings:
+
+```bash
+# View all settings
+stride config list --project
+
+# Update a setting
+stride config set project.version "2.0.0" --project
+```
+
+---
+
+## Goals
+
+*Define your project goals here*
+
+---
+
+## Tech Stack
+
+*List your technologies, frameworks, and tools*
+
+---
+
+## Contributing
+
+*Add contribution guidelines if this is a team project*
+
+---
+
+## Resources
+
+- **Stride Commands:** Run `stride --help` for all available commands
+- **Sprint Creation:** `stride create --help`
+- **Configuration:** `stride config --help`
+
+---
+
+*Last updated: {{ timestamp }}*

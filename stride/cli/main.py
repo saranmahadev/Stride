@@ -83,25 +83,41 @@ def version(ctx: click.Context) -> None:
 
 @cli.command()
 @click.option("--name", "-n", help="Project name")
+@click.option("--description", "-d", help="Project description")
+@click.option("--agents", "-a", help="Comma-separated list of agent IDs (e.g., claude,copilot)")
 @click.option("--force", "-f", is_flag=True, help="Force initialization even if Stride already exists")
+@click.option("--no-interactive", is_flag=True, help="Skip interactive prompts")
 @click.pass_context
-def init(ctx: click.Context, name: Optional[str], force: bool) -> None:
+def init(ctx: click.Context, name: Optional[str], description: Optional[str], agents: Optional[str], 
+         force: bool, no_interactive: bool) -> None:
     """
     Initialize Stride in the current directory.
     
-    Creates the necessary folder structure:
-      - stride/sprints/proposed/
-      - stride/sprints/active/
-      - stride/sprints/blocked/
-      - stride/sprints/review/
-      - stride/sprints/completed/
+    Creates the necessary folder structure, configuration, and documentation files.
+    If run without options, enters interactive mode to guide setup.
+    
+    \b
+    Created Structure:
+      - stride/sprints/{proposed,active,blocked,review,completed}/
       - stride/specs/
       - stride/introspection/
+      - stride/project.md
+      - stride.config.yaml
+      - AGENTS.md
     
-    Example:
-      stride init --name "My Project"
+    \b
+    Examples:
+      stride init                                    # Interactive mode
+      stride init --name "My Project"                # With project name
+      stride init --agents claude,copilot            # With specific agents
+      stride init --name "My App" --no-interactive   # Non-interactive
     """
+    from stride.core.agent_manager import AgentManager
+    from stride.core.template_engine import TemplateEngine
+    from datetime import datetime, timezone
+    
     fm: FolderManager = ctx.obj["folder_manager"]
+    config_manager = ConfigManager()
     quiet = ctx.obj.get("quiet", False)
     
     # Check if already initialized
@@ -110,35 +126,142 @@ def init(ctx: click.Context, name: Optional[str], force: bool) -> None:
         click.echo("   Use --force to reinitialize.", err=True)
         sys.exit(1)
     
-    # Create structure
+    # Interactive prompts if not in non-interactive mode
+    if not no_interactive and not quiet:
+        if RICH_AVAILABLE:
+            rprint("\n[bold cyan]🚀 Welcome to Stride![/bold cyan]")
+            rprint("[dim]Sprint-Powered, Spec-Driven Development for AI Agents[/dim]\n")
+        else:
+            click.echo("\n🚀 Welcome to Stride!")
+            click.echo("Sprint-Powered, Spec-Driven Development for AI Agents\n")
+        
+        # Prompt for project name if not provided
+        if not name:
+            name = click.prompt("Project name", default=Path.cwd().name)
+        
+        # Prompt for description if not provided
+        if not description:
+            description = click.prompt("Project description (optional)", default="", show_default=False)
+            if not description:
+                description = None
+        
+        # Prompt for agents if not provided
+        if not agents:
+            if RICH_AVAILABLE:
+                rprint("\n[bold]Available AI Agents:[/bold]")
+                for agent in AgentManager.get_all_agents():
+                    rprint(f"  • [cyan]{agent.id:12}[/cyan] - {agent.name}")
+                    rprint(f"    [dim]{agent.description}[/dim]")
+            else:
+                click.echo("\nAvailable AI Agents:")
+                for agent in AgentManager.get_all_agents():
+                    click.echo(f"  • {agent.id:12} - {agent.name}")
+                    click.echo(f"    {agent.description}")
+            
+            click.echo()
+            agents_input = click.prompt(
+                "Select agents (comma-separated IDs)",
+                default="claude,copilot",
+                show_default=True
+            )
+            agents = agents_input
+    
+    # Use defaults if still not provided
+    if not name:
+        name = Path.cwd().name
+    if not agents:
+        agents = "claude,copilot"  # Default agents
+    
+    # Parse and validate agents
+    selected_agent_ids = AgentManager.parse_agent_string(agents)
+    valid_agents, invalid_agents = AgentManager.validate_agent_ids(selected_agent_ids)
+    
+    if invalid_agents:
+        click.echo(f"⚠️  Warning: Unknown agents will be ignored: {', '.join(invalid_agents)}", err=True)
+    
+    if not valid_agents:
+        click.echo("❌ No valid agents selected. Using default: claude,copilot", err=True)
+        valid_agents = ["claude", "copilot"]
+    
+    # Create folder structure
     try:
         fm.ensure_structure()
         
+        # Initialize project configuration
+        config_manager.init_project_config(
+            project_name=name,
+            version="1.0.0",
+            agents=valid_agents,
+            force=force
+        )
+        
+        # Generate AGENTS.md
+        agents_md_path = fm.project_root / "AGENTS.md"
+        if not agents_md_path.exists() or force:
+            template_engine = TemplateEngine()
+            agent_objects = [AgentManager.get_agent(aid) for aid in valid_agents]
+            agents_content = template_engine.render_template(
+                "AGENTS.md.j2",
+                {
+                    "project_name": name,
+                    "agents": agent_objects,
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                }
+            )
+            agents_md_path.write_text(agents_content, encoding="utf-8")
+        
+        # Generate stride/project.md
+        project_md_path = fm.stride_root / "project.md"
+        if not project_md_path.exists() or force:
+            template_engine = TemplateEngine()
+            agent_objects = [AgentManager.get_agent(aid) for aid in valid_agents]
+            project_content = template_engine.render_template(
+                "project.md.j2",
+                {
+                    "project_name": name,
+                    "agents": agent_objects,
+                    "agent_ids": valid_agents,
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                }
+            )
+            project_md_path.write_text(project_content, encoding="utf-8")
+        
+        # Success feedback
         if not quiet:
             if RICH_AVAILABLE:
-                rprint(f"[bold green]✓[/bold green] Stride initialized in {fm.project_root}")
-                rprint("\n[bold]Created directories:[/bold]")
-                rprint("  📁 stride/sprints/proposed/")
-                rprint("  📁 stride/sprints/active/")
-                rprint("  📁 stride/sprints/blocked/")
-                rprint("  📁 stride/sprints/review/")
-                rprint("  📁 stride/sprints/completed/")
+                rprint(f"\n[bold green]✓[/bold green] Stride initialized successfully!")
+                rprint(f"\n[bold]Created structure:[/bold]")
+                rprint("  📁 stride/sprints/{proposed,active,blocked,review,completed}/")
                 rprint("  📁 stride/specs/")
                 rprint("  📁 stride/introspection/")
-                rprint("\n[dim]Ready to create your first sprint with:[/dim]")
-                rprint("  stride create")
+                rprint(f"  📄 stride/project.md")
+                rprint(f"  📄 stride.config.yaml")
+                rprint(f"  📄 AGENTS.md ([cyan]{len(valid_agents)}[/cyan] agent{'s' if len(valid_agents) != 1 else ''} configured)")
+                
+                rprint(f"\n[bold]Project:[/bold] {name}")
+                rprint(f"[bold]Agents:[/bold] {', '.join([AgentManager.get_agent_display_name(a) for a in valid_agents])}")
+                
+                rprint("\n[bold cyan]📋 Next steps:[/bold cyan]")
+                rprint("  1. Review and customize [cyan]AGENTS.md[/cyan]")
+                rprint("  2. Edit [cyan]stride/project.md[/cyan] with project details")
+                rprint("  3. Create your first sprint: [green]stride create[/green]")
             else:
-                click.echo(f"✓ Stride initialized in {fm.project_root}")
-                click.echo("\nCreated directories:")
-                click.echo("  📁 stride/sprints/proposed/")
-                click.echo("  📁 stride/sprints/active/")
-                click.echo("  📁 stride/sprints/blocked/")
-                click.echo("  📁 stride/sprints/review/")
-                click.echo("  📁 stride/sprints/completed/")
+                click.echo("\n✓ Stride initialized successfully!")
+                click.echo("\nCreated structure:")
+                click.echo("  📁 stride/sprints/{proposed,active,blocked,review,completed}/")
                 click.echo("  📁 stride/specs/")
                 click.echo("  📁 stride/introspection/")
-                click.echo("\nReady to create your first sprint with:")
-                click.echo("  stride create")
+                click.echo("  � stride/project.md")
+                click.echo("  � stride.config.yaml")
+                click.echo(f"  � AGENTS.md ({len(valid_agents)} agent{'s' if len(valid_agents) != 1 else ''} configured)")
+                
+                click.echo(f"\nProject: {name}")
+                click.echo(f"Agents: {', '.join([AgentManager.get_agent_display_name(a) for a in valid_agents])}")
+                
+                click.echo("\n📋 Next steps:")
+                click.echo("  1. Review and customize AGENTS.md")
+                click.echo("  2. Edit stride/project.md with project details")
+                click.echo("  3. Create your first sprint: stride create")
                 
     except Exception as e:
         click.echo(f"❌ Failed to initialize Stride: {e}", err=True)

@@ -67,39 +67,45 @@ class TestCLIBasics:
 class TestInitCommand:
     """Test stride init command."""
     
-    def test_init_creates_structure(self, runner, temp_project):
+    def test_init_creates_structure(self, runner):
         """Test that init creates Stride folder structure."""
-        result = runner.invoke(cli, ["init"], obj=make_context(temp_project))
-        
-        assert result.exit_code == 0
-        assert "✓" in result.output or "initialized" in result.output.lower()
-        
-        # Verify structure created
-        assert (temp_project / "stride").exists()
-        assert (temp_project / "stride" / "sprints" / "proposed").exists()
-        assert (temp_project / "stride" / "sprints" / "active").exists()
-        assert (temp_project / "stride" / "sprints" / "completed").exists()
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            result = runner.invoke(cli, ["init", "--no-interactive"], obj=make_context(temp_project))
+            
+            assert result.exit_code == 0
+            assert "✓" in result.output or "initialized" in result.output.lower()
+            
+            # Verify structure created
+            assert (temp_project / "stride").exists()
+            assert (temp_project / "stride" / "sprints" / "proposed").exists()
+            assert (temp_project / "stride" / "sprints" / "active").exists()
+            assert (temp_project / "stride" / "sprints" / "completed").exists()
     
-    def test_init_already_initialized(self, runner, temp_project):
+    def test_init_already_initialized(self, runner):
         """Test init fails when already initialized."""
-        # First init
-        result1 = runner.invoke(cli, ["init"], obj=make_context(temp_project))
-        assert result1.exit_code == 0
-        
-        # Second init without force
-        result2 = runner.invoke(cli, ["init"], obj=make_context(temp_project))
-        assert result2.exit_code == 1
-        assert "already initialized" in result2.output.lower()
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            # First init
+            result1 = runner.invoke(cli, ["init", "--no-interactive"], obj=make_context(temp_project))
+            assert result1.exit_code == 0
+            
+            # Second init without force
+            result2 = runner.invoke(cli, ["init", "--no-interactive"], obj=make_context(temp_project))
+            assert result2.exit_code == 1
+            assert "already initialized" in result2.output.lower()
     
-    def test_init_force_reinitialize(self, runner, temp_project):
+    def test_init_force_reinitialize(self, runner):
         """Test init --force reinitializes."""
-        # First init
-        result1 = runner.invoke(cli, ["init"], obj=make_context(temp_project))
-        assert result1.exit_code == 0
-        
-        # Second init with force
-        result2 = runner.invoke(cli, ["init", "--force"], obj=make_context(temp_project))
-        assert result2.exit_code == 0
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            # First init
+            result1 = runner.invoke(cli, ["init", "--no-interactive"], obj=make_context(temp_project))
+            assert result1.exit_code == 0
+            
+            # Second init with force
+            result2 = runner.invoke(cli, ["init", "--force", "--no-interactive"], obj=make_context(temp_project))
+            assert result2.exit_code == 0
 
 
 class TestCreateCommand:
@@ -206,35 +212,37 @@ class TestListCommand:
         assert "SPRINT-LST1" in result.output
         assert "SPRINT-LST2" in result.output
     
-    def test_list_filter_by_status(self, runner, temp_project):
+    def test_list_filter_by_status(self, runner):
         """Test list filtering by status."""
-        ctx = make_context(temp_project)
-        
-        result1 = runner.invoke(cli, ["init"], obj=ctx)
-        assert result1.exit_code == 0, f"Init failed: {result1.output}"
-        
-        result2 = runner.invoke(
-            cli,
-            ["create", "--id", "SPRINT-ACT1", "--title", "Active Sprint"],
-            obj=ctx
-        )
-        assert result2.exit_code == 0, f"Create failed: {result2.output}"
-        
-        result3 = runner.invoke(
-            cli,
-            ["move", "SPRINT-ACT1", "active"],
-            obj=ctx
-        )
-        assert result3.exit_code == 0, f"Move failed: {result3.output}"
-        
-        result = runner.invoke(
-            cli,
-            ["list", "--status", "active"],
-            obj=ctx
-        )
-        
-        assert result.exit_code == 0
-        assert "SPRINT-ACT1" in result.output
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            ctx = make_context(temp_project)
+            
+            result1 = runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+            assert result1.exit_code == 0, f"Init failed: {result1.output}"
+            
+            result2 = runner.invoke(
+                cli,
+                ["create", "--id", "SPRINT-ACT1", "--title", "Active Sprint"],
+                obj=ctx
+            )
+            assert result2.exit_code == 0, f"Create failed: {result2.output}"
+            
+            result3 = runner.invoke(
+                cli,
+                ["move", "SPRINT-ACT1", "active"],
+                obj=ctx
+            )
+            assert result3.exit_code == 0, f"Move failed: {result3.output}"
+            
+            result = runner.invoke(
+                cli,
+                ["list", "--status", "active"],
+                obj=ctx
+            )
+            
+            assert result.exit_code == 0
+            assert "SPRINT-ACT1" in result.output
     
     def test_list_json_format(self, runner, temp_project):
         """Test list with JSON format."""

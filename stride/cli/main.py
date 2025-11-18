@@ -29,6 +29,193 @@ except ImportError:
 console = Console() if RICH_AVAILABLE else None
 
 
+# Helper functions for dashboard display
+def _calculate_sprint_age(created_str: str) -> int:
+    """Calculate days since sprint creation."""
+    from datetime import datetime, timezone
+    try:
+        # Handle both Z suffix and +00:00 suffix
+        created_str = created_str.replace("Z", "+00:00")
+        created = datetime.fromisoformat(created_str)
+        now = datetime.now(timezone.utc)
+        return (now - created).days
+    except (ValueError, AttributeError):
+        return 0
+
+
+def _get_status_emoji(status: str) -> str:
+    """Get emoji for sprint status."""
+    status_map = {
+        "proposed": "📝",
+        "active": "🚀",
+        "blocked": "🚫",
+        "review": "👀",
+        "completed": "✅"
+    }
+    return status_map.get(status, "❓")
+
+
+def _get_status_color(status: str) -> str:
+    """Get Rich color for sprint status."""
+    color_map = {
+        "proposed": "yellow",
+        "active": "blue",
+        "blocked": "red",
+        "review": "magenta",
+        "completed": "green"
+    }
+    return color_map.get(status, "white")
+
+
+def _get_priority_emoji(priority: str) -> str:
+    """Get emoji for priority level."""
+    priority_map = {
+        "critical": "🔥",
+        "high": "⚡",
+        "medium": "⭐",
+        "low": "💤"
+    }
+    return priority_map.get(priority, "⭐")
+
+
+def _display_dashboard(sprints: list, detailed: bool, team: bool, quiet: bool) -> None:
+    """Display enhanced visual dashboard with sprint analytics."""
+    from datetime import datetime
+    from collections import Counter
+    
+    if RICH_AVAILABLE:
+        from rich.panel import Panel
+        from rich.progress import Progress, BarColumn, TextColumn
+        from rich.layout import Layout
+        from rich.text import Text
+        
+        # Calculate statistics
+        total = len(sprints)
+        status_counts = Counter()
+        priority_counts = Counter()
+        author_counts = Counter()
+        oldest_sprint = None
+        oldest_age = 0
+        blocked_sprints = []
+        
+        for sprint in sprints:
+            status_str = sprint["status"].value if hasattr(sprint["status"], "value") else sprint["status"]
+            meta = sprint["metadata"] or {}
+            
+            status_counts[status_str] += 1
+            priority_counts[meta.get("priority", "medium")] += 1
+            
+            if meta.get("author"):
+                author_counts[meta["author"]] += 1
+            
+            # Track oldest sprint
+            age = _calculate_sprint_age(meta.get("created", ""))
+            if age > oldest_age:
+                oldest_age = age
+                oldest_sprint = sprint["id"]
+            
+            # Track blocked sprints
+            if status_str == "blocked":
+                blocked_sprints.append({
+                    "id": sprint["id"],
+                    "title": meta.get("title", "N/A"),
+                    "age": age,
+                    "reason": meta.get("reason", "No reason specified")
+                })
+        
+        # Display header with summary
+        rprint(f"\n[bold cyan]{'=' * 60}[/bold cyan]")
+        rprint(f"[bold white]📊 Sprint Dashboard[/bold white]")
+        rprint(f"[bold cyan]{'=' * 60}[/bold cyan]\n")
+        
+        # Sprint distribution with progress bars
+        rprint("[bold]Sprint Distribution:[/bold]")
+        for status_val in ["proposed", "active", "blocked", "review", "completed"]:
+            count = status_counts.get(status_val, 0)
+            percentage = (count / total * 100) if total > 0 else 0
+            emoji = _get_status_emoji(status_val)
+            color = _get_status_color(status_val)
+            
+            # Create visual bar
+            bar_length = int(percentage / 2)  # Scale to 50 chars max
+            bar = "█" * bar_length
+            
+            rprint(f"  {emoji} [{color}]{status_val.capitalize():<12}[/{color}] {count:>3} [{color}]{bar}[/{color}] {percentage:>5.1f}%")
+        
+        # Health metrics
+        rprint(f"\n[bold]Health Metrics:[/bold]")
+        rprint(f"  📈 Total Sprints: [cyan]{total}[/cyan]")
+        rprint(f"  🔥 Active Sprints: [blue]{status_counts.get('active', 0)}[/blue]")
+        rprint(f"  ✅ Completed: [green]{status_counts.get('completed', 0)}[/green]")
+        rprint(f"  🚫 Blocked: [red]{status_counts.get('blocked', 0)}[/red]")
+        
+        if oldest_sprint and oldest_age > 0:
+            rprint(f"  ⏰ Oldest Sprint: [yellow]{oldest_sprint}[/yellow] ([yellow]{oldest_age} days[/yellow])")
+        
+        if blocked_sprints:
+            rprint(f"\n[bold red]⚠️  Blocked Sprints ({len(blocked_sprints)}):[/bold red]")
+            for blocked in blocked_sprints[:3]:  # Show top 3
+                rprint(f"    • {blocked['id']}: {blocked['title']}")
+                rprint(f"      [dim]Blocked for {blocked['age']} days: {blocked['reason']}[/dim]")
+        
+        # Team analytics
+        if team and author_counts:
+            rprint(f"\n[bold]Team Activity:[/bold]")
+            for author, count in author_counts.most_common(5):
+                percentage = (count / total * 100) if total > 0 else 0
+                bar_length = int(percentage / 2)
+                bar = "█" * bar_length
+                rprint(f"  👤 {author:<30} {count:>3} [cyan]{bar}[/cyan] {percentage:>5.1f}%")
+        
+        # Detailed sprint list
+        if detailed:
+            rprint(f"\n[bold]Detailed Sprint List:[/bold]")
+            for sprint in sprints:
+                status_str = sprint["status"].value if hasattr(sprint["status"], "value") else sprint["status"]
+                meta = sprint["metadata"] or {}
+                age = _calculate_sprint_age(meta.get("created", ""))
+                emoji = _get_status_emoji(status_str)
+                color = _get_status_color(status_str)
+                priority_emoji = _get_priority_emoji(meta.get("priority", "medium"))
+                
+                rprint(f"\n  {emoji} [{color}]{sprint['id']}[/{color}] - {meta.get('title', 'N/A')}")
+                rprint(f"     Status: [{color}]{status_str}[/{color}] | Priority: {priority_emoji} {meta.get('priority', 'N/A')}")
+                rprint(f"     Author: [dim]{meta.get('author', 'N/A')}[/dim] | Age: [yellow]{age} days[/yellow]")
+                if meta.get("tags"):
+                    rprint(f"     Tags: [cyan]{', '.join(meta['tags'])}[/cyan]")
+        
+        rprint(f"\n[bold cyan]{'=' * 60}[/bold cyan]\n")
+    
+    else:
+        # Fallback ASCII dashboard
+        click.echo("\n" + "=" * 60)
+        click.echo("Sprint Dashboard")
+        click.echo("=" * 60 + "\n")
+        
+        # Calculate statistics
+        total = len(sprints)
+        status_counts = Counter()
+        
+        for sprint in sprints:
+            status_str = sprint["status"].value if hasattr(sprint["status"], "value") else sprint["status"]
+            status_counts[status_str] += 1
+        
+        click.echo("Sprint Distribution:")
+        for status_val in ["proposed", "active", "blocked", "review", "completed"]:
+            count = status_counts.get(status_val, 0)
+            percentage = (count / total * 100) if total > 0 else 0
+            emoji = _get_status_emoji(status_val)
+            bar_length = int(percentage / 2)
+            bar = "#" * bar_length
+            click.echo(f"  {emoji} {status_val.capitalize():<12} {count:>3} {bar} {percentage:>5.1f}%")
+        
+        click.echo(f"\nTotal Sprints: {total}")
+        click.echo(f"Active: {status_counts.get('active', 0)}")
+        click.echo(f"Completed: {status_counts.get('completed', 0)}")
+        click.echo(f"Blocked: {status_counts.get('blocked', 0)}")
+        click.echo("\n" + "=" * 60 + "\n")
+
+
 @click.group()
 @click.version_option(version=__version__, prog_name="stride")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
@@ -581,19 +768,23 @@ def create(ctx: click.Context, sprint_id: Optional[str], title: str, description
 
 @cli.command()
 @click.option("--status", "-s", type=click.Choice(["proposed", "active", "blocked", "review", "completed"]), help="Filter by status")
-@click.option("--format", "-f", type=click.Choice(["table", "list", "json"]), default="table", help="Output format")
+@click.option("--format", "-f", type=click.Choice(["table", "list", "json", "dashboard"]), default="dashboard", help="Output format")
+@click.option("--detailed", "-d", is_flag=True, help="Show detailed sprint information")
+@click.option("--team", "-t", is_flag=True, help="Show team analytics")
 @click.pass_context
-def list(ctx: click.Context, status: Optional[str], format: str) -> None:
+def list(ctx: click.Context, status: Optional[str], format: str, detailed: bool, team: bool) -> None:
     """
-    List all sprints or sprints in a specific status.
+    List all sprints or sprints in a specific status with visual dashboard.
     
-    By default, shows all sprints across all statuses in a table format.
+    By default, shows a visual dashboard with sprint distribution and health metrics.
     
     Examples:
       stride list
       stride list --status active
       stride list --status proposed --format list
       stride list --format json
+      stride list --detailed
+      stride list --team
     """
     sm: SprintManager = ctx.obj["sprint_manager"]
     fm: FolderManager = ctx.obj["folder_manager"]
@@ -639,6 +830,9 @@ def list(ctx: click.Context, status: Optional[str], format: str) -> None:
             status_str = sprint["status"].value if hasattr(sprint["status"], "value") else sprint["status"]
             title = sprint["metadata"].get("title", "N/A") if sprint["metadata"] else "N/A"
             click.echo(f"{sprint['id']} [{status_str}] - {title}")
+    
+    elif format == "dashboard":
+        _display_dashboard(sprints, detailed, team, quiet)
             
     else:  # table format
         if RICH_AVAILABLE and console:

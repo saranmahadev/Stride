@@ -206,7 +206,7 @@ class TestListCommand:
             obj=make_context(temp_project)
         )
         
-        result = runner.invoke(cli, ["list"], obj=make_context(temp_project))
+        result = runner.invoke(cli, ["list", "--format", "table"], obj=make_context(temp_project))
         
         assert result.exit_code == 0
         assert "SPRINT-LST1" in result.output
@@ -237,7 +237,7 @@ class TestListCommand:
             
             result = runner.invoke(
                 cli,
-                ["list", "--status", "active"],
+                ["list", "--status", "active", "--format", "table"],
                 obj=ctx
             )
             

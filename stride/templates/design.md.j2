@@ -1,0 +1,277 @@
+---
+id: {{ sprint_id }}
+title: {{ title }}
+status: design
+created: {{ created }}
+author: {{ author }}
+---
+
+# Design Document: {{ title }}
+
+## Overview
+
+### Purpose
+_Brief description of what this sprint aims to accomplish and why the design is needed._
+
+### Scope
+_What is included and what is explicitly out of scope for this design._
+
+### Success Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
+
+---
+
+## Architecture Design
+
+### System Architecture
+_High-level architecture diagram or description of how components interact._
+
+```
+┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+│  Component  │─────▶│  Component  │─────▶│  Component  │
+│      A      │      │      B      │      │      C      │
+└─────────────┘      └─────────────┘      └─────────────┘
+```
+
+### Component Design
+
+#### Component 1: [Name]
+**Purpose:** What this component does  
+**Responsibilities:**
+- Responsibility 1
+- Responsibility 2
+
+**Interfaces:**
+- Input: Description
+- Output: Description
+
+**Dependencies:**
+- Dependency 1
+- Dependency 2
+
+---
+
+#### Component 2: [Name]
+**Purpose:** What this component does  
+**Responsibilities:**
+- Responsibility 1
+- Responsibility 2
+
+**Interfaces:**
+- Input: Description
+- Output: Description
+
+---
+
+## Data Design
+
+### Data Models
+
+#### Model 1: [Name]
+```python
+class ModelName:
+    field1: Type
+    field2: Type
+    field3: Type
+```
+
+**Attributes:**
+- `field1`: Description
+- `field2`: Description
+
+**Relationships:**
+- Relates to Model2 via field3
+
+---
+
+### Data Flow
+_Describe how data flows through the system._
+
+1. Step 1: Data enters via...
+2. Step 2: Data is processed by...
+3. Step 3: Data is stored/outputted...
+
+---
+
+## API Design
+
+### Endpoints / Interfaces
+
+#### Endpoint 1: `POST /api/resource`
+**Description:** What this endpoint does
+
+**Request:**
+```json
+{
+  "field1": "value",
+  "field2": 123
+}
+```
+
+**Response:**
+```json
+{
+  "id": "xxx",
+  "status": "success"
+}
+```
+
+**Error Codes:**
+- 400: Invalid input
+- 404: Resource not found
+
+---
+
+## Security Considerations
+
+### Authentication & Authorization
+_How will the system authenticate users and authorize actions?_
+
+### Data Protection
+_How will sensitive data be protected?_
+
+### Potential Vulnerabilities
+- Vulnerability 1: Description and mitigation
+- Vulnerability 2: Description and mitigation
+
+---
+
+## Performance Considerations
+
+### Expected Load
+- Expected concurrent users: X
+- Expected requests per second: Y
+- Expected data volume: Z
+
+### Optimization Strategies
+- Strategy 1: Description
+- Strategy 2: Description
+
+### Caching Strategy
+_Describe what will be cached and how._
+
+---
+
+## Error Handling
+
+### Error Types
+- Error Type 1: How it's handled
+- Error Type 2: How it's handled
+
+### Logging Strategy
+- What gets logged
+- Log levels and severity
+- Log retention policy
+
+### Fallback Mechanisms
+- Fallback 1: Description
+- Fallback 2: Description
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+- Component A: Test scenarios
+- Component B: Test scenarios
+
+### Integration Tests
+- Integration point 1: Test scenarios
+- Integration point 2: Test scenarios
+
+### Edge Cases
+- Edge case 1: Expected behavior
+- Edge case 2: Expected behavior
+
+---
+
+## Deployment Considerations
+
+### Environment Requirements
+- Requirement 1
+- Requirement 2
+
+### Migration Strategy
+_If applicable, how will existing systems/data be migrated?_
+
+### Rollback Plan
+_How can we rollback if deployment fails?_
+
+---
+
+## Alternative Approaches Considered
+
+### Approach 1: [Name]
+**Pros:**
+- Pro 1
+- Pro 2
+
+**Cons:**
+- Con 1
+- Con 2
+
+**Why Not Chosen:** Explanation
+
+---
+
+### Approach 2: [Name]
+**Pros:**
+- Pro 1
+- Pro 2
+
+**Cons:**
+- Con 1
+- Con 2
+
+**Why Not Chosen:** Explanation
+
+---
+
+## Open Questions
+
+- [ ] Question 1: Who needs to answer?
+- [ ] Question 2: Who needs to answer?
+- [ ] Question 3: Who needs to answer?
+
+---
+
+## Dependencies & Prerequisites
+
+### External Dependencies
+- Dependency 1: Version X.Y
+- Dependency 2: Version A.B
+
+### Internal Prerequisites
+- Prerequisite 1: Must be completed first
+- Prerequisite 2: Must be available
+
+---
+
+## Timeline Estimates
+
+### Design Phase
+- Review with team: X hours
+- Finalize design: Y hours
+
+### Implementation Phase
+- Development: X days
+- Testing: Y days
+- Deployment: Z days
+
+---
+
+## References
+
+- [Related Documentation](link)
+- [External Resources](link)
+- [Standards/Guidelines](link)
+
+---
+
+## Change Log
+
+| Date | Author | Change Description |
+|------|--------|-------------------|
+| {{ created | date_short }} | {{ author }} | Initial design document |

@@ -1,14 +1,17 @@
 """
 Main CLI entry point for Stride.
 """
+import builtins
 import click
 import sys
+import json
 from pathlib import Path
 from typing import Optional
 
 from stride import __version__
 from stride.core.folder_manager import FolderManager, SprintStatus
 from stride.core.sprint_manager import SprintManager
+from stride.core.config_manager import ConfigManager, ConfigError, ConfigValidationError
 from stride.utils.id_generator import generate_sprint_id, validate_sprint_id
 
 try:
@@ -654,6 +657,450 @@ def restore(ctx: click.Context, sprint_id: str, to_status: str) -> None:
     except Exception as e:
         click.echo(f"❌ Failed to restore sprint: {e}", err=True)
         sys.exit(1)
+
+
+@cli.group()
+@click.pass_context
+def config(ctx: click.Context) -> None:
+    """
+    Manage Stride configuration settings.
+    
+    Configure user preferences, project settings, and AI agent configurations.
+    Supports both user-level (~/.stride/config.yaml) and project-level (stride.config.yaml) settings.
+    
+    \b
+    Examples:
+      stride config get user.name
+      stride config set user.email "dev@example.com"
+      stride config list --user
+      stride config init --project
+      stride config validate
+      stride config reset --user
+    """
+    pass
+
+
+@config.command("get")
+@click.argument("key", required=False)
+@click.option("--user", "-u", is_flag=True, help="Get from user configuration only")
+@click.option("--project", "-p", is_flag=True, help="Get from project configuration only")
+@click.option("--format", "-f", "output_format", type=click.Choice(["text", "json"]), default="text", help="Output format")
+@click.pass_context
+def config_get(ctx: click.Context, key: Optional[str], user: bool, project: bool, output_format: str) -> None:
+    """
+    Get configuration value(s).
+    
+    If KEY is provided, retrieves that specific configuration value using dot notation.
+    If KEY is omitted, displays all configuration values.
+    
+    \b
+    Examples:
+      stride config get user.name
+      stride config get project.agents
+      stride config get --user
+      stride config get --format json
+    """
+    quiet = ctx.parent.parent.params.get("quiet", False)
+    config_manager = ConfigManager()
+    
+    try:
+        if user and project:
+            click.echo("❌ Cannot specify both --user and --project", err=True)
+            sys.exit(1)
+        
+        # Determine which config to use
+        if user:
+            config_data = config_manager.get_user_config()
+        elif project:
+            config_data = config_manager.get_project_config()
+        else:
+            config_data = config_manager.get_merged_config()
+        
+        # Get specific key or full config
+        if key:
+            value = config_manager.get_value(key, config=config_data)
+            if value is None:
+                click.echo(f"❌ Configuration key '{key}' not found", err=True)
+                sys.exit(1)
+            
+            if output_format == "json":
+                click.echo(json.dumps(value, indent=2))
+            else:
+                if isinstance(value, (builtins.dict, builtins.list)):
+                    click.echo(json.dumps(value, indent=2))
+                else:
+                    click.echo(value)
+        else:
+            # Show all config
+            if output_format == "json":
+                click.echo(json.dumps(config_data, indent=2))
+            else:
+                if RICH_AVAILABLE and not quiet:
+                    _print_config_tree(config_data, "Configuration")
+                else:
+                    click.echo(json.dumps(config_data, indent=2))
+    
+    except ConfigError as e:
+        click.echo(f"❌ {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Failed to get configuration: {e}", err=True)
+        sys.exit(1)
+
+
+@config.command("set")
+@click.argument("key")
+@click.argument("value")
+@click.option("--user", "-u", is_flag=True, help="Set in user configuration")
+@click.option("--project", "-p", is_flag=True, help="Set in project configuration")
+@click.option("--json", "-j", "is_json", is_flag=True, help="Parse value as JSON")
+@click.pass_context
+def config_set(ctx: click.Context, key: str, value: str, user: bool, project: bool, is_json: bool) -> None:
+    """
+    Set a configuration value.
+    
+    Sets a configuration value using dot notation for nested keys.
+    By default, sets in project configuration if it exists, otherwise user configuration.
+    
+    \b
+    Examples:
+      stride config set user.name "John Doe"
+      stride config set user.email "john@example.com"
+      stride config set project.name "MyProject" --project
+      stride config set defaults.tags '["bug", "feature"]' --json --user
+    """
+    quiet = ctx.parent.parent.params.get("quiet", False)
+    config_manager = ConfigManager()
+    
+    try:
+        if user and project:
+            click.echo("❌ Cannot specify both --user and --project", err=True)
+            sys.exit(1)
+        
+        # Parse value if JSON flag is set
+        parsed_value = value
+        if is_json:
+            try:
+                parsed_value = json.loads(value)
+            except json.JSONDecodeError as e:
+                click.echo(f"❌ Invalid JSON: {e}", err=True)
+                sys.exit(1)
+        
+        # Determine which config to update
+        config_type = None
+        if user:
+            config_type = "user"
+        elif project:
+            config_type = "project"
+        else:
+            # Default to project if it exists, otherwise user
+            project_config_path = Path.cwd() / "stride.config.yaml"
+            config_type = "project" if project_config_path.exists() else "user"
+        
+        # Set the value
+        config_manager.set_value(key, parsed_value, config_type)
+        
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint(f"[bold green]✓[/bold green] Set [bold cyan]{key}[/bold cyan] = [bold yellow]{parsed_value}[/bold yellow]")
+                rprint(f"  📁 Configuration: {config_type}")
+            else:
+                click.echo(f"✓ Set {key} = {parsed_value}")
+                click.echo(f"  📁 Configuration: {config_type}")
+    
+    except ConfigError as e:
+        click.echo(f"❌ {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Failed to set configuration: {e}", err=True)
+        sys.exit(1)
+
+
+@config.command("list")
+@click.option("--user", "-u", is_flag=True, help="List user configuration only")
+@click.option("--project", "-p", is_flag=True, help="List project configuration only")
+@click.option("--format", "-f", "output_format", type=click.Choice(["table", "json"]), default="table", help="Output format")
+@click.pass_context
+def config_list(ctx: click.Context, user: bool, project: bool, output_format: str) -> None:
+    """
+    List all configuration settings.
+    
+    Displays all configuration keys and values in a readable format.
+    Use --user or --project to filter specific configuration levels.
+    
+    \b
+    Examples:
+      stride config list
+      stride config list --user
+      stride config list --format json
+    """
+    quiet = ctx.parent.parent.params.get("quiet", False)
+    config_manager = ConfigManager()
+    
+    try:
+        if user and project:
+            click.echo("❌ Cannot specify both --user and --project", err=True)
+            sys.exit(1)
+        
+        # Determine which config to list
+        if user:
+            config_data = config_manager.get_user_config()
+            config_label = "User Configuration"
+        elif project:
+            config_data = config_manager.get_project_config()
+            config_label = "Project Configuration"
+        else:
+            config_data = config_manager.get_merged_config()
+            config_label = "Merged Configuration"
+        
+        if output_format == "json":
+            click.echo(json.dumps(config_data, indent=2))
+        else:
+            if RICH_AVAILABLE and not quiet:
+                _print_config_tree(config_data, config_label)
+            else:
+                click.echo(f"=== {config_label} ===")
+                click.echo(json.dumps(config_data, indent=2))
+    
+    except ConfigError as e:
+        click.echo(f"❌ {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Failed to list configuration: {e}", err=True)
+        sys.exit(1)
+
+
+@config.command("init")
+@click.option("--user", "-u", is_flag=True, help="Initialize user configuration")
+@click.option("--project", "-p", is_flag=True, help="Initialize project configuration")
+@click.option("--name", help="Project name (for project config)")
+@click.option("--force", is_flag=True, help="Overwrite existing configuration")
+@click.pass_context
+def config_init(ctx: click.Context, user: bool, project: bool, name: Optional[str], force: bool) -> None:
+    """
+    Initialize configuration files.
+    
+    Creates default configuration files with sensible defaults.
+    Use --user for ~/.stride/config.yaml or --project for stride.config.yaml.
+    
+    \b
+    Examples:
+      stride config init --user
+      stride config init --project --name "MyProject"
+      stride config init --project --force
+    """
+    quiet = ctx.parent.parent.params.get("quiet", False)
+    config_manager = ConfigManager()
+    
+    try:
+        if not user and not project:
+            click.echo("❌ Must specify either --user or --project", err=True)
+            sys.exit(1)
+        
+        if user and project:
+            click.echo("❌ Cannot specify both --user and --project", err=True)
+            sys.exit(1)
+        
+        if user:
+            config_path = config_manager.user_config_path
+            if config_path.exists() and not force:
+                click.echo(f"❌ User configuration already exists at {config_path}", err=True)
+                click.echo("   Use --force to overwrite", err=True)
+                sys.exit(1)
+            
+            if force and config_path.exists():
+                config_path.unlink()
+            
+            config_manager.init_user_config()
+            
+            if not quiet:
+                if RICH_AVAILABLE:
+                    rprint(f"[bold green]✓[/bold green] Initialized user configuration")
+                    rprint(f"  📁 Location: {config_path}")
+                else:
+                    click.echo(f"✓ Initialized user configuration")
+                    click.echo(f"  📁 Location: {config_path}")
+        
+        elif project:
+            config_path = config_manager.project_config_path
+            if config_path.exists() and not force:
+                click.echo(f"❌ Project configuration already exists at {config_path}", err=True)
+                click.echo("   Use --force to overwrite", err=True)
+                sys.exit(1)
+            
+            if force and config_path.exists():
+                config_path.unlink()
+            
+            kwargs = {}
+            if name:
+                kwargs["project_name"] = name
+            
+            config_manager.init_project_config(**kwargs)
+            
+            if not quiet:
+                if RICH_AVAILABLE:
+                    rprint(f"[bold green]✓[/bold green] Initialized project configuration")
+                    rprint(f"  📁 Location: {config_path}")
+                else:
+                    click.echo(f"✓ Initialized project configuration")
+                    click.echo(f"  📁 Location: {config_path}")
+    
+    except ConfigError as e:
+        click.echo(f"❌ {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Failed to initialize configuration: {e}", err=True)
+        sys.exit(1)
+
+
+@config.command("validate")
+@click.option("--user", "-u", is_flag=True, help="Validate user configuration only")
+@click.option("--project", "-p", is_flag=True, help="Validate project configuration only")
+@click.option("--strict", is_flag=True, help="Enable strict validation mode")
+@click.pass_context
+def config_validate(ctx: click.Context, user: bool, project: bool, strict: bool) -> None:
+    """
+    Validate configuration files.
+    
+    Checks configuration files against schemas to ensure they are valid.
+    Reports any errors or warnings found.
+    
+    \b
+    Examples:
+      stride config validate
+      stride config validate --user
+      stride config validate --project --strict
+    """
+    quiet = ctx.parent.parent.params.get("quiet", False)
+    config_manager = ConfigManager()
+    
+    try:
+        from stride.core.config_schemas import USER_CONFIG_SCHEMA, PROJECT_CONFIG_SCHEMA
+        
+        errors = []
+        
+        # Validate user config
+        if user or not project:
+            try:
+                user_config = config_manager.get_user_config()
+                config_manager.validate_config(user_config, USER_CONFIG_SCHEMA, strict=strict)
+                if not quiet:
+                    if RICH_AVAILABLE:
+                        rprint(f"[bold green]✓[/bold green] User configuration is valid")
+                    else:
+                        click.echo("✓ User configuration is valid")
+            except ConfigValidationError as e:
+                errors.append(f"User configuration: {e}")
+            except FileNotFoundError:
+                if not quiet:
+                    click.echo("⚠ User configuration not found (this is optional)")
+        
+        # Validate project config
+        if project or not user:
+            try:
+                project_config = config_manager.get_project_config()
+                config_manager.validate_config(project_config, PROJECT_CONFIG_SCHEMA, strict=strict)
+                if not quiet:
+                    if RICH_AVAILABLE:
+                        rprint(f"[bold green]✓[/bold green] Project configuration is valid")
+                    else:
+                        click.echo("✓ Project configuration is valid")
+            except ConfigValidationError as e:
+                errors.append(f"Project configuration: {e}")
+            except FileNotFoundError:
+                if not quiet:
+                    click.echo("⚠ Project configuration not found (this is optional)")
+        
+        if errors:
+            click.echo("❌ Configuration validation failed:", err=True)
+            for error in errors:
+                click.echo(f"   - {error}", err=True)
+            sys.exit(1)
+    
+    except Exception as e:
+        click.echo(f"❌ Failed to validate configuration: {e}", err=True)
+        sys.exit(1)
+
+
+@config.command("reset")
+@click.option("--user", "-u", is_flag=True, help="Reset user configuration")
+@click.option("--project", "-p", is_flag=True, help="Reset project configuration")
+@click.option("--force", is_flag=True, help="Skip confirmation prompt")
+@click.pass_context
+def config_reset(ctx: click.Context, user: bool, project: bool, force: bool) -> None:
+    """
+    Reset configuration to defaults.
+    
+    Restores configuration files to their default values.
+    This action cannot be undone without a backup.
+    
+    \b
+    Examples:
+      stride config reset --user
+      stride config reset --project --force
+    """
+    quiet = ctx.parent.parent.params.get("quiet", False)
+    config_manager = ConfigManager()
+    
+    try:
+        if not user and not project:
+            click.echo("❌ Must specify either --user or --project", err=True)
+            sys.exit(1)
+        
+        if user and project:
+            click.echo("❌ Cannot specify both --user and --project", err=True)
+            sys.exit(1)
+        
+        config_type = "user" if user else "project"
+        config_path = config_manager.user_config_path if user else config_manager.project_config_path
+        
+        # Confirmation prompt
+        if not force:
+            if RICH_AVAILABLE:
+                rprint(f"[bold yellow]⚠[/bold yellow] This will reset {config_type} configuration to defaults")
+                rprint(f"  📁 Location: {config_path}")
+            else:
+                click.echo(f"⚠ This will reset {config_type} configuration to defaults")
+                click.echo(f"  📁 Location: {config_path}")
+            
+            if not click.confirm("Do you want to continue?"):
+                click.echo("Cancelled.")
+                return
+        
+        # Reset the configuration
+        config_manager.reset_config(config_type)
+        
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint(f"[bold green]✓[/bold green] Reset {config_type} configuration to defaults")
+            else:
+                click.echo(f"✓ Reset {config_type} configuration to defaults")
+    
+    except ConfigError as e:
+        click.echo(f"❌ {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Failed to reset configuration: {e}", err=True)
+        sys.exit(1)
+
+
+def _print_config_tree(config: dict, title: str, indent: int = 0) -> None:
+    """Helper function to print configuration as a tree using Rich."""
+    if not RICH_AVAILABLE:
+        return
+    
+    if indent == 0:
+        rprint(f"\n[bold cyan]=== {title} ===[/bold cyan]\n")
+    
+    for key, value in config.items():
+        prefix = "  " * indent
+        if isinstance(value, dict):
+            rprint(f"{prefix}[bold yellow]{key}:[/bold yellow]")
+            _print_config_tree(value, title, indent + 1)
+        elif isinstance(value, list):
+            rprint(f"{prefix}[bold yellow]{key}:[/bold yellow] [dim]{value}[/dim]")
+        else:
+            rprint(f"{prefix}[bold yellow]{key}:[/bold yellow] {value}")
 
 
 if __name__ == "__main__":

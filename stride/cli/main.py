@@ -1,7 +1,6 @@
 """
 Main CLI entry point for Stride.
 """
-import builtins
 import click
 import sys
 import json
@@ -79,6 +78,200 @@ def version(ctx: click.Context) -> None:
         else:
             click.echo(f"Stride version {__version__}")
             click.echo("Sprint-Powered, Spec-Driven Development for AI Agents")
+
+
+@cli.command()
+@click.option("--name", "-n", help="Your name")
+@click.option("--email", "-e", help="Your email address")
+@click.pass_context
+def login(ctx: click.Context, name: Optional[str], email: Optional[str]) -> None:
+    """
+    Set your user identity for sprint authorship.
+    
+    Stores your name and email in ~/.stride/config.yaml.
+    This information is used to track who creates and modifies sprints.
+    
+    \b
+    Examples:
+      stride login                               # Interactive mode
+      stride login --name "John Doe" --email "john@example.com"
+      stride login --email "newemail@example.com"  # Update email only
+    """
+    from stride.utils.validators import validate_email, validate_name
+    
+    config_manager = ConfigManager()
+    quiet = ctx.obj.get("quiet", False)
+    
+    # Get current user info
+    current_email, current_name = config_manager.get_user_info()
+    
+    # Interactive mode if no flags provided
+    if not name and not email:
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint("\n[bold cyan]📝 Setup User Identity[/bold cyan]")
+                if current_name or current_email:
+                    rprint(f"[dim]Current: {current_name or '(no name)'} <{current_email or '(no email)'}>[/dim]\n")
+            else:
+                click.echo("\n📝 Setup User Identity")
+                if current_name or current_email:
+                    click.echo(f"Current: {current_name or '(no name)'} <{current_email or '(no email)'}>\n")
+        
+        # Prompt for name
+        name = click.prompt("Name", default=current_name or "", show_default=bool(current_name))
+        if not name:
+            name = current_name
+        
+        # Prompt for email
+        email = click.prompt("Email", default=current_email or "", show_default=bool(current_email))
+        if not email:
+            email = current_email
+    else:
+        # Use current values if not provided
+        if not name:
+            name = current_name
+        if not email:
+            email = current_email
+    
+    # Validate name
+    if name:
+        is_valid, error = validate_name(name)
+        if not is_valid:
+            click.echo(f"❌ {error}", err=True)
+            sys.exit(1)
+    
+    # Validate email
+    if email:
+        is_valid, error = validate_email(email)
+        if not is_valid:
+            click.echo(f"❌ {error}", err=True)
+            sys.exit(1)
+    
+    # Store credentials
+    try:
+        user_config = config_manager.get_user_config()
+        if "user" not in user_config:
+            user_config["user"] = {}
+        
+        user_config["user"]["name"] = name
+        user_config["user"]["email"] = email
+        
+        config_manager.save_config(config_manager.user_config_path, user_config)
+        config_manager._clear_cache()
+        
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint(f"\n[bold green]✓[/bold green] Logged in as [bold]{name}[/bold] ([cyan]{email}[/cyan])")
+                rprint(f"  📁 Config: {config_manager.user_config_path}")
+            else:
+                click.echo(f"\n✓ Logged in as {name} ({email})")
+                click.echo(f"  📁 Config: {config_manager.user_config_path}")
+    
+    except Exception as e:
+        click.echo(f"❌ Failed to save credentials: {e}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+@click.option("--force", "-f", is_flag=True, help="Skip confirmation prompt")
+@click.pass_context
+def logout(ctx: click.Context, force: bool) -> None:
+    """
+    Clear your user identity.
+    
+    Removes your name and email from ~/.stride/config.yaml.
+    
+    \b
+    Examples:
+      stride logout           # With confirmation
+      stride logout --force   # Skip confirmation
+    """
+    config_manager = ConfigManager()
+    quiet = ctx.obj.get("quiet", False)
+    
+    # Check if user is logged in
+    if not config_manager.is_user_authenticated():
+        click.echo("❌ Not logged in", err=True)
+        sys.exit(1)
+    
+    # Get current user for display
+    email, name = config_manager.get_user_info()
+    
+    # Confirmation prompt
+    if not force and not quiet:
+        if RICH_AVAILABLE:
+            rprint(f"\n[yellow]⚠️  You are currently logged in as:[/yellow]")
+            rprint(f"   {name} ({email})")
+            rprint()
+        else:
+            click.echo(f"\n⚠️  You are currently logged in as:")
+            click.echo(f"   {name} ({email})\n")
+        
+        if not click.confirm("Are you sure you want to logout?"):
+            click.echo("Cancelled.")
+            return
+    
+    # Clear credentials
+    try:
+        user_config = config_manager.get_user_config()
+        if "user" in user_config:
+            user_config["user"]["name"] = None
+            user_config["user"]["email"] = None
+        
+        config_manager.save_config(config_manager.user_config_path, user_config)
+        config_manager._clear_cache()
+        
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint("[bold green]✓[/bold green] Logged out successfully")
+            else:
+                click.echo("✓ Logged out successfully")
+    
+    except Exception as e:
+        click.echo(f"❌ Failed to logout: {e}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+@click.pass_context
+def whoami(ctx: click.Context) -> None:
+    """
+    Display current user identity.
+    
+    Shows your name, email, and authentication status.
+    
+    \b
+    Example:
+      stride whoami
+    """
+    config_manager = ConfigManager()
+    quiet = ctx.obj.get("quiet", False)
+    
+    if config_manager.is_user_authenticated():
+        email, name = config_manager.get_user_info()
+        
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint(f"[bold green]✓[/bold green] Logged in as [bold]{name or '(no name)'}[/bold] ([cyan]{email}[/cyan])")
+                rprint(f"  📁 Config: {config_manager.user_config_path}")
+            else:
+                click.echo(f"✓ Logged in as {name or '(no name)'} ({email})")
+                click.echo(f"  📁 Config: {config_manager.user_config_path}")
+        else:
+            # In quiet mode, just print the basic info
+            click.echo(f"{name or '(no name)'} ({email})")
+    else:
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint("[yellow]❌ Not logged in[/yellow]")
+                rprint("  Run [cyan]stride login[/cyan] to set your identity")
+            else:
+                click.echo("❌ Not logged in")
+                click.echo("  Run 'stride login' to set your identity")
+        else:
+            click.echo("Not logged in")
+        
+        sys.exit(1)
 
 
 @cli.command()
@@ -304,23 +497,46 @@ def create(ctx: click.Context, sprint_id: Optional[str], title: str, description
     # Parse tags
     tag_list = [t.strip() for t in tags.split(",")] if tags else []
     
-    # Get author from git config if not provided
+    # Get author from Stride user config, git config, or prompt
     if not author:
-        try:
-            import subprocess
-            result = subprocess.run(
-                ["git", "config", "user.email"],
-                capture_output=True,
-                text=True,
-                check=False
-            )
-            if result.returncode == 0:
-                author = result.stdout.strip()
-        except Exception:
-            pass
-    
-    if not author:
-        author = "unknown@example.com"
+        # First try Stride user config
+        config_manager = ConfigManager()
+        if config_manager.is_user_authenticated():
+            email, name = config_manager.get_user_info()
+            author = email
+            if not quiet:
+                if RICH_AVAILABLE:
+                    rprint(f"[dim]Using authenticated user: {name} <{email}>[/dim]")
+                else:
+                    click.echo(f"Using authenticated user: {name} <{email}>")
+        else:
+            # Fall back to git config
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ["git", "config", "user.email"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+                if result.returncode == 0:
+                    author = result.stdout.strip()
+                    if not quiet:
+                        if RICH_AVAILABLE:
+                            rprint(f"[dim]Using git config email: {author}[/dim]")
+                        else:
+                            click.echo(f"Using git config email: {author}")
+            except Exception:
+                pass
+            
+            # Warn if no author found
+            if not author:
+                if not quiet:
+                    if RICH_AVAILABLE:
+                        rprint("[yellow]⚠️  No author configured. Run 'stride login' to set your identity.[/yellow]")
+                    else:
+                        click.echo("⚠️  No author configured. Run 'stride login' to set your identity.")
+                author = "unknown@example.com"
     
     # Create sprint
     try:
@@ -849,7 +1065,8 @@ def config_get(ctx: click.Context, key: Optional[str], user: bool, project: bool
             if output_format == "json":
                 click.echo(json.dumps(value, indent=2))
             else:
-                if isinstance(value, (builtins.dict, builtins.list)):
+                # Use type() comparison for better compatibility
+                if type(value).__name__ in ('dict', 'list'):
                     click.echo(json.dumps(value, indent=2))
                 else:
                     click.echo(value)
@@ -1207,7 +1424,7 @@ def config_reset(ctx: click.Context, user: bool, project: bool, force: bool) -> 
         sys.exit(1)
 
 
-def _print_config_tree(config: dict, title: str, indent: int = 0) -> None:
+def _print_config_tree(config, title: str, indent: int = 0) -> None:
     """Helper function to print configuration as a tree using Rich."""
     if not RICH_AVAILABLE:
         return
@@ -1217,10 +1434,11 @@ def _print_config_tree(config: dict, title: str, indent: int = 0) -> None:
     
     for key, value in config.items():
         prefix = "  " * indent
-        if isinstance(value, dict):
+        # Use type() comparison instead of isinstance for better compatibility
+        if type(value).__name__ == 'dict':
             rprint(f"{prefix}[bold yellow]{key}:[/bold yellow]")
             _print_config_tree(value, title, indent + 1)
-        elif isinstance(value, list):
+        elif type(value).__name__ == 'list':
             rprint(f"{prefix}[bold yellow]{key}:[/bold yellow] [dim]{value}[/dim]")
         else:
             rprint(f"{prefix}[bold yellow]{key}:[/bold yellow] {value}")

@@ -307,11 +307,12 @@ class TestMoveCommand:
     def test_move_to_active(self, runner, temp_project):
         """Test moving sprint to active status."""
         runner.invoke(cli, ["init"], obj=make_context(temp_project))
-        runner.invoke(
+        create_result = runner.invoke(
             cli,
-            ["create", "--id", "SPRINT-MOVE", "--title", "Move Test"],
+            ["create", "--id", "SPRINT-MOVE", "--title", "Move Test", "--author", "test@example.com"],
             obj=make_context(temp_project)
         )
+        assert create_result.exit_code == 0, f"Create failed: {create_result.output}"
         
         result = runner.invoke(
             cli,
@@ -332,7 +333,7 @@ class TestMoveCommand:
         runner.invoke(cli, ["init"], obj=make_context(temp_project))
         runner.invoke(
             cli,
-            ["create", "--id", "SPRINT-BLCK", "--title", "Block Test"],
+            ["create", "--id", "SPRINT-BLCK", "--title", "Block Test", "--author", "test@example.com"],
             obj=make_context(temp_project)
         )
         

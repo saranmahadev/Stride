@@ -210,6 +210,9 @@ class TestConfigList:
         runner.invoke(cli, ["config", "init", "--user"])
         
         result = runner.invoke(cli, ["config", "list", "--user"])
+        if result.exit_code != 0:
+            print(f"ERROR: {result.output}")
+            print(f"EXCEPTION: {result.exception if hasattr(result, 'exception') else 'None'}")
         assert result.exit_code == 0
         assert "user" in result.output.lower() or "configuration" in result.output.lower()
     

@@ -112,6 +112,9 @@ class FolderManager:
         if not source.exists():
             raise FileNotFoundError(f"Sprint {sprint_id} not found in {from_status.value}/")
         
+        # Ensure destination parent directory exists
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        
         # Move the entire sprint folder
         source.rename(destination)
         return destination

@@ -93,7 +93,77 @@ We combine **OpenSpec’s clarity**, **SpecKit’s rigor**, and **agile velocity
 
 ---
 
-## **6. Technical Architecture**
+## **6. CLI Quick Start**
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/stride.git
+cd stride
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Verify installation
+python -m stride.cli.main --version
+```
+
+### Your First Sprint
+
+```bash
+# 1. Initialize Stride in your project
+cd your-project
+python -m stride.cli.main init
+
+# 2. Create a new sprint
+python -m stride.cli.main create \
+  --title "Add user authentication" \
+  --tags "feature,security" \
+  --priority high
+
+# Output: ✓ Created: SPRINT-7K9P
+
+# 3. Start working on it
+python -m stride.cli.main move SPRINT-7K9P active
+
+# 4. Check status anytime
+python -m stride.cli.main status SPRINT-7K9P
+
+# 5. List all active sprints
+python -m stride.cli.main list --status active
+
+# 6. Validate your work
+python -m stride.cli.main validate SPRINT-7K9P
+
+# 7. Move to review when ready
+python -m stride.cli.main move SPRINT-7K9P review
+
+# 8. Complete the sprint
+python -m stride.cli.main move SPRINT-7K9P completed
+```
+
+### Complete Command Reference
+
+For detailed documentation of all CLI commands, options, and examples, see **[COMMANDS.md](COMMANDS.md)**.
+
+Key commands:
+- `init` - Initialize Stride in a project
+- `create` - Create new sprints
+- `list` - List and filter sprints
+- `status` - Show sprint details
+- `move` - Change sprint status
+- `validate` - Verify sprint structure
+- `archive` - Archive completed sprints
+- `restore` - Restore archived sprints
+
+---
+
+## **7. Technical Architecture**
 
 ```
 ┌─────────────────────┐

@@ -49,6 +49,156 @@ class TestFolderManager:
         
         assert path.exists()
         assert path.name == sprint_id
+    
+    def test_validate_structure(self, temp_project):
+        """Test structure validation."""
+        fm = FolderManager(temp_project)
+        
+        # Before creating structure
+        results = fm.validate_structure()
+        assert not all(results.values())
+        
+        # After creating structure
+        fm.ensure_structure()
+        results = fm.validate_structure()
+        assert all(results.values())
+        assert results["stride_root"] is True
+        assert results["sprints_root"] is True
+    
+    def test_list_sprints_by_status(self, temp_project):
+        """Test listing sprints by status."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        # Create test sprints
+        fm.create_sprint_folder("SPRINT-AAA1", SprintStatus.PROPOSED)
+        fm.create_sprint_folder("SPRINT-BBB2", SprintStatus.PROPOSED)
+        fm.create_sprint_folder("SPRINT-CCC3", SprintStatus.ACTIVE)
+        
+        # List proposed sprints
+        proposed = fm.list_sprints_by_status(SprintStatus.PROPOSED)
+        assert len(proposed) == 2
+        assert "SPRINT-AAA1" in proposed
+        assert "SPRINT-BBB2" in proposed
+        
+        # List active sprints
+        active = fm.list_sprints_by_status(SprintStatus.ACTIVE)
+        assert len(active) == 1
+        assert "SPRINT-CCC3" in active
+    
+    def test_move_sprint(self, temp_project):
+        """Test moving sprint between statuses."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        # Create sprint in proposed
+        fm.create_sprint_folder("SPRINT-MOVE", SprintStatus.PROPOSED)
+        
+        # Move to active
+        new_path = fm.move_sprint("SPRINT-MOVE", SprintStatus.PROPOSED, SprintStatus.ACTIVE)
+        assert new_path.exists()
+        assert new_path.parent.name == "active"
+        assert not fm.get_sprint_path("SPRINT-MOVE", SprintStatus.PROPOSED).exists()
+    
+    def test_move_sprint_not_found(self, temp_project):
+        """Test moving non-existent sprint raises error."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        with pytest.raises(FileNotFoundError):
+            fm.move_sprint("SPRINT-NOTFOUND", SprintStatus.PROPOSED, SprintStatus.ACTIVE)
+    
+    def test_archive_sprint(self, temp_project):
+        """Test archiving a sprint."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        # Create and archive sprint
+        fm.create_sprint_folder("SPRINT-ARCH", SprintStatus.ACTIVE)
+        archive_path = fm.archive_sprint("SPRINT-ARCH", SprintStatus.ACTIVE)
+        
+        assert archive_path.exists()
+        assert ".archive" in str(archive_path)
+        assert not fm.get_sprint_path("SPRINT-ARCH", SprintStatus.ACTIVE).exists()
+    
+    def test_archive_sprint_not_found(self, temp_project):
+        """Test archiving non-existent sprint raises error."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        with pytest.raises(FileNotFoundError):
+            fm.archive_sprint("SPRINT-NOTFOUND", SprintStatus.ACTIVE)
+    
+    def test_restore_sprint(self, temp_project):
+        """Test restoring a sprint from archive."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        # Create, archive, then restore sprint
+        fm.create_sprint_folder("SPRINT-RESTORE", SprintStatus.COMPLETED)
+        fm.archive_sprint("SPRINT-RESTORE", SprintStatus.COMPLETED)
+        
+        restored_path = fm.restore_sprint("SPRINT-RESTORE", SprintStatus.COMPLETED)
+        
+        assert restored_path.exists()
+        assert restored_path.parent.name == "completed"
+        assert fm.sprint_exists("SPRINT-RESTORE", SprintStatus.COMPLETED)
+    
+    def test_delete_sprint(self, temp_project):
+        """Test hard deleting a sprint."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        # Create and delete sprint
+        fm.create_sprint_folder("SPRINT-DEL", SprintStatus.REVIEW)
+        result = fm.delete_sprint("SPRINT-DEL", SprintStatus.REVIEW)
+        
+        assert result is True
+        assert not fm.sprint_exists("SPRINT-DEL", SprintStatus.REVIEW)
+    
+    def test_delete_sprint_not_found(self, temp_project):
+        """Test deleting non-existent sprint returns False."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        result = fm.delete_sprint("SPRINT-NOTFOUND", SprintStatus.REVIEW)
+        assert result is False
+    
+    def test_get_sprint_count(self, temp_project):
+        """Test counting sprints."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        # Initially zero
+        assert fm.get_sprint_count() == 0
+        assert fm.get_sprint_count(SprintStatus.PROPOSED) == 0
+        
+        # Add some sprints
+        fm.create_sprint_folder("SPRINT-1", SprintStatus.PROPOSED)
+        fm.create_sprint_folder("SPRINT-2", SprintStatus.PROPOSED)
+        fm.create_sprint_folder("SPRINT-3", SprintStatus.ACTIVE)
+        
+        assert fm.get_sprint_count() == 3
+        assert fm.get_sprint_count(SprintStatus.PROPOSED) == 2
+        assert fm.get_sprint_count(SprintStatus.ACTIVE) == 1
+    
+    def test_get_all_sprints_with_status(self, temp_project):
+        """Test getting all sprints organized by status."""
+        fm = FolderManager(temp_project)
+        fm.ensure_structure()
+        
+        # Create sprints in different statuses
+        fm.create_sprint_folder("SPRINT-P1", SprintStatus.PROPOSED)
+        fm.create_sprint_folder("SPRINT-A1", SprintStatus.ACTIVE)
+        fm.create_sprint_folder("SPRINT-A2", SprintStatus.ACTIVE)
+        
+        all_sprints = fm.get_all_sprints_with_status()
+        
+        assert len(all_sprints[SprintStatus.PROPOSED]) == 1
+        assert len(all_sprints[SprintStatus.ACTIVE]) == 2
+        assert len(all_sprints[SprintStatus.BLOCKED]) == 0
+        assert "SPRINT-P1" in all_sprints[SprintStatus.PROPOSED]
+        assert "SPRINT-A1" in all_sprints[SprintStatus.ACTIVE]
 
 
 class TestSprintManager:

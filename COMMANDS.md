@@ -890,6 +890,325 @@ The `--fix` flag can automatically repair:
 
 ---
 
+### stride agent
+
+Manage AI agents for your Stride project.
+
+Track which AI tools assist with development by configuring agents in your project. View available agents from the registry, add agents to your project, remove agents, and view detailed agent information.
+
+**Usage:**
+```bash
+stride agent COMMAND [OPTIONS]
+```
+
+**Available Commands:**
+
+| Command | Description |
+|---------|-------------|
+| `list` | List all available AI agents and show configured status |
+| `add` | Add an AI agent to your project configuration |
+| `remove` | Remove an AI agent from your project |
+| `info` | Show detailed information about a specific agent |
+
+---
+
+#### stride agent list
+
+List all available AI agents and show which are configured for your project.
+
+**Usage:**
+```bash
+stride agent list [OPTIONS]
+```
+
+**Options:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `--json` | flag | Output results as JSON |
+
+**Examples:**
+
+```bash
+# List all agents with visual status
+stride agent list
+
+# Export agent list as JSON
+stride agent list --json
+```
+
+**Output Example:**
+```
+🤖 AI Agents
+   1 configured • 7 available
+
+ ✓ Claude (Anthropic)
+   ID: claude
+   Advanced AI with strong reasoning, coding, and analysis capabilities
+   Website: https://claude.ai
+
+ · GitHub Copilot
+   ID: copilot
+   AI pair programmer integrated directly into your IDE
+   Website: https://github.com/features/copilot
+
+ · ChatGPT (OpenAI)
+   ID: chatgpt
+   Versatile conversational AI for general tasks and coding
+   Website: https://chat.openai.com
+```
+
+**JSON Output Example:**
+```json
+{
+  "configured_count": 1,
+  "available_count": 7,
+  "agents": [
+    {
+      "id": "claude",
+      "name": "Claude (Anthropic)",
+      "description": "Advanced AI with strong reasoning, coding, and analysis capabilities",
+      "website": "https://claude.ai",
+      "configured": true
+    }
+  ]
+}
+```
+
+---
+
+#### stride agent add
+
+Add an AI agent to your project configuration.
+
+**Usage:**
+```bash
+stride agent add AGENT_ID [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `AGENT_ID` | The agent to add (e.g., claude, copilot) |
+
+**Options:**
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--quiet` | `-q` | Suppress non-essential output |
+
+**Examples:**
+
+```bash
+# Add Claude agent
+stride agent add claude
+
+# Add agent in quiet mode
+stride agent add copilot --quiet
+
+# Add with uppercase (case-insensitive)
+stride agent add CLAUDE
+```
+
+**Available Agent IDs:**
+- `claude` - Claude (Anthropic)
+- `copilot` - GitHub Copilot
+- `chatgpt` - ChatGPT (OpenAI)
+- `gemini` - Gemini (Google)
+- `cursor` - Cursor AI
+- `windsurf` - Windsurf (Codeium)
+- `custom` - Custom Agent (for your own AI tools)
+
+**Output Example:**
+```
+✅ Added agent: Claude (Anthropic)
+📋 Total configured agents: 1
+```
+
+**Validation:**
+- Agent ID must exist in the registry
+- Case-insensitive matching
+- Duplicate additions are detected and reported
+- Agent is persisted to `stride.config.yaml`
+
+---
+
+#### stride agent remove
+
+Remove an AI agent from your project configuration.
+
+**Usage:**
+```bash
+stride agent remove AGENT_ID [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `AGENT_ID` | The agent to remove (e.g., claude, copilot) |
+
+**Options:**
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--quiet` | `-q` | Suppress non-essential output |
+
+**Examples:**
+
+```bash
+# Remove Claude agent
+stride agent remove claude
+
+# Remove agent in quiet mode
+stride agent remove copilot --quiet
+```
+
+**Output Example:**
+```
+✅ Removed agent: Claude (Anthropic)
+📋 Remaining agents: 0
+```
+
+---
+
+#### stride agent info
+
+Show detailed information about a specific AI agent.
+
+**Usage:**
+```bash
+stride agent info AGENT_ID
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `AGENT_ID` | The agent to show info for (e.g., claude, copilot) |
+
+**Examples:**
+
+```bash
+# Show Claude agent details
+stride agent info claude
+
+# Show Copilot details
+stride agent info copilot
+```
+
+**Output Example (Configured Agent):**
+```
+🤖 Claude (Anthropic)
+=====================
+
+ID: claude
+Description: Advanced AI with strong reasoning, coding, and analysis capabilities
+Website: https://claude.ai
+
+Configured: ✓ Yes
+
+💡 Remove with: stride agent remove claude
+```
+
+**Output Example (Not Configured):**
+```
+🤖 GitHub Copilot
+=================
+
+ID: copilot
+Description: AI pair programmer integrated directly into your IDE
+Website: https://github.com/features/copilot
+
+Configured: ✗ No
+
+💡 Add to project with: stride agent add copilot
+```
+
+**Agent Registry:**
+
+| Agent ID | Name | Description | Use Case |
+|----------|------|-------------|----------|
+| `claude` | Claude (Anthropic) | Advanced AI with strong reasoning capabilities | Complex problem-solving, architecture, technical discussions |
+| `copilot` | GitHub Copilot | AI pair programmer integrated into IDE | Real-time code completion, inline suggestions |
+| `chatgpt` | ChatGPT (OpenAI) | Versatile conversational AI | Brainstorming, explanations, quick coding tasks |
+| `gemini` | Gemini (Google) | Multimodal AI with analytical capabilities | Data analysis, multi-modal tasks, research |
+| `cursor` | Cursor AI | AI-first code editor with context awareness | Full-project context coding, multi-file edits |
+| `windsurf` | Windsurf (Codeium) | AI-powered IDE with agentic flow | Autonomous coding tasks, multi-step implementations |
+| `custom` | Custom Agent | Add your own AI tool | Specialized or proprietary AI tools |
+
+**Use Cases:**
+
+1. **Agent Tracking:**
+   ```bash
+   # Track which AI tools help with your project
+   stride agent add claude
+   stride agent add copilot
+   
+   # See all configured agents
+   stride agent list
+   ```
+
+2. **Team Coordination:**
+   ```bash
+   # Check which agents the team uses
+   stride agent list
+   
+   # Get details about a specific agent
+   stride agent info claude
+   ```
+
+3. **CI/CD Integration:**
+   ```bash
+   # Export agent configuration for automation
+   stride agent list --json > agents.json
+   
+   # Validate agent configuration in build
+   if stride agent list --json | grep -q '"configured": true'; then
+     echo "Agents configured"
+   fi
+   ```
+
+4. **Project Handoff:**
+   ```bash
+   # Document AI tools used in project
+   stride agent list
+   
+   # Add recommended agents for new team members
+   stride agent add claude
+   stride agent add copilot
+   ```
+
+**Features:**
+- 🤖 **7 Built-in Agents**: Pre-configured registry with major AI tools
+- 🔍 **Agent Discovery**: Browse available agents and their capabilities
+- 📋 **Configuration Tracking**: Persist agent selections in project config
+- ✓ **Validation**: Verify agent IDs against registry
+- 🎨 **Rich Display**: Visual status indicators (✓ configured, · not configured)
+- 📄 **JSON Export**: Machine-readable output for automation
+- 🔄 **Case-Insensitive**: Agent IDs work in any case
+- 💡 **Actionable Hints**: Suggestions for adding/removing agents
+
+**Configuration Storage:**
+
+Agents are stored in `stride.config.yaml`:
+```yaml
+project:
+  name: "My Project"
+  agents:
+    - claude
+    - copilot
+```
+
+**Notes:**
+- Agent configuration is project-specific (not user-level)
+- Agents are tracked for attribution and documentation
+- Custom agents allow integration of proprietary AI tools
+- Agent info includes website links for more details
+
+---
+
 ### stride move
 
 ---

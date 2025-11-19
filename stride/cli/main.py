@@ -2222,6 +2222,192 @@ def doctor(ctx: click.Context, fix: bool, verbose: bool, output_json: bool) -> N
     sys.exit(0 if report.error_count == 0 else 1)
 
 
+# =============================================================================
+# Agent Commands - Manage AI agents for Stride projects
+# =============================================================================
+
+@cli.group()
+@click.pass_context
+def agent(ctx: click.Context) -> None:
+    """
+    Manage AI agents for your Stride project.
+    
+    View available agents, add agents to your project, remove agents, and view detailed agent information.
+    Agents help track which AI tools assist with development.
+    
+    \b
+    Examples:
+      stride agent list
+      stride agent add claude copilot
+      stride agent remove chatgpt
+      stride agent info claude
+    """
+    pass
+
+
+@agent.command("list")
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
+@click.pass_context
+def agent_list(ctx: click.Context, output_json: bool) -> None:
+    """List all available AI agents and show which are configured."""
+    from ..core.agent_manager import AgentManager
+    from ..core.config_manager import ConfigManager
+    
+    cm = ConfigManager()
+    configured_agents = set(cm.get_agents())
+    all_agents = AgentManager.get_all_agents()
+    
+    if output_json:
+        import json
+        output = {
+            "configured_count": len(configured_agents),
+            "available_count": len(all_agents),
+            "agents": [
+                {
+                    "id": agent.id,
+                    "name": agent.name,
+                    "description": agent.description,
+                    "website": agent.website,
+                    "configured": agent.id in configured_agents
+                }
+                for agent in all_agents
+            ]
+        }
+        click.echo(json.dumps(output, indent=2))
+        return
+    
+    # Rich output
+    click.echo(f"🤖 AI Agents")
+    click.echo(f"   {len(configured_agents)} configured • {len(all_agents)} available\n")
+    
+    for agent in all_agents:
+        status = "✓" if agent.id in configured_agents else "·"
+        click.echo(f" {status} {agent.name}")
+        click.echo(f"   ID: {agent.id}")
+        click.echo(f"   {agent.description}")
+        if agent.website:
+            click.echo(f"   Website: {agent.website}")
+        click.echo()
+
+
+@agent.command("add")
+@click.argument("agent_id")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-essential output")
+@click.pass_context
+def agent_add(ctx: click.Context, agent_id: str, quiet: bool) -> None:
+    """
+    Add one or more AI agents to your project.
+    
+    \b
+    Examples:
+      stride agent add claude
+      stride agent add claude copilot chatgpt
+      stride agent add cursor --quiet
+    """
+    from ..core.agent_manager import AgentManager
+    from ..core.config_manager import ConfigManager
+    
+    # Validate agent ID
+    agent_id = agent_id.lower().strip()
+    valid_ids, invalid_ids = AgentManager.validate_agent_ids([agent_id])
+    
+    if invalid_ids:
+        click.echo(f"❌ Invalid agent ID: {agent_id}", err=True)
+        click.echo(f"\nAvailable agents: {', '.join(AgentManager.get_agent_ids())}")
+        click.echo("\nUse 'stride agent list' to see all available agents")
+        sys.exit(1)
+    
+    # Add agent to config
+    cm = ConfigManager()
+    current_agents = set(cm.get_agents())
+    
+    if agent_id in current_agents:
+        if not quiet:
+            agent_name = AgentManager.get_agent_display_name(agent_id)
+            click.echo(f"ℹ️  Already configured: {agent_name}")
+    else:
+        cm.add_agent(agent_id)
+        if not quiet:
+            agent_name = AgentManager.get_agent_display_name(agent_id)
+            click.echo(f"✅ Added agent: {agent_name}")
+            all_configured = cm.get_agents()
+            click.echo(f"📋 Total configured agents: {len(all_configured)}")
+
+
+@agent.command("remove")
+@click.argument("agent_id")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress non-essential output")
+@click.pass_context
+def agent_remove(ctx: click.Context, agent_id: str, quiet: bool) -> None:
+    """
+    Remove an AI agent from your project.
+    
+    \b
+    Example:
+      stride agent remove claude
+    """
+    from ..core.agent_manager import AgentManager
+    from ..core.config_manager import ConfigManager
+    
+    agent_id = agent_id.lower().strip()
+    cm = ConfigManager()
+    current_agents = set(cm.get_agents())
+    
+    if agent_id not in current_agents:
+        if not quiet:
+            click.echo(f"ℹ️  Agent not configured: {agent_id}")
+    else:
+        cm.remove_agent(agent_id)
+        if not quiet:
+            agent_name = AgentManager.get_agent_display_name(agent_id)
+            click.echo(f"✅ Removed agent: {agent_name}")
+            remaining = cm.get_agents()
+            click.echo(f"📋 Remaining agents: {len(remaining)}")
+
+
+@agent.command("info")
+@click.argument("agent_id")
+@click.pass_context
+def agent_info(ctx: click.Context, agent_id: str) -> None:
+    """
+    Show detailed information about a specific AI agent.
+    
+    \b
+    Example:
+      stride agent info claude
+    """
+    from ..core.agent_manager import AgentManager
+    from ..core.config_manager import ConfigManager
+    
+    agent_id = agent_id.lower().strip()
+    agent = AgentManager.get_agent(agent_id)
+    
+    if not agent:
+        click.echo(f"❌ Unknown agent: {agent_id}", err=True)
+        click.echo(f"\nAvailable agents: {', '.join(AgentManager.get_agent_ids())}")
+        click.echo("\nUse 'stride agent list' to see all available agents")
+        sys.exit(1)
+    
+    cm = ConfigManager()
+    configured_agents = cm.get_agents()
+    is_configured = agent_id in configured_agents
+    
+    # Display agent info
+    click.echo(f"\n🤖 {agent.name}")
+    click.echo(f"{'='  * (len(agent.name) + 3)}")
+    click.echo(f"\nID: {agent.id}")
+    click.echo(f"Description: {agent.description}")
+    if agent.website:
+        click.echo(f"Website: {agent.website}")
+    click.echo(f"\nConfigured: {'✓ Yes' if is_configured else '✗ No'}")
+    
+    if is_configured:
+        click.echo("\n💡 Remove with: stride agent remove " + agent.id)
+    else:
+        click.echo("\n💡 Add to project with: stride agent add " + agent.id)
+    click.echo()
+
+
 @cli.group()
 @click.pass_context
 def config(ctx: click.Context) -> None:

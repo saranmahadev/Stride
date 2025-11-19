@@ -67,7 +67,8 @@ We combine **OpenSpec’s clarity**, **SpecKit’s rigor**, and **agile velocity
 | **Sprint Details** | `stride show <ID>` | Display complete sprint information | Stride Original |
 | **Spec Comparison** | `stride diff <ID>` | Show specification changes made in sprint | Git Workflows |
 | **Quality Validation** | `stride validate <ID>` | Comprehensive sprint quality validation with detailed reports | CI/CD Pipelines |
-| **Configuration** | `stride config` | Manage AI agents and project settings | Stride Original |
+| **Agent Management** | `stride agent` | Manage AI agents for your project | AI Integration |
+| **Configuration** | `stride config` | Manage project and user settings | Stride Original |
 | **Health Check** | `stride doctor` | Validate installation and project health | Package Managers |
 | **Data Export** | `stride export` | Export sprint data for reporting/integration | Enterprise Tools |
 | **Updates** | `stride update` | Update Stride framework to latest version | Package Managers |
@@ -179,10 +180,22 @@ python -m stride.cli.main doctor --verbose
 # 14b. Export health report as JSON for CI/CD
 python -m stride.cli.main doctor --json > health-report.json
 
-# 15. Move to review when ready
+# 15. Manage AI agents
+python -m stride.cli.main agent list
+
+# 15a. Add AI agent to track which tools you use
+python -m stride.cli.main agent add claude
+
+# 15b. Get details about an agent
+python -m stride.cli.main agent info copilot
+
+# 15c. Remove an agent
+python -m stride.cli.main agent remove claude
+
+# 16. Move to review when ready
 python -m stride.cli.main move SPRINT-7K9P review
 
-# 16. Complete the sprint
+# 17. Complete the sprint
 python -m stride.cli.main move SPRINT-7K9P completed
 ```
 

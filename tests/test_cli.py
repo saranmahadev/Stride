@@ -404,6 +404,191 @@ class TestValidateCommand:
         assert result.exit_code == 0
         assert "SPRINT-VAL1" in result.output
         assert "SPRINT-VAL2" in result.output
+    
+    def test_validate_detailed_output(self, runner, temp_project):
+        """Test validate with detailed output flag."""
+        ctx = make_context(temp_project)
+        runner.invoke(cli, ["init"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-DET1", "--title", "Detailed Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        result = runner.invoke(
+            cli,
+            ["validate", "SPRINT-DET1", "--detailed"],
+            obj=ctx
+        )
+        
+        assert result.exit_code == 0
+        assert "Structure:" in result.output or "structure" in result.output.lower()
+        assert "Metadata:" in result.output or "metadata" in result.output.lower()
+        assert "Checks:" in result.output or "checks" in result.output.lower()
+    
+    def test_validate_shows_warnings(self, runner, temp_project):
+        """Test that validate shows warnings for missing optional files."""
+        ctx = make_context(temp_project)
+        runner.invoke(cli, ["init"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-WARN", "--title", "W", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        result = runner.invoke(
+            cli,
+            ["validate", "SPRINT-WARN", "--detailed"],
+            obj=ctx
+        )
+        
+        assert result.exit_code == 0
+        # Should warn about missing optional files
+        assert "plan.md" in result.output or "design.md" in result.output
+    
+    def test_validate_shows_suggestions(self, runner, temp_project):
+        """Test that validate shows suggestions for improvements."""
+        ctx = make_context(temp_project)
+        runner.invoke(cli, ["init"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-SUGG", "--title", "Suggestions Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        result = runner.invoke(
+            cli,
+            ["validate", "SPRINT-SUGG", "--detailed"],
+            obj=ctx
+        )
+        
+        assert result.exit_code == 0
+        # Should show suggestions section
+        assert "Suggestions:" in result.output or "suggestion" in result.output.lower()
+    
+    def test_validate_content_quality_checks(self, runner, temp_project):
+        """Test that validate checks content quality."""
+        from pathlib import Path
+        from stride.core.folder_manager import FolderManager
+        
+        ctx = make_context(temp_project)
+        runner.invoke(cli, ["init"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-QUAL", "--title", "Quality Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Add a plan.md with tasks
+        fm = FolderManager(temp_project)
+        sprint_tuple = fm.find_sprint("SPRINT-QUAL")
+        sprint_path, _ = sprint_tuple
+        plan_file = sprint_path / "plan.md"
+        plan_file.write_text("""---
+id: SPRINT-QUAL
+---
+
+# Plan
+
+## Tasks
+- [ ] Task 1
+- [x] Task 2
+- [ ] Task 3
+""", encoding="utf-8")
+        
+        result = runner.invoke(
+            cli,
+            ["validate", "SPRINT-QUAL", "--detailed"],
+            obj=ctx
+        )
+        
+        assert result.exit_code == 0
+        # Should detect task checkboxes
+        assert "task" in result.output.lower() or "checkbox" in result.output.lower()
+    
+    def test_validate_metadata_completeness(self, runner, temp_project):
+        """Test that validate checks metadata completeness."""
+        ctx = make_context(temp_project)
+        runner.invoke(cli, ["init"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-META", "--title", "Metadata Test"],
+            obj=ctx
+        )
+        
+        result = runner.invoke(
+            cli,
+            ["validate", "SPRINT-META", "--detailed"],
+            obj=ctx
+        )
+        
+        assert result.exit_code == 0
+        # Should check for required and recommended fields
+        assert "author" in result.output.lower() or "priority" in result.output.lower()
+    
+    def test_validate_nonexistent_sprint(self, runner, temp_project):
+        """Test validate with non-existent sprint."""
+        ctx = make_context(temp_project)
+        runner.invoke(cli, ["init"], obj=ctx)
+        
+        result = runner.invoke(
+            cli,
+            ["validate", "SPRINT-NONE"],
+            obj=ctx
+        )
+        
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower()
+    
+    def test_validate_status_filter(self, runner, temp_project):
+        """Test validate with status filter."""
+        ctx = make_context(temp_project)
+        runner.invoke(cli, ["init"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-ACT1", "--title", "Active 1"],
+            obj=ctx
+        )
+        runner.invoke(
+            cli,
+            ["move", "SPRINT-ACT1", "active"],
+            obj=ctx
+        )
+        
+        result = runner.invoke(
+            cli,
+            ["validate", "--status", "active"],
+            obj=ctx
+        )
+        
+        assert result.exit_code == 0
+        assert "SPRINT-ACT1" in result.output
+    
+    def test_validate_summary_counts(self, runner, temp_project):
+        """Test that validate shows summary counts."""
+        ctx = make_context(temp_project)
+        runner.invoke(cli, ["init"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-SUM1", "--title", "Summary 1"],
+            obj=ctx
+        )
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-SUM2", "--title", "Summary 2"],
+            obj=ctx
+        )
+        
+        result = runner.invoke(
+            cli,
+            ["validate", "--all"],
+            obj=ctx
+        )
+        
+        assert result.exit_code == 0
+        assert "Summary:" in result.output or "valid" in result.output.lower()
+        # Should show counts
+        assert "2" in result.output
 
 
 class TestArchiveCommand:

@@ -66,7 +66,7 @@ We combine **OpenSpec’s clarity**, **SpecKit’s rigor**, and **agile velocity
 | **Sprint Listing** | `stride list` | List/filter sprints by status, user, or date | Project Management |
 | **Sprint Details** | `stride show <ID>` | Display complete sprint information | Stride Original |
 | **Spec Comparison** | `stride diff <ID>` | Show specification changes made in sprint | Git Workflows |
-| **Quality Validation** | `stride validate <ID>` | Validate sprint structure and code quality | CI/CD Pipelines |
+| **Quality Validation** | `stride validate <ID>` | Comprehensive sprint quality validation with detailed reports | CI/CD Pipelines |
 | **Configuration** | `stride config` | Manage AI agents and project settings | Stride Original |
 | **Health Check** | `stride doctor` | Validate installation and project health | Package Managers |
 | **Data Export** | `stride export` | Export sprint data for reporting/integration | Enterprise Tools |
@@ -149,8 +149,14 @@ python -m stride.cli.main list --user alice@example.com
 # 9. Sort sprints by priority
 python -m stride.cli.main list --sort priority
 
-# 10. Validate your work
+# 10. Validate your work (basic)
 python -m stride.cli.main validate SPRINT-7K9P
+
+# 10a. Validate with detailed quality report
+python -m stride.cli.main validate SPRINT-7K9P --detailed
+
+# 10b. Validate all sprints
+python -m stride.cli.main validate --all
 
 # 11. View sprint timeline (event history)
 python -m stride.cli.main timeline SPRINT-7K9P
@@ -177,7 +183,7 @@ Key commands:
 - `status` - Show sprint metadata
 - `timeline` - View complete event history with timestamps
 - `move` - Change sprint status
-- `validate` - Verify sprint structure
+- `validate` - Comprehensive sprint quality validation with detailed reports
 - `archive` - Archive completed sprints
 - `restore` - Restore archived sprints
 

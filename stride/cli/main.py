@@ -1534,19 +1534,28 @@ def move(ctx: click.Context, sprint_id: str, to_status: str, reason: Optional[st
 @click.option("--all", "validate_all", is_flag=True, help="Validate all sprints")
 @click.option("--status", "-s", type=click.Choice(["proposed", "active", "blocked", "review", "completed"]), help="Validate sprints in specific status")
 @click.option("--strict", is_flag=True, help="Enable strict validation")
+@click.option("--detailed", "-d", is_flag=True, help="Show detailed validation report")
 @click.pass_context
-def validate(ctx: click.Context, sprint_id: Optional[str], validate_all: bool, status: Optional[str], strict: bool) -> None:
+def validate(ctx: click.Context, sprint_id: Optional[str], validate_all: bool, status: Optional[str], strict: bool, detailed: bool) -> None:
     """
-    Validate sprint structure and metadata.
+    Validate sprint structure, metadata, and content quality.
     
-    Can validate a single sprint, all sprints, or sprints in a specific status.
+    Performs comprehensive validation including:
+    - Structure checks (files and folders)
+    - Metadata validation (required fields, consistency)
+    - Content quality checks (completeness, formatting)
+    - Suggestions for improvements
     
     Examples:
       stride validate SPRINT-A1B2
+      stride validate SPRINT-A1B2 --detailed
       stride validate --all
-      stride validate --status active
+      stride validate --status active --detailed
       stride validate --all --strict
     """
+    from ..core.validators import SprintValidator
+    from ..core.metadata_manager import MetadataManager
+    
     sm: SprintManager = ctx.obj["sprint_manager"]
     fm: FolderManager = ctx.obj["folder_manager"]
     quiet = ctx.obj.get("quiet", False)
@@ -1575,35 +1584,141 @@ def validate(ctx: click.Context, sprint_id: Optional[str], validate_all: bool, s
             click.echo("No sprints to validate.")
         return
     
-    # Validate sprints
+    # Validate sprints with enhanced validation
     results = []
     for sid in sprints_to_validate:
-        is_valid, errors = sm.validate_sprint(sid, strict=strict)
-        results.append((sid, is_valid, errors))
+        # Find sprint
+        result_tuple = fm.find_sprint(sid)
+        if not result_tuple:
+            results.append((sid, False, {"errors": [f"Sprint not found: {sid}"]}, None))
+            continue
+        
+        sprint_path, _ = result_tuple
+        proposal_file = sprint_path / "proposal.md"
+        
+        if not proposal_file.exists():
+            results.append((sid, False, {"errors": ["Missing proposal.md"]}, None))
+            continue
+        
+        # Parse metadata
+        try:
+            metadata, _ = MetadataManager.parse_file(proposal_file)
+        except Exception as e:
+            results.append((sid, False, {"errors": [f"Failed to parse metadata: {e}"]}, None))
+            continue
+        
+        # Run enhanced validation
+        validator = SprintValidator(sprint_path, metadata)
+        validation_results = validator.validate_all()
+        summary = validator.get_summary()
+        
+        is_valid = summary["is_valid"]
+        results.append((sid, is_valid, validation_results, summary))
     
     # Report results
-    valid_count = sum(1 for _, is_valid, _ in results if is_valid)
+    valid_count = sum(1 for _, is_valid, _, _ in results if is_valid)
     invalid_count = len(results) - valid_count
     
     if not quiet:
-        if RICH_AVAILABLE:
-            for sid, is_valid, errors in results:
+        if RICH_AVAILABLE and detailed:
+            # Detailed Rich output
+            from rich.console import Console
+            from rich.table import Table
+            from rich.panel import Panel
+            
+            console = Console()
+            
+            for sid, is_valid, validation_results, summary in results:
+                if not validation_results:
+                    # Simple error case
+                    console.print(f"\n[red]✗ {sid}[/red]")
+                    if isinstance(validation_results, dict) and "errors" in validation_results:
+                        for error in validation_results["errors"]:
+                            console.print(f"  [red]• {error}[/red]")
+                    continue
+                
+                # Create header
+                status_icon = "✓" if is_valid else "✗"
+                status_color = "green" if is_valid else "red"
+                console.print(f"\n[{status_color} bold]{status_icon} {sid}[/{status_color} bold]")
+                
+                # Show summary stats
+                console.print(f"  [dim]Checks: {summary['total_checks']} | "
+                            f"Passed: {summary['passed']} | "
+                            f"Warnings: {summary['warnings']} | "
+                            f"Errors: {summary['errors']}[/dim]")
+                
+                # Show detailed results by category
+                for category, result in validation_results.items():
+                    console.print(f"\n  [bold]{category.title()}:[/bold]")
+                    
+                    # Show passed checks
+                    for msg in result.passed:
+                        console.print(f"    [green]✓[/green] {msg}")
+                    
+                    # Show warnings
+                    for msg in result.warnings:
+                        console.print(f"    [yellow]⚠[/yellow] {msg}")
+                    
+                    # Show errors
+                    for msg in result.errors:
+                        console.print(f"    [red]✗[/red] {msg}")
+                    
+                    # Show suggestions
+                    if result.suggestions:
+                        console.print(f"    [dim cyan]💡 Suggestions:[/dim cyan]")
+                        for msg in result.suggestions:
+                            console.print(f"      [dim cyan]• {msg}[/dim cyan]")
+            
+            # Overall summary
+            console.print(f"\n[bold]Overall Summary:[/bold]")
+            console.print(f"  Valid: [green]{valid_count}[/green]")
+            console.print(f"  Invalid: [red]{invalid_count}[/red]")
+            console.print(f"  Total: {len(results)}")
+            
+        elif RICH_AVAILABLE:
+            # Simple Rich output
+            for sid, is_valid, validation_results, summary in results:
                 if is_valid:
                     rprint(f"[green]✓[/green] {sid}")
                 else:
                     rprint(f"[red]✗[/red] {sid}")
-                    for error in errors:
-                        rprint(f"    [dim red]• {error}[/dim red]")
+                    if validation_results and summary:
+                        rprint(f"    [dim]Errors: {summary['errors']}, Warnings: {summary['warnings']}[/dim]")
+                        # Show first few errors
+                        error_count = 0
+                        for result in validation_results.values():
+                            for error in result.errors:
+                                if error_count < 3:  # Limit to 3 errors in simple view
+                                    rprint(f"    [dim red]• {error}[/dim red]")
+                                    error_count += 1
+                        if summary['errors'] > 3:
+                            rprint(f"    [dim]... and {summary['errors'] - 3} more errors (use --detailed)[/dim]")
+                    elif isinstance(validation_results, dict) and "errors" in validation_results:
+                        for error in validation_results["errors"]:
+                            rprint(f"    [dim red]• {error}[/dim red]")
             
             rprint(f"\n[bold]Summary:[/bold] {valid_count} valid, {invalid_count} invalid")
+            if invalid_count > 0 and not detailed:
+                rprint("[dim]Tip: Use --detailed for full validation report[/dim]")
         else:
-            for sid, is_valid, errors in results:
+            # Plain text output
+            for sid, is_valid, validation_results, summary in results:
                 if is_valid:
                     click.echo(f"✓ {sid}")
                 else:
                     click.echo(f"✗ {sid}")
-                    for error in errors:
-                        click.echo(f"    • {error}")
+                    if validation_results and summary:
+                        click.echo(f"    Errors: {summary['errors']}, Warnings: {summary['warnings']}")
+                        error_count = 0
+                        for result in validation_results.values():
+                            for error in result.errors:
+                                if error_count < 3:
+                                    click.echo(f"    • {error}")
+                                    error_count += 1
+                    elif isinstance(validation_results, dict) and "errors" in validation_results:
+                        for error in validation_results["errors"]:
+                            click.echo(f"    • {error}")
             
             click.echo(f"\nSummary: {valid_count} valid, {invalid_count} invalid")
     

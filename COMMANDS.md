@@ -592,9 +592,9 @@ stride move SPRINT-7K9P completed
 
 ### stride validate
 
-Validate sprint structure and metadata.
+Comprehensive sprint quality validation with detailed reports.
 
-Checks that sprint folders contain required documents with valid frontmatter metadata.
+Validates sprint structure, content quality, metadata completeness, and consistency across four categories.
 
 **Usage:**
 ```bash
@@ -603,50 +603,122 @@ stride validate [SPRINT_ID] [OPTIONS]
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--all` | Validate all sprints in the project |
-| `--strict` | Enable strict validation (fails on warnings) |
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--all` | | Validate all sprints in the project |
+| `--detailed` | `-d` | Show detailed validation report with categories |
+| `--status` | `-s` | Filter sprints by status (active, review, completed, etc.) |
+| `--strict` | | Enable strict validation (fails on warnings) |
+
+**Validation Categories:**
+
+1. **Structure**: File existence, unexpected files, required documents
+2. **Content Quality**: Document length, section detection, code blocks, task checkboxes
+3. **Metadata Completeness**: Required fields (id, title, status, created), recommended fields (author, priority, tags)
+4. **Consistency**: Sprint ID matching, timestamp validation
 
 **Examples:**
 
 ```bash
-# Validate single sprint
+# Basic validation (summary only)
 stride validate SPRINT-7K9P
 
-# Validate with strict mode
+# Detailed validation report with all checks
+stride validate SPRINT-7K9P --detailed
+
+# Validate all active sprints
+stride validate --all --status active
+
+# Detailed validation of all sprints
+stride validate --all --detailed
+
+# Validate with strict mode (warnings = errors)
 stride validate SPRINT-7K9P --strict
-
-# Validate all sprints
-stride validate --all
-
-# Validate all with strict mode
-stride validate --all --strict
 ```
 
-**Output (Valid Sprint):**
+**Output (Basic Mode):**
 ```
-✓ SPRINT-7K9P: User Authentication
-  All required documents present
-  Metadata valid
-  Status folder matches declared status
+✓ SPRINT-7K9P
+
+Summary: 1 valid, 0 invalid
+```
+
+**Output (Detailed Mode):**
+```
+✓ SPRINT-7K9P
+  Checks: 22 | Passed: 16 | Warnings: 6 | Errors: 0
+
+  Structure:
+    ✓ proposal.md exists
+    ⚠ plan.md not found (optional)
+    ⚠ design.md not found (optional)
+
+  Content_Quality:
+    ✓ Proposal has adequate content (590 chars)
+    ✓ Contains 'objective' section
+    ✓ Contains 'scope' section
+    💡 Suggestions:
+      • Consider adding code examples to proposal
+
+  Metadata:
+    ✓ Required field 'id' present: SPRINT-7K9P
+    ✓ Required field 'title' present: User Authentication
+    ✓ Required field 'status' present: active
+    ✓ Required field 'created' present
+    ✓ Valid priority: high
+    ⚠ Missing recommended field: tags
+
+  Consistency:
+    ✓ Sprint ID matches folder name
+    ✓ Created timestamp is valid
 ```
 
 **Output (Invalid Sprint):**
 ```
-✗ SPRINT-7K9P: User Authentication
-  ⚠ Missing required document: plan.md
-  ⚠ Invalid metadata: missing 'priority' field
-  ✓ Status folder matches declared status
+✗ SPRINT-BAD1
+  Checks: 18 | Passed: 10 | Warnings: 2 | Errors: 6
+
+  Structure:
+    ✗ Missing proposal.md (REQUIRED)
+    ✓ sprints/ folder exists
+
+  Content_Quality:
+    (No content to analyze)
+
+  Metadata:
+    ✗ Missing required field: id
+    ✗ Missing required field: title
+    ✗ Missing required field: status
+
+  Consistency:
+    ✗ Sprint ID does not match folder name
 ```
 
-**Validation Checks:**
-- Required documents exist (proposal.md)
-- Metadata format is valid YAML
-- Required metadata fields present (id, title, status)
-- Sprint ID format is correct (SPRINT-XXXX)
-- Status value is valid
-- Physical location matches declared status
+**Quality Checks:**
+
+| Check | Category | Description |
+|-------|----------|-------------|
+| proposal.md exists | Structure | Validates required proposal document |
+| Optional files | Structure | Warns if plan.md, design.md missing |
+| Unexpected files | Structure | Identifies non-standard files |
+| Content length | Content Quality | Minimum 100 chars (proposal), 50 (plan/design) |
+| Section detection | Content Quality | Checks for objective, scope, requirements |
+| Code blocks | Content Quality | Detects code examples |
+| Task checkboxes | Content Quality | Counts `- [ ]` and `- [x]` tasks |
+| Required fields | Metadata | id, title, status, created must exist |
+| Recommended fields | Metadata | author, priority, tags should exist |
+| Field validation | Metadata | Validates priority values, email format |
+| ID matching | Consistency | Sprint ID matches folder name |
+| Timestamp validation | Consistency | created/updated timestamps are valid |
+
+**Actionable Suggestions:**
+
+The validator provides suggestions for improvement:
+- "Consider adding code examples to proposal"
+- "Add plan.md to document implementation steps"
+- "Set priority field (low/medium/high/critical)"
+- "Add tags for better organization"
+- "Include author field for team tracking"
 
 ---
 

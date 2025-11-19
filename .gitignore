@@ -46,8 +46,12 @@ dmypy.json
 
 # Stride specific
 .stride/
-stride/sprints/*/
-!stride/sprints/.gitkeep
+stride/sprints/
+stride.config.yaml
+
+# Documentation build
+site/
+docs/build/
 
 # Logs
 *.log

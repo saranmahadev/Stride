@@ -2408,6 +2408,336 @@ def agent_info(ctx: click.Context, agent_id: str) -> None:
     click.echo()
 
 
+@agent.command("init")
+@click.option("--tools", "-t", multiple=True, help="Specific tools to configure (e.g., claude, cursor)")
+@click.option("--all", "-a", "all_tools", is_flag=True, help="Configure all available tools")
+@click.option("--priority", "-p", type=click.Choice(['high', 'medium', 'low']), help="Configure tools by priority level")
+@click.option("--force", "-f", is_flag=True, help="Overwrite existing configuration files")
+@click.pass_context
+def agent_init(ctx: click.Context, tools: tuple, all_tools: bool, priority: str, force: bool) -> None:
+    """
+    Initialize AI agent integration for your project.
+    
+    Creates configuration files and slash commands for selected AI tools.
+    Each tool gets workflow instructions for all 9 Stride commands.
+    
+    \b
+    Examples:
+      stride agent init                    # Interactive selection
+      stride agent init -t claude cursor   # Configure specific tools
+      stride agent init --all              # Configure all 20 tools
+      stride agent init -p high            # Configure high-priority tools only
+    """
+    from pathlib import Path
+    from ..agents.registry import ToolRegistry
+    import click
+    
+    # Get current directory as project path
+    project_path = Path.cwd()
+    
+    # Determine which tools to configure
+    selected_tools = []
+    
+    if all_tools:
+        selected_tools = ToolRegistry.list_all()
+        click.echo("🤖 Configuring all 20 AI tools...\n")
+    elif priority:
+        selected_tools = ToolRegistry.list_by_priority(priority)
+        click.echo(f"🤖 Configuring {priority}-priority tools...\n")
+    elif tools:
+        # Validate tool slugs
+        for slug in tools:
+            tool = ToolRegistry.get(slug)
+            if not tool:
+                click.echo(f"❌ Unknown tool: {slug}", err=True)
+                click.echo(f"\nAvailable tools: {', '.join([t.slug for t in ToolRegistry.list_all()])}")
+                sys.exit(1)
+            selected_tools.append(tool)
+    else:
+        # Interactive mode
+        click.echo("🤖 Stride AI Agent Integration Setup")
+        click.echo("=" * 40)
+        click.echo("\nAvailable tools by priority:\n")
+        
+        high_tools = ToolRegistry.list_by_priority('high')
+        medium_tools = ToolRegistry.list_by_priority('medium')
+        low_tools = ToolRegistry.list_by_priority('low')
+        
+        click.echo(f"⭐ High Priority ({len(high_tools)} tools):")
+        for tool in high_tools:
+            click.echo(f"   • {tool.name} ({tool.slug})")
+        
+        click.echo(f"\n✨ Medium Priority ({len(medium_tools)} tools):")
+        for tool in medium_tools:
+            click.echo(f"   • {tool.name} ({tool.slug})")
+        
+        click.echo(f"\n💫 Low Priority ({len(low_tools)} tools):")
+        for tool in low_tools:
+            click.echo(f"   • {tool.name} ({tool.slug})")
+        
+        click.echo("\nOptions:")
+        click.echo("  1. High priority tools only (recommended)")
+        click.echo("  2. High + Medium priority tools")
+        click.echo("  3. All tools")
+        click.echo("  4. Custom selection")
+        
+        choice = click.prompt("\nSelect option", type=int, default=1)
+        
+        if choice == 1:
+            selected_tools = high_tools
+        elif choice == 2:
+            selected_tools = high_tools + medium_tools
+        elif choice == 3:
+            selected_tools = ToolRegistry.list_all()
+        elif choice == 4:
+            click.echo("\nEnter tool slugs (comma-separated):")
+            slugs_input = click.prompt("Tools", type=str)
+            for slug in slugs_input.split(','):
+                slug = slug.strip()
+                tool = ToolRegistry.get(slug)
+                if tool:
+                    selected_tools.append(tool)
+                else:
+                    click.echo(f"⚠️  Unknown tool: {slug} (skipping)")
+        else:
+            click.echo("❌ Invalid option", err=True)
+            sys.exit(1)
+    
+    if not selected_tools:
+        click.echo("❌ No tools selected", err=True)
+        sys.exit(1)
+    
+    # Configure each selected tool
+    click.echo(f"\nConfiguring {len(selected_tools)} tools...\n")
+    
+    success_count = 0
+    error_count = 0
+    
+    for tool in selected_tools:
+        click.echo(f"📦 {tool.name}")
+        
+        result = tool.configure(project_path)
+        
+        if result.success:
+            for message in result.messages:
+                click.echo(f"   {message}")
+            success_count += 1
+        else:
+            for message in result.messages:
+                click.echo(f"   ❌ {message}", err=True)
+            error_count += 1
+        
+        click.echo()
+    
+    # Summary
+    click.echo("=" * 40)
+    click.echo(f"✅ Successfully configured: {success_count} tools")
+    if error_count > 0:
+        click.echo(f"❌ Failed: {error_count} tools")
+    
+    click.echo(f"\n💡 Next steps:")
+    click.echo("   1. Open your AI tool (Claude, Cursor, etc.)")
+    click.echo("   2. Try: /stride:init")
+    click.echo("   3. Then: /stride:plan \"your feature\"")
+    click.echo("\n📖 See stride/AGENTS.md for complete workflow documentation")
+
+
+@agent.command("update")
+@click.option("--tools", "-t", multiple=True, help="Specific tools to update")
+@click.option("--all", "-a", "all_tools", is_flag=True, help="Update all configured tools")
+@click.pass_context
+def agent_update(ctx: click.Context, tools: tuple, all_tools: bool) -> None:
+    """
+    Update AI agent configurations with latest templates.
+    
+    Refreshes managed blocks in configuration files while preserving
+    custom content outside the markers.
+    
+    \b
+    Examples:
+      stride agent update                 # Update all configured tools
+      stride agent update -t claude       # Update specific tool
+      stride agent update --all           # Update all available tools
+    """
+    from pathlib import Path
+    from ..agents.registry import ToolRegistry
+    
+    project_path = Path.cwd()
+    
+    # Determine which tools to update
+    tools_to_update = []
+    
+    if all_tools:
+        tools_to_update = ToolRegistry.list_all()
+    elif tools:
+        for slug in tools:
+            tool = ToolRegistry.get(slug)
+            if not tool:
+                click.echo(f"❌ Unknown tool: {slug}", err=True)
+                sys.exit(1)
+            tools_to_update.append(tool)
+    else:
+        # Update only configured tools (check which have existing files)
+        all_tools_list = ToolRegistry.list_all()
+        for tool in all_tools_list:
+            if tool.config_file_name:
+                config_path = project_path / tool.config_file_name
+                if config_path.exists():
+                    tools_to_update.append(tool)
+            elif tool.slash_command_dir:
+                slash_path = project_path / tool.slash_command_dir
+                if slash_path.exists():
+                    tools_to_update.append(tool)
+    
+    if not tools_to_update:
+        click.echo("ℹ️  No tools configured yet. Use 'stride agent init' first.")
+        sys.exit(0)
+    
+    click.echo(f"🔄 Updating {len(tools_to_update)} tools...\n")
+    
+    success_count = 0
+    error_count = 0
+    
+    for tool in tools_to_update:
+        click.echo(f"📦 {tool.name}")
+        
+        result = tool.update(project_path)
+        
+        if result.success:
+            for message in result.messages:
+                click.echo(f"   {message}")
+            success_count += 1
+        else:
+            for message in result.messages:
+                click.echo(f"   ❌ {message}", err=True)
+            error_count += 1
+        
+        click.echo()
+    
+    # Summary
+    click.echo("=" * 40)
+    click.echo(f"✅ Successfully updated: {success_count} tools")
+    if error_count > 0:
+        click.echo(f"❌ Failed: {error_count} tools")
+
+
+@agent.command("validate")
+@click.option("--tools", "-t", multiple=True, help="Specific tools to validate")
+@click.option("--all", "-a", "all_tools", is_flag=True, help="Validate all available tools")
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
+@click.pass_context
+def agent_validate(ctx: click.Context, tools: tuple, all_tools: bool, output_json: bool) -> None:
+    """
+    Validate AI agent integrations.
+    
+    Checks that configuration files exist, have proper markers,
+    and contain all required slash commands.
+    
+    \b
+    Examples:
+      stride agent validate               # Validate configured tools
+      stride agent validate -t claude     # Validate specific tool
+      stride agent validate --all         # Validate all available tools
+      stride agent validate --json        # JSON output for CI/CD
+    """
+    from pathlib import Path
+    from ..agents.registry import ToolRegistry
+    import json
+    
+    project_path = Path.cwd()
+    
+    # Determine which tools to validate
+    tools_to_validate = []
+    
+    if all_tools:
+        tools_to_validate = ToolRegistry.list_all()
+    elif tools:
+        for slug in tools:
+            tool = ToolRegistry.get(slug)
+            if not tool:
+                click.echo(f"❌ Unknown tool: {slug}", err=True)
+                sys.exit(1)
+            tools_to_validate.append(tool)
+    else:
+        # Validate only configured tools
+        all_tools_list = ToolRegistry.list_all()
+        for tool in all_tools_list:
+            if tool.config_file_name:
+                config_path = project_path / tool.config_file_name
+                if config_path.exists():
+                    tools_to_validate.append(tool)
+            elif tool.slash_command_dir:
+                slash_path = project_path / tool.slash_command_dir
+                if slash_path.exists():
+                    tools_to_validate.append(tool)
+    
+    if not tools_to_validate:
+        if output_json:
+            click.echo(json.dumps({"error": "No tools configured"}, indent=2))
+        else:
+            click.echo("ℹ️  No tools configured yet. Use 'stride agent init' first.")
+        sys.exit(0)
+    
+    # Validate each tool
+    results = {}
+    valid_count = 0
+    invalid_count = 0
+    
+    for tool in tools_to_validate:
+        validation = tool.validate(project_path)
+        
+        results[tool.slug] = {
+            "name": tool.name,
+            "valid": validation.valid,
+            "issues": validation.issues,
+            "warnings": validation.warnings
+        }
+        
+        if validation.valid:
+            valid_count += 1
+        else:
+            invalid_count += 1
+    
+    # Output results
+    if output_json:
+        output = {
+            "total": len(tools_to_validate),
+            "valid": valid_count,
+            "invalid": invalid_count,
+            "tools": results
+        }
+        click.echo(json.dumps(output, indent=2))
+    else:
+        click.echo(f"🔍 Validating {len(tools_to_validate)} tools...\n")
+        
+        for tool in tools_to_validate:
+            result = results[tool.slug]
+            
+            if result["valid"]:
+                click.echo(f"✅ {result['name']}")
+            else:
+                click.echo(f"❌ {result['name']}")
+                for issue in result["issues"]:
+                    click.echo(f"   • {issue}")
+            
+            if result["warnings"]:
+                for warning in result["warnings"]:
+                    click.echo(f"   ⚠️  {warning}")
+            
+            click.echo()
+        
+        # Summary
+        click.echo("=" * 40)
+        click.echo(f"✅ Valid: {valid_count} tools")
+        if invalid_count > 0:
+            click.echo(f"❌ Invalid: {invalid_count} tools")
+            click.echo("\n💡 Run 'stride agent update' to fix issues")
+    
+    # Exit with error code if any tools are invalid
+    if invalid_count > 0:
+        sys.exit(1)
+
+
 @cli.group()
 @click.pass_context
 def config(ctx: click.Context) -> None:

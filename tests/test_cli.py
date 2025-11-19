@@ -481,5 +481,350 @@ class TestRestoreCommand:
         assert fm.get_sprint_path("SPRINT-REST", SprintStatus.PROPOSED).exists()
 
 
+class TestProgressCommand:
+    """Test stride progress command for Sprint 11."""
+    
+    def test_progress_displays_metadata(self, runner, temp_project):
+        """Test progress command displays sprint metadata."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-PROG1", "--title", "Progress Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act
+        result = runner.invoke(cli, ["progress", "SPRINT-PROG1"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "SPRINT-PROG1" in result.output
+        assert "Progress Test" in result.output
+        assert "test@example.com" in result.output
+    
+    def test_progress_no_tasks(self, runner, temp_project):
+        """Test progress command with no tasks in plan.md."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-PROG2", "--title", "No Tasks", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act
+        result = runner.invoke(cli, ["progress", "SPRINT-PROG2"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "No tasks found" in result.output or "0 / 0" in result.output
+    
+    def test_progress_with_completed_tasks(self, runner, temp_project):
+        """Test progress command calculates completion correctly."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-PROG3", "--title", "Tasks Test", "--author", "test@example.com"],
+            obj=ctx)
+        
+        # Add plan.md with tasks
+        from pathlib import Path
+        sprint_path = temp_project / "stride" / "sprints" / "proposed" / "SPRINT-PROG3"
+        plan_file = sprint_path / "plan.md"
+        plan_file.write_text("""---
+id: SPRINT-PROG3
+---
+
+# Tasks
+
+- [x] Completed task 1
+- [x] Completed task 2
+- [ ] Incomplete task 3
+- [ ] Incomplete task 4
+""", encoding="utf-8")
+        
+        # Act
+        result = runner.invoke(cli, ["progress", "SPRINT-PROG3"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "2 / 4" in result.output or "50" in result.output  # 50% completion
+    
+    def test_progress_all_tasks_completed(self, runner, temp_project):
+        """Test progress command with 100% completion."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-PROG4", "--title", "All Done", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Add plan.md with all completed tasks
+        from pathlib import Path
+        sprint_path = temp_project / "stride" / "sprints" / "proposed" / "SPRINT-PROG4"
+        plan_file = sprint_path / "plan.md"
+        plan_file.write_text("""---
+id: SPRINT-PROG4
+---
+
+# Tasks
+
+- [x] Task 1
+- [x] Task 2
+- [x] Task 3
+""", encoding="utf-8")
+        
+        # Act
+        result = runner.invoke(cli, ["progress", "SPRINT-PROG4"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "3 / 3" in result.output
+        assert "100" in result.output
+    
+    def test_progress_mixed_checkbox_formats(self, runner, temp_project):
+        """Test progress command handles different checkbox formats."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-PROG5", "--title", "Mixed Format", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Add plan.md with mixed formats
+        from pathlib import Path
+        sprint_path = temp_project / "stride" / "sprints" / "proposed" / "SPRINT-PROG5"
+        plan_file = sprint_path / "plan.md"
+        plan_file.write_text("""# Tasks
+
+- [x] Lowercase x
+- [X] Uppercase X
+- [ ] Incomplete
+* [x] Asterisk format
+  - [x] Indented task
+""", encoding="utf-8")
+        
+        # Act
+        result = runner.invoke(cli, ["progress", "SPRINT-PROG5"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        # Should parse 5 tasks with 4 completed
+        assert "4 / 5" in result.output or "80" in result.output
+    
+    def test_progress_invalid_sprint(self, runner, temp_project):
+        """Test progress command with non-existent sprint."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        
+        # Act
+        result = runner.invoke(cli, ["progress", "SPRINT-NONE"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower() or "error" in result.output.lower()
+    
+    def test_progress_shows_timestamps(self, runner, temp_project):
+        """Test progress command displays creation and update timestamps."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-PROG6", "--title", "Timestamps", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act
+        result = runner.invoke(cli, ["progress", "SPRINT-PROG6"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "Created:" in result.output or "created" in result.output.lower()
+        assert "Updated:" in result.output or "updated" in result.output.lower()
+
+
+class TestShowCommand:
+    """Test stride show command for Sprint 10."""
+    
+    def test_show_displays_sprint_metadata(self, runner, temp_project):
+        """Test show command displays complete sprint metadata."""
+        ctx = make_context(temp_project)
+        
+        # Setup: init and create sprint
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-SHOW", "--title", "Show Test Sprint", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act: show sprint
+        result = runner.invoke(cli, ["show", "SPRINT-SHOW"], obj=ctx)
+        
+        # Assert: metadata displayed
+        assert result.exit_code == 0
+        assert "SPRINT-SHOW" in result.output
+        assert "Show Test Sprint" in result.output
+        assert "test@example.com" in result.output
+        assert "proposed" in result.output.lower()
+    
+    def test_show_lists_all_files(self, runner, temp_project):
+        """Test show command lists all sprint files with existence status."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-FILE", "--title", "File Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act
+        result = runner.invoke(cli, ["show", "SPRINT-FILE"], obj=ctx)
+        
+        # Assert: all file types mentioned
+        assert result.exit_code == 0
+        assert "proposal.md" in result.output
+        assert "plan.md" in result.output
+        assert "design.md" in result.output
+        assert "implementation.md" in result.output
+        assert "retrospective.md" in result.output
+    
+    def test_show_with_file_option_displays_content(self, runner, temp_project):
+        """Test show --file option displays specific file content."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-VIEW", "--title", "View Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act: show with --file option
+        result = runner.invoke(cli, ["show", "SPRINT-VIEW", "--file", "proposal"], obj=ctx)
+        
+        # Assert: proposal content displayed
+        assert result.exit_code == 0
+        assert "SPRINT-VIEW" in result.output
+        assert "Objectives" in result.output or "objectives" in result.output.lower()
+        assert "Success Criteria" in result.output or "success criteria" in result.output.lower()
+    
+    def test_show_invalid_sprint_id(self, runner, temp_project):
+        """Test show command with non-existent sprint ID."""
+        ctx = make_context(temp_project)
+        
+        # Setup: init only, no sprint created
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        
+        # Act: show non-existent sprint
+        result = runner.invoke(cli, ["show", "SPRINT-NONE"], obj=ctx)
+        
+        # Assert: error message
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower() or "error" in result.output.lower()
+    
+    def test_show_invalid_file_type(self, runner, temp_project):
+        """Test show command with invalid file type."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-BADFILE", "--title", "Bad File Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act: show with invalid file type
+        result = runner.invoke(cli, ["show", "SPRINT-BADFILE", "--file", "invalid"], obj=ctx)
+        
+        # Assert: error message about invalid file type
+        assert result.exit_code != 0
+        assert "invalid" in result.output.lower() or "must be one of" in result.output.lower()
+    
+    def test_show_displays_file_sizes(self, runner, temp_project):
+        """Test show command displays file sizes for existing files."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-SIZE", "--title", "Size Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act
+        result = runner.invoke(cli, ["show", "SPRINT-SIZE"], obj=ctx)
+        
+        # Assert: file size shown (proposal.md is created by default)
+        assert result.exit_code == 0
+        # Should show bytes for existing files
+        assert "bytes" in result.output.lower() or "kb" in result.output.lower() or "✅" in result.output
+    
+    def test_show_warns_about_missing_files(self, runner, temp_project):
+        """Test show command warns about missing files."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-MISS", "--title", "Missing Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act
+        result = runner.invoke(cli, ["show", "SPRINT-MISS"], obj=ctx)
+        
+        # Assert: warnings for missing files
+        assert result.exit_code == 0
+        # Should have warnings for plan, design, implementation, retrospective
+        assert "not found" in result.output.lower() or "⚠" in result.output
+    
+    def test_show_with_completed_sprint(self, runner, temp_project):
+        """Test show command works with completed sprints."""
+        ctx = make_context(temp_project)
+        
+        # Setup: create and complete sprint
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-DONE", "--title", "Completed Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        runner.invoke(cli, ["start", "SPRINT-DONE"], obj=ctx)
+        runner.invoke(cli, ["complete", "SPRINT-DONE"], obj=ctx)
+        
+        # Act: show completed sprint
+        result = runner.invoke(cli, ["show", "SPRINT-DONE"], obj=ctx)
+        
+        # Assert: shows completed status
+        assert result.exit_code == 0
+        assert "SPRINT-DONE" in result.output
+        assert "completed" in result.output.lower()
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

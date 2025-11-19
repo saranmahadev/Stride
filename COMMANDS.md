@@ -10,6 +10,7 @@ Complete command-line reference for the Stride framework.
   - [create](#stride-create)
   - [list](#stride-list)
   - [status](#stride-status)
+  - [show](#stride-show)
   - [move](#stride-move)
   - [validate](#stride-validate)
   - [archive](#stride-archive)
@@ -136,7 +137,7 @@ stride create --title "Quick feature" --quiet
 
 ### stride list
 
-List sprints with filtering and formatting options.
+List sprints with filtering, sorting, and formatting options.
 
 **Usage:**
 ```bash
@@ -148,6 +149,10 @@ stride list [OPTIONS]
 | Option | Short | Description |
 |--------|-------|-------------|
 | `--status` | `-s` | Filter by status (proposed, active, blocked, review, completed) |
+| `--user` | `-u` | Filter by author email (case-insensitive) |
+| `--since` | | Filter sprints created since date (YYYY-MM-DD) |
+| `--until` | | Filter sprints created until date (YYYY-MM-DD) |
+| `--sort` | | Sort by: date, priority, status, author, title |
 | `--format` | `-f` | Output format: table (default), list, json |
 
 **Examples:**
@@ -158,6 +163,21 @@ stride list
 
 # List only active sprints
 stride list --status active
+
+# Filter by author
+stride list --user alice@example.com
+
+# Filter by date range
+stride list --since 2025-01-01 --until 2025-12-31
+
+# Sort by priority (critical > high > medium > low)
+stride list --sort priority
+
+# Sort by creation date (newest first)
+stride list --sort date
+
+# Combine filters: active sprints by specific user, sorted by priority
+stride list --status active --user alice@example.com --sort priority
 
 # List in simple list format
 stride list --format list
@@ -244,6 +264,112 @@ Dependencies:
   • SPRINT-3X8Y: Payment Integration
   • SPRINT-2M4N: Dashboard Redesign
 ```
+
+---
+
+### stride show
+
+Display complete sprint details with document viewer.
+
+Shows sprint metadata and allows viewing of sprint documents with Rich markdown rendering.
+
+**Usage:**
+```bash
+stride show <SPRINT_ID> [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `SPRINT_ID` | The sprint identifier (e.g., SPRINT-7K9P) |
+
+**Options:**
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--file` | `-f` | View specific document: proposal, plan, design, implementation, retrospective |
+
+**Examples:**
+
+```bash
+# Show complete sprint information
+stride show SPRINT-7K9P
+
+# View proposal document with markdown rendering
+stride show SPRINT-7K9P --file proposal
+
+# View plan document
+stride show SPRINT-7K9P --file plan
+
+# View design document
+stride show SPRINT-7K9P --file design
+
+# View implementation notes
+stride show SPRINT-7K9P --file implementation
+
+# View retrospective
+stride show SPRINT-7K9P --file retrospective
+```
+
+**Output (without --file):**
+```
+============================================================
+📋 Sprint Details: SPRINT-7K9P
+============================================================
+
+Title: User Authentication
+Status: active 🚀
+Author: alice@example.com
+Priority: ⭐⭐⭐ high
+Tags: feature, security
+
+Created: 2025-01-15T10:30:00Z
+Updated: 2025-01-15T14:22:00Z
+Location: F:\Project\stride\sprints\active\SPRINT-7K9P
+
+────────────────────────────────────────────────────────────
+📂 Sprint Files:
+
+  ✅ proposal.md (1.2 KB)
+  ✅ plan.md (3.4 KB)
+  ✅ design.md (5.1 KB)
+  ⚠️  implementation.md (not found)
+  ⚠️  retrospective.md (not found)
+
+💡 Tip: Use --file <name> to view a specific file
+
+============================================================
+```
+
+**Output (with --file proposal):**
+```
+============================================================
+📋 Sprint Details: SPRINT-7K9P
+============================================================
+
+Title: User Authentication
+Status: active 🚀
+...
+
+────────────────────────────────────────────────────────────
+📄 Proposal:
+
+[Beautiful markdown rendering with Rich library]
+- Headers with proper formatting
+- Code blocks with syntax highlighting
+- Lists and checkboxes
+- Tables
+- Links and emphasis
+============================================================
+```
+
+**Features:**
+- 🎨 Rich markdown rendering with syntax highlighting
+- 📊 File existence validation with size display
+- ⚠️  Clear warnings for missing documents
+- 🔍 Specific file viewing with `--file` option
+- 🖥️  Automatic fallback to plain text for unsupported terminals
 
 ---
 

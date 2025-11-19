@@ -771,8 +771,13 @@ def create(ctx: click.Context, sprint_id: Optional[str], title: str, description
 @click.option("--format", "-f", type=click.Choice(["table", "list", "json", "dashboard"]), default="dashboard", help="Output format")
 @click.option("--detailed", "-d", is_flag=True, help="Show detailed sprint information")
 @click.option("--team", "-t", is_flag=True, help="Show team analytics")
+@click.option("--user", "-u", help="Filter by author email")
+@click.option("--since", help="Filter sprints created since date (YYYY-MM-DD)")
+@click.option("--until", help="Filter sprints created until date (YYYY-MM-DD)")
+@click.option("--sort", type=click.Choice(["date", "priority", "status", "author", "title"]), default="date", help="Sort by field")
 @click.pass_context
-def list(ctx: click.Context, status: Optional[str], format: str, detailed: bool, team: bool) -> None:
+def list(ctx: click.Context, status: Optional[str], format: str, detailed: bool, team: bool, 
+         user: Optional[str], since: Optional[str], until: Optional[str], sort: str) -> None:
     """
     List all sprints or sprints in a specific status with visual dashboard.
     
@@ -785,6 +790,9 @@ def list(ctx: click.Context, status: Optional[str], format: str, detailed: bool,
       stride list --format json
       stride list --detailed
       stride list --team
+      stride list --user alice@example.com
+      stride list --since 2025-11-01 --until 2025-11-30
+      stride list --sort priority
     """
     sm: SprintManager = ctx.obj["sprint_manager"]
     fm: FolderManager = ctx.obj["folder_manager"]
@@ -805,6 +813,60 @@ def list(ctx: click.Context, status: Optional[str], format: str, detailed: bool,
             sys.exit(1)
     else:
         sprints = sm.list_all_sprints()
+    
+    # Apply user filter
+    if user:
+        sprints = [s for s in sprints if s["metadata"] and s["metadata"].get("author", "").lower() == user.lower()]
+    
+    # Apply date filters
+    if since or until:
+        from datetime import datetime
+        filtered_sprints = []
+        for sprint in sprints:
+            if not sprint["metadata"] or not sprint["metadata"].get("created"):
+                continue
+            
+            try:
+                created_str = sprint["metadata"]["created"].replace("Z", "+00:00")
+                created = datetime.fromisoformat(created_str).date()
+                
+                if since:
+                    since_date = datetime.strptime(since, "%Y-%m-%d").date()
+                    if created < since_date:
+                        continue
+                
+                if until:
+                    until_date = datetime.strptime(until, "%Y-%m-%d").date()
+                    if created > until_date:
+                        continue
+                
+                filtered_sprints.append(sprint)
+            except (ValueError, AttributeError):
+                # Skip sprints with invalid dates
+                continue
+        
+        sprints = filtered_sprints
+    
+    # Sort sprints
+    def get_sort_key(sprint):
+        meta = sprint["metadata"] or {}
+        if sort == "date":
+            created = meta.get("created", "")
+            return created if created else "9999-99-99"
+        elif sort == "priority":
+            # Sort order: critical, high, medium, low
+            priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+            return priority_order.get(meta.get("priority", "medium"), 2)
+        elif sort == "status":
+            status_str = sprint["status"].value if hasattr(sprint["status"], "value") else sprint["status"]
+            return status_str
+        elif sort == "author":
+            return meta.get("author", "").lower()
+        elif sort == "title":
+            return meta.get("title", "").lower()
+        return ""
+    
+    sprints = sorted(sprints, key=get_sort_key, reverse=(sort == "date"))
     
     if not sprints:
         if not quiet:
@@ -939,6 +1001,325 @@ def status(ctx: click.Context, sprint_id: str) -> None:
                 click.echo(f"\n✗ Invalid")
                 for error in errors:
                     click.echo(f"  • {error}")
+
+
+@cli.command()
+@click.argument("sprint_id")
+@click.option("--file", "-f", help="Show specific file (proposal, plan, design, implementation, retrospective)")
+@click.pass_context
+def show(ctx: click.Context, sprint_id: str, file: Optional[str]) -> None:
+    """
+    Display complete sprint details with all files.
+    
+    Shows metadata and content of all sprint files. Use --file to display
+    a specific file only.
+    
+    Examples:
+      stride show SPRINT-A1B2
+      stride show SPRINT-A1B2 --file plan
+      stride show SPRINT-A1B2 --file proposal
+    """
+    sm: SprintManager = ctx.obj["sprint_manager"]
+    quiet = ctx.obj.get("quiet", False)
+    
+    # Get sprint info
+    sprint_info = sm.get_sprint(sprint_id)
+    
+    if not sprint_info:
+        click.echo(f"❌ Sprint not found: {sprint_id}", err=True)
+        sys.exit(1)
+    
+    meta = sprint_info["metadata"] or {}
+    status_val = sprint_info["status"].value if hasattr(sprint_info["status"], "value") else sprint_info["status"]
+    sprint_path = sprint_info["path"]
+    
+    # Available sprint files
+    file_types = {
+        "proposal": "proposal.md",
+        "plan": "plan.md",
+        "design": "design.md",
+        "implementation": "implementation.md",
+        "retrospective": "retrospective.md"
+    }
+    
+    if not quiet:
+        if RICH_AVAILABLE:
+            from rich.panel import Panel
+            from rich.syntax import Syntax
+            from rich.markdown import Markdown
+            
+            # Show header with metadata
+            rprint(f"\n[bold cyan]{'=' * 60}[/bold cyan]")
+            rprint(f"[bold white]📋 Sprint Details: {sprint_id}[/bold white]")
+            rprint(f"[bold cyan]{'=' * 60}[/bold cyan]\n")
+            
+            # Metadata section
+            rprint(f"[bold]Title:[/bold] {meta.get('title', 'N/A')}")
+            rprint(f"[bold]Status:[/bold] [{_get_status_color(status_val)}]{status_val}[/{_get_status_color(status_val)}] {_get_status_emoji(status_val)}")
+            rprint(f"[bold]Author:[/bold] {meta.get('author', 'N/A')}")
+            rprint(f"[bold]Priority:[/bold] {_get_priority_emoji(meta.get('priority', 'medium'))} {meta.get('priority', 'N/A')}")
+            
+            if meta.get('tags'):
+                rprint(f"[bold]Tags:[/bold] [cyan]{', '.join(meta['tags'])}[/cyan]")
+            
+            rprint(f"\n[bold]Created:[/bold] {meta.get('created', 'N/A')}")
+            if meta.get('updated'):
+                rprint(f"[bold]Updated:[/bold] {meta.get('updated', 'N/A')}")
+            
+            rprint(f"[bold]Location:[/bold] [dim]{sprint_path}[/dim]")
+            
+            # Show specific file if requested
+            if file:
+                if file not in file_types:
+                    click.echo(f"❌ Unknown file type: {file}", err=True)
+                    click.echo(f"   Available: {', '.join(file_types.keys())}", err=True)
+                    sys.exit(1)
+                
+                file_path = sprint_path / file_types[file]
+                if file_path.exists():
+                    rprint(f"\n[bold cyan]{'─' * 60}[/bold cyan]")
+                    rprint(f"[bold]📄 {file.capitalize()}:[/bold]\n")
+                    
+                    content = file_path.read_text(encoding="utf-8")
+                    md = Markdown(content)
+                    rprint(md)
+                else:
+                    rprint(f"\n[yellow]⚠️  {file.capitalize()}.md not found[/yellow]")
+            else:
+                # Show all files
+                rprint(f"\n[bold cyan]{'─' * 60}[/bold cyan]")
+                rprint(f"[bold]📂 Sprint Files:[/bold]\n")
+                
+                for file_type, filename in file_types.items():
+                    file_path = sprint_path / filename
+                    if file_path.exists():
+                        file_size = file_path.stat().st_size
+                        rprint(f"  ✅ [green]{filename}[/green] [dim]({file_size} bytes)[/dim]")
+                    else:
+                        rprint(f"  ⚠️  [dim]{filename}[/dim] [yellow](not found)[/yellow]")
+                
+                rprint(f"\n[dim]💡 Tip: Use --file <name> to view a specific file[/dim]")
+            
+            rprint(f"\n[bold cyan]{'=' * 60}[/bold cyan]\n")
+        
+        else:
+            # Fallback ASCII output
+            click.echo(f"\n{'=' * 60}")
+            click.echo(f"Sprint Details: {sprint_id}")
+            click.echo(f"{'=' * 60}\n")
+            
+            click.echo(f"Title: {meta.get('title', 'N/A')}")
+            click.echo(f"Status: {status_val}")
+            click.echo(f"Author: {meta.get('author', 'N/A')}")
+            click.echo(f"Priority: {meta.get('priority', 'N/A')}")
+            
+            if meta.get('tags'):
+                click.echo(f"Tags: {', '.join(meta['tags'])}")
+            
+            click.echo(f"\nCreated: {meta.get('created', 'N/A')}")
+            if meta.get('updated'):
+                click.echo(f"Updated: {meta.get('updated', 'N/A')}")
+            
+            click.echo(f"Location: {sprint_path}")
+            
+            # Show specific file if requested
+            if file:
+                if file not in file_types:
+                    click.echo(f"\n❌ Unknown file type: {file}", err=True)
+                    click.echo(f"   Available: {', '.join(file_types.keys())}", err=True)
+                    sys.exit(1)
+                
+                file_path = sprint_path / file_types[file]
+                if file_path.exists():
+                    click.echo(f"\n{'-' * 60}")
+                    click.echo(f"{file.capitalize()}:\n")
+                    
+                    content = file_path.read_text(encoding="utf-8")
+                    click.echo(content)
+                else:
+                    click.echo(f"\n⚠️  {file.capitalize()}.md not found")
+            else:
+                # Show all files
+                click.echo(f"\n{'-' * 60}")
+                click.echo(f"Sprint Files:\n")
+                
+                for file_type, filename in file_types.items():
+                    file_path = sprint_path / filename
+                    if file_path.exists():
+                        file_size = file_path.stat().st_size
+                        click.echo(f"  ✓ {filename} ({file_size} bytes)")
+                    else:
+                        click.echo(f"  ✗ {filename} (not found)")
+                
+                click.echo(f"\n💡 Tip: Use --file <name> to view a specific file")
+            
+            click.echo(f"\n{'=' * 60}\n")
+
+
+@cli.command()
+@click.argument("sprint_id")
+@click.pass_context
+def progress(ctx: click.Context, sprint_id: str) -> None:
+    """
+    Display detailed progress for a sprint.
+    
+    Shows task completion status, progress bars, and time estimates.
+    Parses tasks from plan.md and tracks completion.
+    
+    Examples:
+      stride progress SPRINT-A1B2
+    """
+    sm: SprintManager = ctx.obj["sprint_manager"]
+    quiet = ctx.obj.get("quiet", False)
+    
+    try:
+        sprint_info = sm.get_sprint(sprint_id)
+        metadata = sprint_info["metadata"]
+        sprint_path = sprint_info["path"]
+        
+        # Parse tasks from plan.md
+        plan_file = sprint_path / "plan.md"
+        tasks = []
+        completed_count = 0
+        total_count = 0
+        
+        if plan_file.exists():
+            content = plan_file.read_text(encoding="utf-8")
+            # Parse markdown checkboxes: - [ ] or - [x]
+            import re
+            task_pattern = r'^[\s]*[-*]\s+\[([ xX])\]\s+(.+)$'
+            
+            for line in content.split('\n'):
+                match = re.match(task_pattern, line)
+                if match:
+                    is_complete = match.group(1).lower() == 'x'
+                    task_text = match.group(2).strip()
+                    tasks.append({
+                        'text': task_text,
+                        'completed': is_complete
+                    })
+                    total_count += 1
+                    if is_complete:
+                        completed_count += 1
+        
+        # Calculate progress
+        progress_percentage = (completed_count / total_count * 100) if total_count > 0 else 0
+        
+        # Display using Rich if available
+        if RICH_AVAILABLE:
+            from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
+            from rich.table import Table
+            
+            rprint(f"\n[bold cyan]{'=' * 60}[/bold cyan]")
+            rprint(f"[bold white]📊 Sprint Progress: {sprint_id}[/bold white]")
+            rprint(f"[bold cyan]{'=' * 60}[/bold cyan]\n")
+            
+            # Metadata
+            status_val = metadata.get("status", "unknown")
+            rprint(f"[bold]Title:[/bold] {metadata.get('title', 'Untitled')}")
+            rprint(f"[bold]Status:[/bold] [{_get_status_color(status_val)}]{status_val}[/{_get_status_color(status_val)}] {_get_status_emoji(status_val)}")
+            rprint(f"[bold]Author:[/bold] {metadata.get('author', 'Unknown')}")
+            
+            # Progress summary
+            rprint(f"\n[bold cyan]Progress Summary[/bold cyan]")
+            rprint(f"[bold]Tasks Completed:[/bold] {completed_count} / {total_count}")
+            rprint(f"[bold]Completion:[/bold] {progress_percentage:.1f}%\n")
+            
+            # Progress bar
+            if total_count > 0:
+                from rich.progress import Progress as ProgressBar
+                progress_bar = ProgressBar()
+                task_id = progress_bar.add_task("[cyan]Overall Progress", total=total_count)
+                progress_bar.update(task_id, completed=completed_count)
+                
+                # Simple progress bar visualization
+                bar_width = 40
+                filled = int(bar_width * progress_percentage / 100)
+                bar = "█" * filled + "░" * (bar_width - filled)
+                
+                if progress_percentage >= 75:
+                    bar_color = "green"
+                elif progress_percentage >= 50:
+                    bar_color = "yellow"
+                elif progress_percentage >= 25:
+                    bar_color = "blue"
+                else:
+                    bar_color = "red"
+                
+                rprint(f"[{bar_color}]{bar}[/{bar_color}] {progress_percentage:.1f}%\n")
+            
+            # Task list
+            if tasks:
+                rprint(f"[bold cyan]Tasks:[/bold cyan]\n")
+                
+                table = Table(show_header=False, box=None, padding=(0, 2))
+                table.add_column("Status", style="bold", width=3)
+                table.add_column("Task")
+                
+                for task in tasks:
+                    if task['completed']:
+                        status_icon = "[green]✓[/green]"
+                        task_text = f"[dim]{task['text']}[/dim]"
+                    else:
+                        status_icon = "[yellow]○[/yellow]"
+                        task_text = task['text']
+                    
+                    table.add_row(status_icon, task_text)
+                
+                rprint(table)
+            else:
+                rprint("[yellow]⚠️  No tasks found in plan.md[/yellow]")
+            
+            # Timestamps
+            rprint(f"\n[bold cyan]Timeline[/bold cyan]")
+            rprint(f"[dim]Created:[/dim] {metadata.get('created', 'Unknown')}")
+            rprint(f"[dim]Updated:[/dim] {metadata.get('updated', 'Unknown')}")
+            
+            rprint(f"\n[bold cyan]{'=' * 60}[/bold cyan]\n")
+        
+        else:
+            # ASCII fallback
+            click.echo(f"\n{'=' * 60}")
+            click.echo(f"📊 Sprint Progress: {sprint_id}")
+            click.echo(f"{'=' * 60}\n")
+            
+            click.echo(f"Title: {metadata.get('title', 'Untitled')}")
+            click.echo(f"Status: {metadata.get('status', 'unknown')}")
+            click.echo(f"Author: {metadata.get('author', 'Unknown')}")
+            
+            click.echo(f"\nProgress Summary:")
+            click.echo(f"Tasks Completed: {completed_count} / {total_count}")
+            click.echo(f"Completion: {progress_percentage:.1f}%")
+            
+            if total_count > 0:
+                bar_width = 40
+                filled = int(bar_width * progress_percentage / 100)
+                bar = "█" * filled + "░" * (bar_width - filled)
+                click.echo(f"\n{bar} {progress_percentage:.1f}%\n")
+            
+            if tasks:
+                click.echo("\nTasks:\n")
+                for task in tasks:
+                    status_icon = "✓" if task['completed'] else "○"
+                    click.echo(f"  {status_icon} {task['text']}")
+            else:
+                click.echo("\n⚠️  No tasks found in plan.md")
+            
+            click.echo(f"\nTimeline:")
+            click.echo(f"Created: {metadata.get('created', 'Unknown')}")
+            click.echo(f"Updated: {metadata.get('updated', 'Unknown')}")
+            
+            click.echo(f"\n{'=' * 60}\n")
+    
+    except FileNotFoundError:
+        click.echo(f"Error: Sprint {sprint_id} not found", err=True)
+        ctx.exit(1)
+    except Exception as e:
+        click.echo(f"Error: {str(e)}", err=True)
+        if ctx.obj.get("verbose"):
+            import traceback
+            traceback.print_exc()
+        ctx.exit(1)
 
 
 @cli.command()

@@ -134,16 +134,28 @@ python -m stride.cli.main move SPRINT-7K9P active
 # 4. Check status anytime
 python -m stride.cli.main status SPRINT-7K9P
 
-# 5. List all active sprints
+# 5. View complete sprint details
+python -m stride.cli.main show SPRINT-7K9P
+
+# 6. View a specific document (proposal, plan, design, implementation, retrospective)
+python -m stride.cli.main show SPRINT-7K9P --file proposal
+
+# 7. List all active sprints
 python -m stride.cli.main list --status active
 
-# 6. Validate your work
+# 8. Filter sprints by author
+python -m stride.cli.main list --user alice@example.com
+
+# 9. Sort sprints by priority
+python -m stride.cli.main list --sort priority
+
+# 10. Validate your work
 python -m stride.cli.main validate SPRINT-7K9P
 
-# 7. Move to review when ready
+# 11. Move to review when ready
 python -m stride.cli.main move SPRINT-7K9P review
 
-# 8. Complete the sprint
+# 12. Complete the sprint
 python -m stride.cli.main move SPRINT-7K9P completed
 ```
 
@@ -154,8 +166,9 @@ For detailed documentation of all CLI commands, options, and examples, see **[CO
 Key commands:
 - `init` - Initialize Stride in a project
 - `create` - Create new sprints
-- `list` - List and filter sprints
-- `status` - Show sprint details
+- `list` - List and filter sprints (with --user, --since, --until, --sort options)
+- `show` - Display complete sprint details with file viewer
+- `status` - Show sprint metadata
 - `move` - Change sprint status
 - `validate` - Verify sprint structure
 - `archive` - Archive completed sprints

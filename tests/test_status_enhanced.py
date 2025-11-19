@@ -367,3 +367,120 @@ class TestEmptyStates:
             
             assert result.exit_code == 0
             assert "No sprints found" in result.output
+
+
+class TestFilteringAndSorting:
+    """Test Sprint 9 features: filtering and sorting."""
+    
+    def test_user_filter(self, runner):
+        """Test --user filter shows only sprints by that author."""
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            ctx = make_context(temp_project)
+            
+            runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-ALCE", "--title", "Alice Sprint", "--author", "alice@example.com"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-BOBX", "--title", "Bob Sprint", "--author", "bob@example.com"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-ALC2", "--title", "Alice Sprint 2", "--author", "alice@example.com"], obj=ctx)
+            
+            result = runner.invoke(cli, ["list", "--user", "alice@example.com", "--format", "list"], obj=ctx)
+            
+            assert result.exit_code == 0
+            assert "SPRINT-ALCE" in result.output
+            assert "SPRINT-ALC2" in result.output
+            assert "SPRINT-BOBX" not in result.output
+    
+    def test_user_filter_case_insensitive(self, runner):
+        """Test --user filter is case insensitive."""
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            ctx = make_context(temp_project)
+            
+            runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-TEST", "--title", "Test", "--author", "Alice@Example.com"], obj=ctx)
+            
+            result = runner.invoke(cli, ["list", "--user", "alice@example.com", "--format", "list"], obj=ctx)
+            
+            assert result.exit_code == 0
+            assert "SPRINT-TEST" in result.output
+    
+    def test_sort_by_priority(self, runner):
+        """Test --sort priority orders sprints correctly."""
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            ctx = make_context(temp_project)
+            
+            runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-LOW1", "--title", "Low", "--author", "test@example.com", "--priority", "low"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-CRIT", "--title", "Critical", "--author", "test@example.com", "--priority", "critical"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-HIGH", "--title", "High", "--author", "test@example.com", "--priority", "high"], obj=ctx)
+            
+            result = runner.invoke(cli, ["list", "--sort", "priority", "--format", "list"], obj=ctx)
+            
+            assert result.exit_code == 0
+            lines = result.output.strip().split("\n")
+            # Critical should come first, then high, then low
+            crit_idx = next(i for i, line in enumerate(lines) if "SPRINT-CRIT" in line)
+            high_idx = next(i for i, line in enumerate(lines) if "SPRINT-HIGH" in line)
+            low_idx = next(i for i, line in enumerate(lines) if "SPRINT-LOW1" in line)
+            assert crit_idx < high_idx < low_idx
+    
+    def test_sort_by_author(self, runner):
+        """Test --sort author orders sprints alphabetically."""
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            ctx = make_context(temp_project)
+            
+            runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-ZARA", "--title", "Zara Sprint", "--author", "zara@example.com"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-ALCE", "--title", "Alice Sprint", "--author", "alice@example.com"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-BOBX", "--title", "Bob Sprint", "--author", "bob@example.com"], obj=ctx)
+            
+            result = runner.invoke(cli, ["list", "--sort", "author", "--format", "list"], obj=ctx)
+            
+            assert result.exit_code == 0
+            lines = result.output.strip().split("\n")
+            alice_idx = next(i for i, line in enumerate(lines) if "SPRINT-ALCE" in line)
+            bob_idx = next(i for i, line in enumerate(lines) if "SPRINT-BOBX" in line)
+            zara_idx = next(i for i, line in enumerate(lines) if "SPRINT-ZARA" in line)
+            assert alice_idx < bob_idx < zara_idx
+    
+    def test_sort_by_title(self, runner):
+        """Test --sort title orders sprints alphabetically."""
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            ctx = make_context(temp_project)
+            
+            runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-TST1", "--title", "Zebra Feature", "--author", "test@example.com"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-TST2", "--title", "Alpha Feature", "--author", "test@example.com"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-TST3", "--title", "Beta Feature", "--author", "test@example.com"], obj=ctx)
+            
+            result = runner.invoke(cli, ["list", "--sort", "title", "--format", "list"], obj=ctx)
+            
+            assert result.exit_code == 0
+            lines = result.output.strip().split("\n")
+            alpha_idx = next(i for i, line in enumerate(lines) if "SPRINT-TST2" in line)
+            beta_idx = next(i for i, line in enumerate(lines) if "SPRINT-TST3" in line)
+            zebra_idx = next(i for i, line in enumerate(lines) if "SPRINT-TST1" in line)
+            assert alpha_idx < beta_idx < zebra_idx
+    
+    def test_combined_user_and_sort(self, runner):
+        """Test combining --user filter with --sort."""
+        with runner.isolated_filesystem() as temp_dir:
+            temp_project = Path(temp_dir)
+            ctx = make_context(temp_project)
+            
+            runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-ALC1", "--title", "Zebra", "--author", "alice@example.com"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-ALC2", "--title", "Alpha", "--author", "alice@example.com"], obj=ctx)
+            runner.invoke(cli, ["create", "--id", "SPRINT-BOBX", "--title", "Bob Sprint", "--author", "bob@example.com"], obj=ctx)
+            
+            result = runner.invoke(cli, ["list", "--user", "alice@example.com", "--sort", "title", "--format", "list"], obj=ctx)
+            
+            assert result.exit_code == 0
+            assert "SPRINT-ALC1" in result.output
+            assert "SPRINT-ALC2" in result.output
+            assert "SPRINT-BOBX" not in result.output
+            # Alpha should come before Zebra
+            assert result.output.index("SPRINT-ALC2") < result.output.index("SPRINT-ALC1")

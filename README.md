@@ -1,3 +1,5 @@
+![Stride Banner](./assets/banner.png)
+
 # **Stride**
 
 > **Sprint-Powered, Spec-Driven Development for AI Agents**

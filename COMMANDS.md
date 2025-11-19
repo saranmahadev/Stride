@@ -543,6 +543,113 @@ Event History (7 events):
 
 ---
 
+### stride watch
+
+Watch a sprint for real-time file changes with live display.
+
+Monitors sprint folder and displays live updates when files are modified, created, deleted, or moved. Shows sprint status, file list, and event log in a split-panel terminal UI.
+
+**Usage:**
+```bash
+stride watch <SPRINT_ID> [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `SPRINT_ID` | The sprint to watch (e.g., SPRINT-7K9P) |
+
+**Options:**
+
+| Option | Short | Type | Default | Description |
+|--------|-------|------|---------|-------------|
+| `--interval` | `-i` | float | 1.0 | Refresh interval in seconds |
+
+**Examples:**
+
+```bash
+# Watch sprint with default 1-second refresh
+stride watch SPRINT-7K9P
+
+# Watch with faster refresh (0.5 seconds)
+stride watch SPRINT-A1B2 --interval 0.5
+
+# Watch with slower refresh (2 seconds)
+stride watch SPRINT-TIME -i 2.0
+```
+
+**Live Display:**
+```
+╭────────────────── 📡 Sprint Monitor ───────────────────╮
+│   Sprint:  SPRINT-7K9P                                 │
+│    Title:  User Authentication                         │
+│   Status:  active                                      │
+│ Watching:  stride\sprints\active\SPRINT-7K9P           │
+╰────────────────────────────────────────────────────────╯
+╭──────── 📁 Files ─────────╮╭──── 📋 Recent Events ─────╮
+│  File               Size  ││ 14:32:15 ✏️ proposal.md   │
+│  ✓ proposal.md    1.4 KB  ││ 14:30:22 ✨ plan.md       │
+│  ✓ plan.md        892 B   ││ 14:28:10 ✏️ proposal.md   │
+│  · design.md           -  ││                           │
+│  · implementation…     -  ││                           │
+│  · retrospective.…     -  ││                           │
+│  · notes.md            -  ││                           │
+╰───────────────────────────╯╰───────────────────────────╯
+╭────────────────────────────────────────────────────────╮
+│ Monitoring every 1.0s • Press Ctrl+C to stop           │
+╰────────────────────────────────────────────────────────╯
+```
+
+**Tracked Files:**
+- `proposal.md` - Sprint proposal document
+- `plan.md` - Implementation plan
+- `design.md` - Design specifications
+- `implementation.md` - Implementation notes
+- `retrospective.md` - Post-completion retrospective
+- `notes.md` - General notes
+
+**Event Icons:**
+
+| Icon | Event Type | Description |
+|------|-----------|-------------|
+| ✏️ | modified | File content changed |
+| ✨ | created | New file created |
+| 🗑️ | deleted | File deleted |
+| 📦 | moved | File moved/renamed |
+
+**Features:**
+- 🔄 Real-time file system monitoring with watchdog
+- 📊 Live split-panel display (files + events)
+- 📁 File size tracking with automatic updates
+- 🎨 Color-coded event types for quick identification
+- ⏱️  Timestamp tracking for all file changes
+- 🔍 Automatic filtering of non-sprint files
+- 📝 Event history (last 20 events)
+- 🚫 Debouncing to prevent duplicate events
+- ⌨️  Graceful Ctrl+C handling
+- 🖥️  Rich terminal UI with panels and tables
+
+**Use Cases:**
+- Monitor active development in real-time
+- Track AI agent file modifications
+- Watch for unexpected file changes
+- Verify implementation progress
+- Debug file system issues
+- Live code review sessions
+- Team collaboration monitoring
+
+**Performance:**
+- Minimal CPU usage when idle
+- Efficient file system watching
+- Configurable refresh rate
+- No file content reading (size only)
+- Automatic cleanup on exit
+
+**Note:** Press `Ctrl+C` to stop watching at any time.
+
+---
+
 ### stride move
 
 Move a sprint to a different status folder.

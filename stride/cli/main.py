@@ -4,6 +4,7 @@ Main CLI entry point for Stride.
 import click
 import sys
 import json
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -1849,6 +1850,202 @@ def restore(ctx: click.Context, sprint_id: str, to_status: str) -> None:
     except Exception as e:
         click.echo(f"❌ Failed to restore sprint: {e}", err=True)
         sys.exit(1)
+
+
+@cli.command()
+@click.argument("sprint_id")
+@click.option("--interval", "-i", default=1.0, type=float, help="Refresh interval in seconds")
+@click.pass_context
+def watch(ctx: click.Context, sprint_id: str, interval: float) -> None:
+    """
+    Watch a sprint for real-time file changes.
+    
+    Monitors sprint folder and displays live updates when files are modified,
+    created, deleted, or moved. Shows sprint status, file list, and event log.
+    
+    Press Ctrl+C to stop watching.
+    
+    \b
+    Examples:
+      stride watch SPRINT-7K9P
+      stride watch SPRINT-A1B2 --interval 0.5
+      stride watch SPRINT-TIME -i 2.0
+    """
+    from ..core.watcher import SprintWatcher, SprintEvent
+    from ..core.metadata_manager import MetadataManager
+    from rich.live import Live
+    from rich.panel import Panel
+    from rich.table import Table
+    from rich.layout import Layout
+    from rich.console import Group
+    from rich.text import Text
+    from collections import deque
+    import signal
+    
+    sm: SprintManager = ctx.obj["sprint_manager"]
+    fm: FolderManager = ctx.obj["folder_manager"]
+    quiet = ctx.obj.get("quiet", False)
+    
+    # Validate sprint exists
+    sprint_path = None
+    for status in SprintStatus:
+        path = fm.sprints_root / status.value / sprint_id
+        if path.exists():
+            sprint_path = path
+            break
+    
+    if not sprint_path:
+        click.echo(f"❌ Sprint not found: {sprint_id}", err=True)
+        sys.exit(1)
+    
+    # Load sprint metadata
+    proposal_file = sprint_path / "proposal.md"
+    if not proposal_file.exists():
+        click.echo(f"❌ Sprint proposal not found: {sprint_id}", err=True)
+        sys.exit(1)
+    
+    metadata, _ = MetadataManager.parse_file(proposal_file)
+    
+    # Event storage
+    events = deque(maxlen=20)  # Keep last 20 events
+    file_states = {}  # Track file sizes
+    
+    def on_event(event: SprintEvent):
+        """Handle file system events."""
+        events.append(event)
+        if event.event_type in ['modified', 'created']:
+            try:
+                file_size = event.file_path.stat().st_size
+                file_states[event.file_name] = file_size
+            except:
+                pass
+    
+    def generate_display() -> Layout:
+        """Generate the live display layout."""
+        layout = Layout()
+        layout.split_column(
+            Layout(name="header", size=7),
+            Layout(name="body"),
+            Layout(name="footer", size=3),
+        )
+        
+        # Header: Sprint info
+        header_content = Table.grid(padding=(0, 2))
+        header_content.add_column(style="bold cyan", justify="right")
+        header_content.add_column()
+        header_content.add_row("Sprint:", f"[bold]{metadata.get('id', sprint_id)}[/bold]")
+        header_content.add_row("Title:", metadata.get('title', 'Untitled'))
+        header_content.add_row("Status:", f"[yellow]{metadata.get('status', 'unknown')}[/yellow]")
+        header_content.add_row("Watching:", str(sprint_path.relative_to(fm.project_root)))
+        
+        layout["header"].update(Panel(header_content, title="📡 Sprint Monitor", border_style="cyan"))
+        
+        # Body: Split into files and events
+        body_layout = Layout()
+        body_layout.split_row(
+            Layout(name="files", ratio=1),
+            Layout(name="events", ratio=1),
+        )
+        
+        # Files panel
+        files_table = Table(show_header=True, header_style="bold magenta", box=None)
+        files_table.add_column("File", style="cyan")
+        files_table.add_column("Size", justify="right", style="green")
+        
+        tracked_files = ['proposal.md', 'plan.md', 'design.md', 'implementation.md', 'retrospective.md', 'notes.md']
+        for file_name in tracked_files:
+            file_path = sprint_path / file_name
+            if file_path.exists():
+                size = file_path.stat().st_size
+                size_str = f"{size:,} bytes" if size < 1024 else f"{size/1024:.1f} KB"
+                status_icon = "✓"
+            else:
+                size_str = "-"
+                status_icon = "·"
+            
+            files_table.add_row(f"{status_icon} {file_name}", size_str)
+        
+        body_layout["files"].update(Panel(files_table, title="📁 Files", border_style="magenta"))
+        
+        # Events panel
+        if events:
+            events_content = []
+            for event in reversed(list(events)):
+                timestamp = event.timestamp.strftime("%H:%M:%S")
+                
+                if event.event_type == "modified":
+                    icon = "✏️"
+                    color = "yellow"
+                elif event.event_type == "created":
+                    icon = "✨"
+                    color = "green"
+                elif event.event_type == "deleted":
+                    icon = "🗑️"
+                    color = "red"
+                elif event.event_type == "moved":
+                    icon = "📦"
+                    color = "blue"
+                else:
+                    icon = "📝"
+                    color = "white"
+                
+                event_text = Text()
+                event_text.append(f"{timestamp} ", style="dim")
+                event_text.append(icon + " ", style=color)
+                event_text.append(event.file_name, style=f"bold {color}")
+                
+                if event.event_type == "moved" and event.src_path:
+                    event_text.append(f" (from {event.src_path.name})", style="dim")
+                
+                events_content.append(event_text)
+        else:
+            events_content = [Text("Waiting for changes...", style="dim italic")]
+        
+        events_group = Group(*events_content)
+        body_layout["events"].update(Panel(events_group, title="📋 Recent Events", border_style="yellow"))
+        
+        layout["body"].update(body_layout)
+        
+        # Footer
+        footer_text = Text.from_markup(
+            f"[dim]Monitoring every {interval}s • Press [bold]Ctrl+C[/bold] to stop[/dim]"
+        )
+        layout["footer"].update(Panel(footer_text, style="dim"))
+        
+        return layout
+    
+    # Signal handling for graceful shutdown
+    stop_requested = False
+    
+    def signal_handler(sig, frame):
+        nonlocal stop_requested
+        stop_requested = True
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    
+    # Start watching
+    try:
+        with SprintWatcher(sprint_path, on_event) as watcher:
+            if not quiet:
+                click.echo(f"👀 Watching sprint: {sprint_id}")
+                click.echo(f"📂 Path: {sprint_path}")
+                click.echo(f"⏱️  Refresh: {interval}s\n")
+            
+            with Live(generate_display(), refresh_per_second=1/interval, screen=True) as live:
+                while not stop_requested:
+                    live.update(generate_display())
+                    time.sleep(interval)
+    
+    except KeyboardInterrupt:
+        pass
+    
+    except Exception as e:
+        click.echo(f"\n❌ Error watching sprint: {e}", err=True)
+        sys.exit(1)
+    
+    finally:
+        if not quiet:
+            click.echo(f"\n✓ Stopped watching {sprint_id}")
 
 
 @cli.group()

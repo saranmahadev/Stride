@@ -164,10 +164,16 @@ python -m stride.cli.main timeline SPRINT-7K9P
 # 12. Show recent 5 events only
 python -m stride.cli.main timeline SPRINT-7K9P --limit 5
 
-# 13. Move to review when ready
+# 13. Watch sprint for real-time file changes
+python -m stride.cli.main watch SPRINT-7K9P
+
+# 13a. Watch with custom refresh interval
+python -m stride.cli.main watch SPRINT-7K9P --interval 0.5
+
+# 14. Move to review when ready
 python -m stride.cli.main move SPRINT-7K9P review
 
-# 14. Complete the sprint
+# 15. Complete the sprint
 python -m stride.cli.main move SPRINT-7K9P completed
 ```
 
@@ -182,6 +188,7 @@ Key commands:
 - `show` - Display complete sprint details with file viewer
 - `status` - Show sprint metadata
 - `timeline` - View complete event history with timestamps
+- `watch` - Monitor sprint for real-time file changes with live display
 - `move` - Change sprint status
 - `validate` - Comprehensive sprint quality validation with detailed reports
 - `archive` - Archive completed sprints

@@ -1209,6 +1209,416 @@ project:
 
 ---
 
+### stride export
+
+Export sprint data for reporting and integration.
+
+Supports multiple formats (JSON, Markdown, CSV, HTML) with comprehensive filtering options. Use filters to export specific sprints or `--all` for complete export.
+
+**Usage:**
+```bash
+stride export [OPTIONS]
+```
+
+**Options:**
+
+| Option | Short | Type | Description |
+|--------|-------|------|-------------|
+| `--format` | `-f` | choice | Export format: json, markdown, csv, html (default: markdown) |
+| `--status` | `-s` | choice | Filter by status (can specify multiple) |
+| `--since` | | date | Filter sprints created since date (YYYY-MM-DD) |
+| `--until` | | date | Filter sprints created until date (YYYY-MM-DD) |
+| `--user` | `-u` | text | Filter by author email |
+| `--priority` | `-p` | choice | Filter by priority: critical, high, medium, low |
+| `--tag` | `-t` | text | Filter by tag (can specify multiple) |
+| `--agent` | `-a` | text | Filter by agent (can specify multiple) |
+| `--output` | `-o` | path | Output file path (default: auto-generated) |
+| `--all` | | flag | Export all sprints (no filters) |
+
+**Examples:**
+
+```bash
+# Export all sprints as Markdown
+stride export --all --format markdown
+
+# Export completed sprints as JSON
+stride export --format json --status completed --output completed.json
+
+# Export high-priority sprints since January
+stride export --format html --priority high --since 2025-01-01 --output high-priority.html
+
+# Export sprints by specific author
+stride export --format csv --user dev@example.com --output dev-sprints.csv
+
+# Export sprints with multiple filters
+stride export --status active --status review --tag feature --format markdown
+
+# Export sprints by agent
+stride export --agent claude --agent copilot --format json --output ai-assisted.json
+
+# Export date range
+stride export --since 2025-01-01 --until 2025-01-31 --format html --output january-2025.html
+```
+
+**Export Formats:**
+
+#### JSON Format
+
+Complete sprint data in structured JSON format. Ideal for programmatic processing, CI/CD integration, and data analysis.
+
+**Structure:**
+```json
+{
+  "export_metadata": {
+    "timestamp": "2025-01-15T10:30:00Z",
+    "total_sprints": 10,
+    "exported_sprints": 5,
+    "format": "json",
+    "filters": {
+      "status": ["completed"],
+      "priority": "high"
+    }
+  },
+  "sprints": [
+    {
+      "id": "SPRINT-7K9P",
+      "status": "completed",
+      "metadata": {
+        "title": "User Authentication",
+        "author": "dev@example.com",
+        "priority": "high",
+        "tags": ["feature", "security"],
+        "agents": ["claude", "copilot"],
+        "created": "2025-01-10T08:00:00Z",
+        "updated": "2025-01-12T16:30:00Z"
+      },
+      "files": {
+        "proposal.md": "# Proposal content...",
+        "plan.md": "# Plan content...",
+        "implementation.md": "# Implementation notes..."
+      },
+      "timeline": [
+        {
+          "event_type": "created",
+          "timestamp": "2025-01-10T08:00:00Z"
+        },
+        {
+          "event_type": "status_changed",
+          "timestamp": "2025-01-10T09:00:00Z",
+          "metadata": {
+            "from_status": "proposed",
+            "to_status": "active"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Use Cases:**
+- CI/CD pipeline integration
+- Automated reporting systems
+- Data analysis and metrics
+- Project management tool sync
+- Backup and archival
+
+#### Markdown Format
+
+Human-readable reports with sprint summaries, statistics, and formatted metadata. Perfect for stakeholder reports and documentation.
+
+**Features:**
+- Sprint summaries with metadata tables
+- Table of contents with clickable links
+- Status and priority distribution statistics
+- Timeline summaries
+- File availability indicators
+
+**Output Example:**
+```markdown
+# Sprint Export Report
+
+**Generated:** 2025-01-15T10:30:00Z
+**Format:** markdown
+**Total Sprints:** 10
+**Exported Sprints:** 5
+
+## Filters Applied
+
+- **Status:** completed
+- **Priority:** high
+
+## Table of Contents
+
+1. [SPRINT-7K9P: User Authentication](#sprint-7k9p)
+2. [SPRINT-AUTH2: OAuth Integration](#sprint-auth2)
+
+## Sprint Summaries
+
+### SPRINT-7K9P: User Authentication
+
+| Field | Value |
+|-------|-------|
+| **ID** | SPRINT-7K9P |
+| **Status** | completed |
+| **Author** | dev@example.com |
+| **Priority** | high |
+| **Tags** | feature, security |
+| **Agents** | claude, copilot |
+
+**Files:**
+- ✅ proposal.md (150 words)
+- ✅ plan.md (300 words)
+- ✅ implementation.md (500 words)
+
+**Activity:** 8 events
+```
+
+**Use Cases:**
+- Executive summaries
+- Sprint retrospectives
+- Documentation generation
+- Stakeholder reports
+- Project status updates
+
+#### CSV Format
+
+Tabular data export for spreadsheets and data analysis tools. Includes sprint metadata and file availability.
+
+**Columns:**
+- sprint_id
+- status
+- title
+- author
+- priority
+- created
+- updated
+- tags (semicolon-separated)
+- agents (semicolon-separated)
+- description
+- has_proposal (yes/no)
+- has_plan (yes/no)
+- has_design (yes/no)
+- has_implementation (yes/no)
+- has_retrospective (yes/no)
+- event_count
+
+**Example:**
+```csv
+# Sprint Export Report
+# Generated: 2025-01-15T10:30:00Z
+# Total Sprints: 10
+# Exported Sprints: 5
+sprint_id,status,title,author,priority,created,updated,tags,agents,has_proposal,has_plan,event_count
+SPRINT-7K9P,completed,User Authentication,dev@example.com,high,2025-01-10T08:00:00Z,2025-01-12T16:30:00Z,feature;security,claude;copilot,yes,yes,8
+```
+
+**Use Cases:**
+- Excel/Google Sheets analysis
+- Data visualization tools
+- Import into project management systems
+- Bulk data processing
+- Quick filtering and sorting
+
+#### HTML Format
+
+Styled web reports with interactive elements and embedded CSS. Beautiful reports for sharing and presentation.
+
+**Features:**
+- Responsive design
+- Color-coded status badges
+- Metadata cards
+- Statistics tables
+- Timeline visualization
+- Embedded CSS styling
+- Print-friendly layout
+
+**Use Cases:**
+- Team dashboards
+- Client presentations
+- Web-based reports
+- Email attachments
+- Archival documentation
+
+**Filtering Options:**
+
+#### Status Filtering
+
+Filter by one or multiple sprint statuses:
+```bash
+# Single status
+stride export --status completed
+
+# Multiple statuses
+stride export --status active --status review
+```
+
+**Available Statuses:** proposed, active, blocked, review, completed
+
+#### Date Range Filtering
+
+Filter by creation date range:
+```bash
+# Sprints since a date
+stride export --since 2025-01-01
+
+# Sprints until a date
+stride export --until 2025-01-31
+
+# Date range
+stride export --since 2025-01-01 --until 2025-01-31
+```
+
+**Date Format:** YYYY-MM-DD
+
+#### Author Filtering
+
+Filter by author email (partial match):
+```bash
+stride export --user dev@example.com
+stride export --user alice
+```
+
+#### Priority Filtering
+
+Filter by priority level:
+```bash
+stride export --priority high
+stride export --priority critical
+```
+
+**Available Priorities:** critical, high, medium, low
+
+#### Tag Filtering
+
+Filter by tags (any match):
+```bash
+# Single tag
+stride export --tag feature
+
+# Multiple tags (OR logic)
+stride export --tag feature --tag security
+```
+
+#### Agent Filtering
+
+Filter by configured AI agents (any match):
+```bash
+# Single agent
+stride export --agent claude
+
+# Multiple agents (OR logic)
+stride export --agent claude --agent copilot
+```
+
+**Combining Filters:**
+
+All filters can be combined for precise exports:
+```bash
+stride export \
+  --format html \
+  --status completed \
+  --priority high \
+  --since 2025-01-01 \
+  --tag feature \
+  --agent claude \
+  --output high-priority-features.html
+```
+
+**Output File Naming:**
+
+If `--output` is not specified, files are auto-generated:
+- Format: `stride-export-YYYYMMDD-HHMMSS.{extension}`
+- Example: `stride-export-20250115-103000.json`
+
+**Integration Examples:**
+
+#### CI/CD Pipeline
+
+```yaml
+# GitHub Actions example
+- name: Export Sprint Data
+  run: |
+    stride export --format json --status completed --output build/sprints.json
+    stride export --format html --all --output build/report.html
+```
+
+#### Reporting Script
+
+```bash
+#!/bin/bash
+# Generate weekly sprint report
+
+WEEK_START=$(date -d "last monday" +%Y-%m-%d)
+WEEK_END=$(date -d "next sunday" +%Y-%m-%d)
+
+stride export \
+  --format markdown \
+  --since $WEEK_START \
+  --until $WEEK_END \
+  --output "reports/week-$(date +%Y-%U).md"
+```
+
+#### Data Analysis
+
+```python
+import json
+import subprocess
+
+# Export sprint data
+result = subprocess.run(
+    ["stride", "export", "--format", "json", "--all"],
+    capture_output=True,
+    text=True
+)
+
+data = json.loads(result.stdout)
+
+# Analyze data
+for sprint in data["sprints"]:
+    print(f"Sprint: {sprint['id']}")
+    print(f"Events: {len(sprint['timeline'])}")
+```
+
+**Performance Notes:**
+
+- Export time scales with number of sprints and file sizes
+- Large exports (>100 sprints) may take several seconds
+- JSON and CSV formats are fastest
+- HTML format includes embedded styles (~10KB overhead)
+- Filtering reduces export time by limiting sprints processed
+
+**Error Handling:**
+
+```bash
+# Invalid date format
+$ stride export --since 2025-13-40
+❌ Invalid date format for --since: 2025-13-40 (use YYYY-MM-DD)
+
+# Unknown format
+$ stride export --format xml
+❌ Unknown format: xml. Available: json, markdown, csv, html
+
+# No sprints match filters
+$ stride export --status completed --priority critical
+📤 Exporting sprints...
+✅ Export complete!
+   Output: stride-export-20250115-103000.md
+   Format: markdown
+   Exported: 0 sprints (no matches found)
+```
+
+**Notes:**
+- Export preserves all sprint data including metadata, files, and timeline
+- File contents are included in JSON format for complete backup
+- Filters use AND logic (all conditions must match)
+- Multiple values for same filter use OR logic (any match)
+- Export does not modify source sprints
+- Output files are created with UTF-8 encoding
+- Auto-generated filenames include timestamp to prevent overwrites
+
+---
+
 ### stride move
 
 ---

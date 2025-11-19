@@ -192,10 +192,19 @@ python -m stride.cli.main agent info copilot
 # 15c. Remove an agent
 python -m stride.cli.main agent remove claude
 
-# 16. Move to review when ready
+# 16. Export sprint data for reporting
+python -m stride.cli.main export --format markdown --output report.md
+
+# 16a. Export completed sprints as JSON
+python -m stride.cli.main export --format json --status completed --output completed-sprints.json
+
+# 16b. Export HTML report with filters
+python -m stride.cli.main export --format html --since 2025-01-01 --priority high --output high-priority-report.html
+
+# 17. Move to review when ready
 python -m stride.cli.main move SPRINT-7K9P review
 
-# 17. Complete the sprint
+# 18. Complete the sprint
 python -m stride.cli.main move SPRINT-7K9P completed
 ```
 

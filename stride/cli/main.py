@@ -2834,6 +2834,171 @@ def config_reset(ctx: click.Context, user: bool, project: bool, force: bool) -> 
         sys.exit(1)
 
 
+# ============================================================================
+# Export Command
+# ============================================================================
+
+@cli.command()
+@click.option("--format", "-f", "output_format", type=click.Choice(["json", "markdown", "csv", "html"]), default="markdown", help="Export format")
+@click.option("--status", "-s", type=click.Choice(["proposed", "active", "blocked", "review", "completed"]), multiple=True, help="Filter by status (can specify multiple)")
+@click.option("--since", help="Filter sprints created since date (YYYY-MM-DD)")
+@click.option("--until", help="Filter sprints created until date (YYYY-MM-DD)")
+@click.option("--user", "-u", help="Filter by author email")
+@click.option("--priority", "-p", type=click.Choice(["critical", "high", "medium", "low"]), help="Filter by priority")
+@click.option("--tag", "-t", "tags", multiple=True, help="Filter by tag (can specify multiple)")
+@click.option("--agent", "-a", "agents", multiple=True, help="Filter by agent (can specify multiple)")
+@click.option("--output", "-o", type=click.Path(), help="Output file path (default: auto-generated)")
+@click.option("--all", "export_all", is_flag=True, help="Export all sprints (no filters)")
+@click.pass_context
+def export(
+    ctx: click.Context,
+    output_format: str,
+    status: tuple,
+    since: Optional[str],
+    until: Optional[str],
+    user: Optional[str],
+    priority: Optional[str],
+    tags: tuple,
+    agents: tuple,
+    output: Optional[str],
+    export_all: bool,
+) -> None:
+    """
+    Export sprint data for reporting and integration.
+    
+    Supports multiple formats: JSON, Markdown, CSV, HTML.
+    Use filters to export specific sprints or --all for complete export.
+    
+    Examples:
+      stride export --format json --status completed
+      stride export --format markdown --since 2025-01-01
+      stride export --format html --user dev@example.com --output report.html
+      stride export --all --format csv
+    """
+    from stride.export.export_engine import ExportEngine, ExportFilter
+    from stride.export.formatters import JSONFormatter, MarkdownFormatter, CSVFormatter, HTMLFormatter
+    from datetime import datetime
+    from pathlib import Path
+    
+    sm: SprintManager = ctx.obj["sprint_manager"]
+    fm: FolderManager = ctx.obj["folder_manager"]
+    quiet = ctx.obj.get("quiet", False)
+    
+    try:
+        # Create export engine
+        engine = ExportEngine(sm, fm)
+        
+        # Register formatters
+        engine.register_formatter("json", JSONFormatter(indent=2))
+        engine.register_formatter("markdown", MarkdownFormatter())
+        engine.register_formatter("csv", CSVFormatter())
+        engine.register_formatter("html", HTMLFormatter())
+        
+        # Build filter
+        filter_criteria = None
+        if not export_all:
+            # Parse dates
+            since_date = None
+            until_date = None
+            
+            if since:
+                try:
+                    since_date = datetime.strptime(since, "%Y-%m-%d")
+                except ValueError:
+                    click.echo(f"❌ Invalid date format for --since: {since} (use YYYY-MM-DD)", err=True)
+                    sys.exit(1)
+            
+            if until:
+                try:
+                    until_date = datetime.strptime(until, "%Y-%m-%d")
+                except ValueError:
+                    click.echo(f"❌ Invalid date format for --until: {until} (use YYYY-MM-DD)", err=True)
+                    sys.exit(1)
+            
+            # Convert status strings to SprintStatus
+            status_enums = []
+            if status:
+                for s in status:
+                    try:
+                        status_enums.append(SprintStatus(s))
+                    except ValueError:
+                        click.echo(f"❌ Invalid status: {s}", err=True)
+                        sys.exit(1)
+            
+            # Create filter if any criteria specified
+            if any([status_enums, since_date, until_date, user, priority, tags, agents]):
+                filter_criteria = ExportFilter(
+                    status=status_enums or None,
+                    since=since_date,
+                    until=until_date,
+                    author=user,
+                    priority=priority,
+                    tags=list(tags) if tags else None,
+                    agents=list(agents) if agents else None,
+                )
+        
+        # Determine output path
+        if output:
+            output_path = Path(output)
+        else:
+            # Auto-generate output path
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            formatter = engine.formatters[output_format]
+            extension = formatter.get_extension()
+            output_path = Path(f"stride-export-{timestamp}.{extension}")
+        
+        # Export data
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint(f"[bold cyan]📤 Exporting sprints...[/bold cyan]")
+            else:
+                click.echo("📤 Exporting sprints...")
+        
+        export_data = engine.export(
+            format_name=output_format,
+            filter_criteria=filter_criteria,
+            output_path=output_path,
+        )
+        
+        # Success message
+        if not quiet:
+            if RICH_AVAILABLE:
+                rprint(f"\n[bold green]✅ Export complete![/bold green]")
+                rprint(f"   [dim]Output:[/dim] {output_path}")
+                rprint(f"   [dim]Format:[/dim] {output_format}")
+                rprint(f"   [dim]Size:[/dim] {len(export_data)} characters")
+                
+                # Show filter summary
+                if filter_criteria:
+                    rprint(f"\n[bold]Filters applied:[/bold]")
+                    if filter_criteria.status:
+                        status_names = [s.value for s in filter_criteria.status]
+                        rprint(f"   • Status: {', '.join(status_names)}")
+                    if filter_criteria.since:
+                        rprint(f"   • Since: {filter_criteria.since.strftime('%Y-%m-%d')}")
+                    if filter_criteria.until:
+                        rprint(f"   • Until: {filter_criteria.until.strftime('%Y-%m-%d')}")
+                    if filter_criteria.author:
+                        rprint(f"   • Author: {filter_criteria.author}")
+                    if filter_criteria.priority:
+                        rprint(f"   • Priority: {filter_criteria.priority}")
+                    if filter_criteria.tags:
+                        rprint(f"   • Tags: {', '.join(filter_criteria.tags)}")
+                    if filter_criteria.agents:
+                        rprint(f"   • Agents: {', '.join(filter_criteria.agents)}")
+            else:
+                click.echo(f"\n✅ Export complete!")
+                click.echo(f"   Output: {output_path}")
+                click.echo(f"   Format: {output_format}")
+    
+    except ValueError as e:
+        click.echo(f"❌ {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Export failed: {e}", err=True)
+        sys.exit(1)
+
+
 def _print_config_tree(config, title: str, indent: int = 0) -> None:
     """Helper function to print configuration as a tree using Rich."""
     if not RICH_AVAILABLE:

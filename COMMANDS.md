@@ -11,6 +11,8 @@ Complete command-line reference for the Stride framework.
   - [list](#stride-list)
   - [status](#stride-status)
   - [show](#stride-show)
+  - [progress](#stride-progress)
+  - [timeline](#stride-timeline)
   - [move](#stride-move)
   - [validate](#stride-validate)
   - [archive](#stride-archive)
@@ -369,6 +371,174 @@ Status: active 🚀
 - 📊 File existence validation with size display
 - ⚠️  Clear warnings for missing documents
 - 🔍 Specific file viewing with `--file` option
+- 🖥️  Automatic fallback to plain text for unsupported terminals
+
+---
+
+### stride progress
+
+Display detailed sprint progress with task breakdown.
+
+Analyzes proposal.md and tracks task completion progress.
+
+**Usage:**
+```bash
+stride progress <SPRINT_ID>
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `SPRINT_ID` | The sprint to analyze (e.g., SPRINT-7K9P) |
+
+**Examples:**
+
+```bash
+# View sprint progress
+stride progress SPRINT-7K9P
+
+# Check progress of blocked sprint
+stride progress SPRINT-BLOCK
+```
+
+**Output:**
+```
+============================================================
+📊 Sprint Progress: SPRINT-7K9P
+============================================================
+
+Title: User Authentication
+Status: active 🚀
+Author: alice@example.com
+Priority: ⭐⭐⭐ high
+
+Created: 2025-01-15T10:30:00Z
+Updated: 2025-01-15T14:22:00Z
+
+────────────────────────────────────────────────────────────
+✅ Task Progress:
+
+  [█████████████░░░░░░░] 65% (13/20 tasks)
+
+  ✅ Set up authentication middleware
+  ✅ Create user model
+  ✅ Implement login endpoint
+  ❌ Add password hashing
+  ❌ Create registration flow
+  ❌ Set up session management
+  ❌ Add logout functionality
+
+────────────────────────────────────────────────────────────
+📈 Summary:
+
+  Completed: 13 tasks
+  Remaining: 7 tasks
+  Total: 20 tasks
+  Progress: 65%
+
+============================================================
+```
+
+**Features:**
+- 📊 Visual progress bar with percentage
+- ✅ Task-by-task completion status
+- 🎯 Automatic checkbox detection in proposal.md
+- 📈 Summary statistics with counts
+
+---
+
+### stride timeline
+
+Display complete sprint timeline with all events.
+
+Shows chronological event history including creation, status changes, updates, and more.
+
+**Usage:**
+```bash
+stride timeline <SPRINT_ID> [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `SPRINT_ID` | The sprint to view (e.g., SPRINT-7K9P) |
+
+**Options:**
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--limit` | `-n` | Limit number of events shown (most recent) |
+
+**Event Types:**
+
+| Icon | Type | Description |
+|------|------|-------------|
+| 🎉 | created | Sprint creation |
+| 🔄 | status_changed | Status transitions (proposed→active→review→completed) |
+| ✏️ | updated | Metadata updates (title, priority, tags, etc.) |
+| 📝 | file_modified | Document changes (proposal, plan, design, etc.) |
+| 🚫 | blocked | Sprint blocked with reason |
+| ✅ | unblocked | Sprint unblocked |
+| 🎯 | completed | Sprint marked as completed |
+
+**Examples:**
+
+```bash
+# View complete timeline
+stride timeline SPRINT-7K9P
+
+# Show only recent 5 events
+stride timeline SPRINT-7K9P --limit 5
+
+# View timeline of blocked sprint
+stride timeline SPRINT-BLOCK -n 10
+```
+
+**Output:**
+```
+============================================================
+📅 Sprint Timeline: SPRINT-7K9P
+============================================================
+
+Title: User Authentication
+Status: review 🔍
+Created: 2025-01-15 10:30:00
+
+────────────────────────────────────────────────────────────
+Event History (7 events):
+
+  Time                      Event                Details
+  ──────────────────────────────────────────────────────────
+  2025-01-15 10:30:00       🎉 Created           Priority: high
+  2025-01-15 10:35:00       🔄 Status Changed    proposed → active
+  2025-01-15 14:20:00       📝 File Modified     Updated plan.md
+  2025-01-16 09:00:00       🔄 Status Changed    active → blocked: 
+                                                 Waiting for API docs
+  2025-01-16 15:30:00       ✅ Unblocked         API documentation 
+                                                 received
+  2025-01-16 15:31:00       🔄 Status Changed    blocked → active
+  2025-01-17 16:45:00       🔄 Status Changed    active → review
+
+────────────────────────────────────────────────────────────
+📊 Summary:
+
+  Total Events: 7
+  First Event: 2025-01-15 10:30:00
+  Latest Event: 2025-01-17 16:45:00
+  Sprint Age: 2 days
+
+============================================================
+```
+
+**Features:**
+- 📅 Complete chronological event history
+- 🎨 Event icons for quick visual scanning
+- 🔍 Detailed event metadata (reasons, priorities, etc.)
+- ⏱️  Timestamp tracking for all activities
+- 📊 Summary statistics with event counts
+- 🎯 --limit option for recent events only
 - 🖥️  Automatic fallback to plain text for unsupported terminals
 
 ---

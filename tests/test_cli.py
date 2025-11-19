@@ -481,6 +481,172 @@ class TestRestoreCommand:
         assert fm.get_sprint_path("SPRINT-REST", SprintStatus.PROPOSED).exists()
 
 
+class TestTimelineCommand:
+    """Test stride timeline command for Sprint 12."""
+    
+    def test_timeline_displays_creation_event(self, runner, temp_project):
+        """Test timeline command shows sprint creation event."""
+        ctx = make_context(temp_project)
+
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-TL1X", "--title", "Timeline Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act
+        result = runner.invoke(cli, ["timeline", "SPRINT-TL1X"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "SPRINT-TL1X" in result.output
+        assert "created" in result.output.lower() or "Created" in result.output
+        assert "test@example.com" in result.output
+    
+    def test_timeline_tracks_status_changes(self, runner, temp_project):
+        """Test timeline command tracks status change events."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-TL2X", "--title", "Status Change Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Move sprint through statuses
+        runner.invoke(cli, ["move", "SPRINT-TL2X", "active"], obj=ctx)
+        runner.invoke(cli, ["move", "SPRINT-TL2X", "review"], obj=ctx)
+        
+        # Act
+        result = runner.invoke(cli, ["timeline", "SPRINT-TL2X"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "status" in result.output.lower() or "Status" in result.output
+        assert "proposed" in result.output.lower() or "active" in result.output.lower()
+    
+    def test_timeline_with_limit(self, runner, temp_project):
+        """Test timeline command with --limit option."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-TL3X", "--title", "Limit Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Generate multiple events
+        runner.invoke(cli, ["move", "SPRINT-TL3X", "active"], obj=ctx)
+        runner.invoke(cli, ["move", "SPRINT-TL3X", "blocked", "--reason", "Test"], obj=ctx)
+        runner.invoke(cli, ["move", "SPRINT-TL3X", "active"], obj=ctx)
+        
+        # Act - limit to 2 events
+        result = runner.invoke(cli, ["timeline", "SPRINT-TL3X", "--limit", "2"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        # Should show limited events
+        assert "SPRINT-TL3X" in result.output
+    
+    def test_timeline_with_blocked_reason(self, runner, temp_project):
+        """Test timeline command shows blocking reason."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-TL4X", "--title", "Block Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Block with reason
+        runner.invoke(cli, ["move", "SPRINT-TL4X", "blocked", "--reason", "Waiting for API"], obj=ctx)
+        
+        # Act
+        result = runner.invoke(cli, ["timeline", "SPRINT-TL4X"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "Waiting for API" in result.output or "blocked" in result.output.lower()
+    
+    def test_timeline_invalid_sprint(self, runner, temp_project):
+        """Test timeline command with non-existent sprint."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        
+        # Act
+        result = runner.invoke(cli, ["timeline", "SPRINT-NONE"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code != 0
+        assert "not found" in result.output.lower() or "error" in result.output.lower()
+    
+    def test_timeline_shows_event_count(self, runner, temp_project):
+        """Test timeline command displays total event count."""
+        ctx = make_context(temp_project)
+        
+        # Setup
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        runner.invoke(
+            cli,
+            ["create", "--id", "SPRINT-TL5X", "--title", "Count Test", "--author", "test@example.com"],
+            obj=ctx
+        )
+        
+        # Act
+        result = runner.invoke(cli, ["timeline", "SPRINT-TL5X"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "event" in result.output.lower() or "Event" in result.output
+        # Should show at least the creation event
+        assert "1" in result.output or "created" in result.output.lower()
+    
+    def test_timeline_empty_events(self, runner, temp_project):
+        """Test timeline command with sprint that has no events (legacy sprint)."""
+        ctx = make_context(temp_project)
+        
+        # Setup - create sprint manually without events
+        runner.invoke(cli, ["init", "--no-interactive"], obj=ctx)
+        
+        # Create a sprint using the old method (before event tracking)
+        from pathlib import Path
+        fm = FolderManager(temp_project)
+        sm = SprintManager(fm)
+        
+        # Create sprint folder
+        sprint_path = fm.create_sprint_folder("SPRINT-TL6X", SprintStatus.PROPOSED)
+        
+        # Write minimal metadata without events
+        proposal_file = sprint_path / "proposal.md"
+        proposal_file.write_text("""---
+id: SPRINT-TL6X
+title: Legacy Sprint
+status: proposed
+created: 2025-11-19T00:00:00Z
+author: test@example.com
+---
+
+# Legacy Sprint
+No events tracked.""", encoding="utf-8")
+        
+        # Act
+        result = runner.invoke(cli, ["timeline", "SPRINT-TL6X"], obj=ctx)
+        
+        # Assert
+        assert result.exit_code == 0
+        assert "No events" in result.output or "0" in result.output
+
+
 class TestProgressCommand:
     """Test stride progress command for Sprint 11."""
     

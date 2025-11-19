@@ -334,3 +334,71 @@ class MetadataManager:
         
         metadata, _ = MetadataManager.parse_file(file_path)
         return MetadataManager.validate_metadata(metadata, strict=strict)
+    
+    @staticmethod
+    def add_event(
+        file_path: Path,
+        event_type: str,
+        message: str,
+        metadata_dict: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        Add an event to the sprint's timeline.
+        
+        Args:
+            file_path: Path to sprint's proposal.md file
+            event_type: Type of event (created, status_changed, updated, etc.)
+            message: Human-readable event description
+            metadata_dict: Optional additional metadata for the event
+        """
+        logger.debug(f"Adding event '{event_type}' to {file_path}")
+        
+        try:
+            metadata, body = MetadataManager.parse_file(file_path)
+            
+            # Initialize events list if it doesn't exist
+            if "events" not in metadata:
+                metadata["events"] = []
+            
+            # Create event record
+            event = {
+                "type": event_type,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "message": message
+            }
+            
+            # Add optional metadata
+            if metadata_dict:
+                event["metadata"] = metadata_dict
+            
+            # Append event
+            metadata["events"].append(event)
+            
+            # Write back
+            MetadataManager.write_file(file_path, metadata, body)
+            
+            logger.info(f"Added event '{event_type}' to sprint timeline")
+            
+        except Exception as e:
+            logger.error(f"Failed to add event: {e}")
+            raise
+    
+    @staticmethod
+    def get_events(file_path: Path) -> list:
+        """
+        Get all events from a sprint's timeline.
+        
+        Args:
+            file_path: Path to sprint's proposal.md file
+            
+        Returns:
+            List of event dictionaries
+        """
+        logger.debug(f"Getting events from {file_path}")
+        
+        try:
+            metadata, _ = MetadataManager.parse_file(file_path)
+            return metadata.get("events", [])
+        except Exception as e:
+            logger.error(f"Failed to get events: {e}")
+            return []

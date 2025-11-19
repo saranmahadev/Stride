@@ -152,10 +152,16 @@ python -m stride.cli.main list --sort priority
 # 10. Validate your work
 python -m stride.cli.main validate SPRINT-7K9P
 
-# 11. Move to review when ready
+# 11. View sprint timeline (event history)
+python -m stride.cli.main timeline SPRINT-7K9P
+
+# 12. Show recent 5 events only
+python -m stride.cli.main timeline SPRINT-7K9P --limit 5
+
+# 13. Move to review when ready
 python -m stride.cli.main move SPRINT-7K9P review
 
-# 12. Complete the sprint
+# 14. Complete the sprint
 python -m stride.cli.main move SPRINT-7K9P completed
 ```
 
@@ -169,6 +175,7 @@ Key commands:
 - `list` - List and filter sprints (with --user, --since, --until, --sort options)
 - `show` - Display complete sprint details with file viewer
 - `status` - Show sprint metadata
+- `timeline` - View complete event history with timestamps
 - `move` - Change sprint status
 - `validate` - Verify sprint structure
 - `archive` - Archive completed sprints

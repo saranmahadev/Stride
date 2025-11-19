@@ -10,6 +10,7 @@ from typing import Optional
 from stride import __version__
 from stride.core.folder_manager import FolderManager, SprintStatus
 from stride.core.sprint_manager import SprintManager
+from stride.core.metadata_manager import MetadataManager
 from stride.core.config_manager import ConfigManager, ConfigError, ConfigValidationError
 from stride.utils.id_generator import generate_sprint_id, validate_sprint_id
 
@@ -1308,6 +1309,168 @@ def progress(ctx: click.Context, sprint_id: str) -> None:
             click.echo(f"\nTimeline:")
             click.echo(f"Created: {metadata.get('created', 'Unknown')}")
             click.echo(f"Updated: {metadata.get('updated', 'Unknown')}")
+            
+            click.echo(f"\n{'=' * 60}\n")
+    
+    except FileNotFoundError:
+        click.echo(f"Error: Sprint {sprint_id} not found", err=True)
+        ctx.exit(1)
+    except Exception as e:
+        click.echo(f"Error: {str(e)}", err=True)
+        if ctx.obj.get("verbose"):
+            import traceback
+            traceback.print_exc()
+        ctx.exit(1)
+
+
+@cli.command()
+@click.argument("sprint_id")
+@click.option("--limit", "-n", type=int, help="Limit number of events to show")
+@click.pass_context
+def timeline(ctx: click.Context, sprint_id: str, limit: Optional[int]) -> None:
+    """
+    Display complete sprint timeline with all events.
+    
+    Shows chronological history of all sprint events including:
+    - Sprint creation
+    - Status changes
+    - Updates and modifications
+    
+    Examples:
+      stride timeline SPRINT-A1B2
+      stride timeline SPRINT-A1B2 --limit 10
+    """
+    sm: SprintManager = ctx.obj["sprint_manager"]
+    quiet = ctx.obj.get("quiet", False)
+    
+    try:
+        sprint_info = sm.get_sprint(sprint_id)
+        metadata = sprint_info["metadata"]
+        sprint_path = sprint_info["path"]
+        proposal_file = sprint_path / "proposal.md"
+        
+        # Get events
+        events = MetadataManager.get_events(proposal_file)
+        
+        # Apply limit if specified
+        if limit and limit > 0:
+            events = events[-limit:]  # Show most recent N events
+        
+        # Display using Rich if available
+        if RICH_AVAILABLE:
+            from rich.table import Table
+            from rich.panel import Panel
+            
+            rprint(f"\n[bold cyan]{'=' * 60}[/bold cyan]")
+            rprint(f"[bold white]📅 Sprint Timeline: {sprint_id}[/bold white]")
+            rprint(f"[bold cyan]{'=' * 60}[/bold cyan]\n")
+            
+            # Sprint info
+            status_val = metadata.get("status", "unknown")
+            rprint(f"[bold]Title:[/bold] {metadata.get('title', 'Untitled')}")
+            rprint(f"[bold]Status:[/bold] [{_get_status_color(status_val)}]{status_val}[/{_get_status_color(status_val)}] {_get_status_emoji(status_val)}")
+            rprint(f"[bold]Author:[/bold] {metadata.get('author', 'Unknown')}\n")
+            
+            # Events
+            if events:
+                rprint(f"[bold cyan]Event History ({len(events)} events):[/bold cyan]\n")
+                
+                # Create timeline table
+                table = Table(show_header=True, box=None, padding=(0, 2))
+                table.add_column("Time", style="dim", width=22)
+                table.add_column("Event", style="bold")
+                table.add_column("Details")
+                
+                # Event type icons
+                event_icons = {
+                    "created": "🎉",
+                    "status_changed": "🔄",
+                    "updated": "✏️",
+                    "file_modified": "📝",
+                    "blocked": "🚫",
+                    "unblocked": "✅",
+                    "completed": "🎯"
+                }
+                
+                for event in events:
+                    event_type = event.get("type", "unknown")
+                    timestamp = event.get("timestamp", "Unknown")
+                    message = event.get("message", "No description")
+                    
+                    # Format timestamp
+                    try:
+                        from datetime import datetime
+                        dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                        time_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+                    except:
+                        time_str = timestamp
+                    
+                    # Get icon
+                    icon = event_icons.get(event_type, "•")
+                    
+                    # Format event type
+                    event_display = f"{icon} {event_type.replace('_', ' ').title()}"
+                    
+                    # Get additional details
+                    details = ""
+                    if "metadata" in event and event["metadata"]:
+                        meta = event["metadata"]
+                        if "from_status" in meta and "to_status" in meta:
+                            details = f"{meta['from_status']} → {meta['to_status']}"
+                        elif "priority" in meta:
+                            details = f"Priority: {meta['priority']}"
+                    
+                    table.add_row(time_str, event_display, details)
+                
+                rprint(table)
+            else:
+                rprint("[yellow]⚠️  No events recorded yet[/yellow]")
+                rprint("[dim]Events are automatically tracked when you create or modify sprints.[/dim]")
+            
+            # Summary
+            rprint(f"\n[bold cyan]Summary[/bold cyan]")
+            rprint(f"[dim]Created:[/dim] {metadata.get('created', 'Unknown')}")
+            rprint(f"[dim]Last Updated:[/dim] {metadata.get('updated', 'Unknown')}")
+            rprint(f"[dim]Total Events:[/dim] {len(events)}")
+            
+            rprint(f"\n[bold cyan]{'=' * 60}[/bold cyan]\n")
+        
+        else:
+            # ASCII fallback
+            click.echo(f"\n{'=' * 60}")
+            click.echo(f"📅 Sprint Timeline: {sprint_id}")
+            click.echo(f"{'=' * 60}\n")
+            
+            click.echo(f"Title: {metadata.get('title', 'Untitled')}")
+            click.echo(f"Status: {metadata.get('status', 'unknown')}")
+            click.echo(f"Author: {metadata.get('author', 'Unknown')}\n")
+            
+            if events:
+                click.echo(f"Event History ({len(events)} events):\n")
+                
+                for i, event in enumerate(events, 1):
+                    event_type = event.get("type", "unknown")
+                    timestamp = event.get("timestamp", "Unknown")
+                    message = event.get("message", "No description")
+                    
+                    # Format timestamp
+                    try:
+                        from datetime import datetime
+                        dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                        time_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+                    except:
+                        time_str = timestamp
+                    
+                    click.echo(f"{i}. [{time_str}] {event_type}: {message}")
+                
+                click.echo()
+            else:
+                click.echo("⚠️  No events recorded yet\n")
+            
+            click.echo("Summary:")
+            click.echo(f"Created: {metadata.get('created', 'Unknown')}")
+            click.echo(f"Last Updated: {metadata.get('updated', 'Unknown')}")
+            click.echo(f"Total Events: {len(events)}")
             
             click.echo(f"\n{'=' * 60}\n")
     

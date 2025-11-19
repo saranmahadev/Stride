@@ -96,6 +96,15 @@ class SprintManager:
 
         # Write proposal file with frontmatter using MetadataManager
         proposal_file = sprint_path / "proposal.md"
+        
+        # Add creation event to metadata
+        metadata["events"] = [{
+            "type": "created",
+            "timestamp": metadata["created"],  # Use same timestamp as creation
+            "message": f"Sprint created by {author}",
+            "metadata": {"status": status.value, "priority": priority}
+        }]
+        
         self.metadata_manager.write_file(proposal_file, metadata, proposal_body)
         
         logger.info(f"Sprint {sprint_id} created at {sprint_path}")
@@ -216,7 +225,25 @@ class SprintManager:
             updates["reason"] = reason
             
         success = self.update_sprint_metadata(sprint_id, updates)
+        
+        # Log status change event
         if success:
+            result = self.folder_manager.find_sprint(sprint_id)
+            if result:
+                sprint_path, _ = result
+                proposal_file = sprint_path / "proposal.md"
+                
+                event_message = f"Status changed from {from_status.value} to {to_status.value}"
+                if reason:
+                    event_message += f": {reason}"
+                
+                self.metadata_manager.add_event(
+                    proposal_file,
+                    "status_changed",
+                    event_message,
+                    {"from_status": from_status.value, "to_status": to_status.value, "reason": reason}
+                )
+            
             logger.info(f"Sprint {sprint_id} moved from {from_status.value} to {to_status.value}")
         return success
     

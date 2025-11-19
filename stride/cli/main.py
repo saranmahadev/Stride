@@ -2048,6 +2048,180 @@ def watch(ctx: click.Context, sprint_id: str, interval: float) -> None:
             click.echo(f"\n✓ Stopped watching {sprint_id}")
 
 
+@cli.command()
+@click.option("--fix", is_flag=True, help="Attempt to auto-fix issues")
+@click.option("--verbose", "-v", is_flag=True, help="Show detailed check information")
+@click.option("--json", "output_json", is_flag=True, help="Output results as JSON")
+@click.pass_context
+def doctor(ctx: click.Context, fix: bool, verbose: bool, output_json: bool) -> None:
+    """
+    Run health checks on Stride installation and project.
+    
+    Performs comprehensive diagnostics including:
+    - Installation (Python version, dependencies)
+    - Project structure (folders, required files)
+    - Sprint integrity (metadata, consistency)
+    - Configuration (user/project configs)
+    
+    \b
+    Examples:
+      stride doctor
+      stride doctor --verbose
+      stride doctor --fix
+      stride doctor --json > report.json
+    """
+    from ..core.health_checker import HealthChecker, CheckStatus
+    
+    quiet = ctx.obj.get("quiet", False)
+    
+    if not quiet and not output_json:
+        click.echo("🏥 Running Stride Health Check...\n")
+    
+    # Run health checks
+    checker = HealthChecker()
+    report = checker.check_all()
+    
+    # JSON output
+    if output_json:
+        import json
+        output = {
+            "health_score": report.health_score,
+            "health_grade": report.health_grade,
+            "total_checks": report.total_checks,
+            "passed": report.passed_count,
+            "warnings": report.warning_count,
+            "errors": report.error_count,
+            "checks": [
+                {
+                    "category": r.category,
+                    "check": r.check_name,
+                    "status": r.status.value,
+                    "message": r.message,
+                    "details": r.details,
+                    "fix_suggestion": r.fix_suggestion,
+                    "auto_fixable": r.auto_fixable,
+                }
+                for r in report.results
+            ]
+        }
+        click.echo(json.dumps(output, indent=2))
+        sys.exit(0 if report.error_count == 0 else 1)
+    
+    # Rich output
+    if RICH_AVAILABLE and not quiet:
+        from rich.console import Console
+        from rich.table import Table
+        from rich.panel import Panel
+        from rich.text import Text
+        
+        console = Console()
+        
+        # Group results by category
+        categories = {}
+        for result in report.results:
+            if result.category not in categories:
+                categories[result.category] = []
+            categories[result.category].append(result)
+        
+        # Display each category
+        for category, results in categories.items():
+            # Category header
+            status_icon = "✅" if all(r.status == CheckStatus.PASS or r.status == CheckStatus.INFO for r in results) else "⚠️" if any(r.status == CheckStatus.WARNING for r in results) else "❌"
+            console.print(f"\n{status_icon} [bold]{category}[/bold]")
+            
+            # Display results
+            for result in results:
+                icon = result.icon
+                
+                if result.status == CheckStatus.PASS:
+                    color = "green"
+                elif result.status == CheckStatus.WARNING:
+                    color = "yellow"
+                elif result.status == CheckStatus.ERROR:
+                    color = "red"
+                else:
+                    color = "cyan"
+                
+                console.print(f"   [{color}]{icon} {result.message}[/{color}]")
+                
+                # Show details in verbose mode
+                if verbose and result.details:
+                    for line in result.details.split('\n'):
+                        console.print(f"     [dim]{line}[/dim]")
+                
+                # Show fix suggestions
+                if result.fix_suggestion and result.status != CheckStatus.PASS:
+                    console.print(f"     [dim]💡 {result.fix_suggestion}[/dim]")
+        
+        # Summary
+        console.print("\n" + "━" * 60)
+        console.print(f"📊 [bold]Health Score: {report.health_score}/100 ({report.health_grade})[/bold]\n")
+        
+        # Stats
+        stats_text = f"Total Checks: {report.total_checks} | "
+        stats_text += f"[green]✓ {report.passed_count}[/green] | "
+        stats_text += f"[yellow]⚠ {report.warning_count}[/yellow] | "
+        stats_text += f"[red]✗ {report.error_count}[/red]"
+        console.print(stats_text)
+        
+        # Fixable issues
+        fixable = report.get_fixable_issues()
+        if fixable and not fix:
+            console.print(f"\n💡 [dim]{len(fixable)} issue(s) can be auto-fixed with --fix flag[/dim]")
+    
+    else:
+        # Plain text output
+        click.echo("Health Check Results:")
+        click.echo("=" * 60)
+        
+        for category in ["Installation", "Project Structure", "Sprints", "Configuration"]:
+            results = report.get_by_category(category)
+            if not results:
+                continue
+            
+            click.echo(f"\n{category}:")
+            for result in results:
+                icon = result.icon
+                click.echo(f"  {icon} {result.message}")
+                
+                if verbose and result.details:
+                    for line in result.details.split('\n'):
+                        click.echo(f"    {line}")
+                
+                if result.fix_suggestion and result.status != CheckStatus.PASS:
+                    click.echo(f"    💡 {result.fix_suggestion}")
+        
+        click.echo("\n" + "=" * 60)
+        click.echo(f"Health Score: {report.health_score}/100 ({report.health_grade})")
+        click.echo(f"Passed: {report.passed_count}, Warnings: {report.warning_count}, Errors: {report.error_count}")
+        
+        fixable = report.get_fixable_issues()
+        if fixable and not fix:
+            click.echo(f"\n{len(fixable)} issue(s) can be auto-fixed with --fix flag")
+    
+    # Auto-fix
+    if fix:
+        fixable = report.get_fixable_issues()
+        if fixable:
+            if not quiet:
+                click.echo(f"\n🔧 Attempting to fix {len(fixable)} issue(s)...")
+            
+            # TODO: Implement auto-fix logic
+            # For now, just show what would be fixed
+            for issue in fixable:
+                if not quiet:
+                    click.echo(f"  • {issue.check_name}: {issue.fix_suggestion}")
+            
+            if not quiet:
+                click.echo("\n⚠️  Auto-fix not yet implemented. Please fix manually.")
+        else:
+            if not quiet:
+                click.echo("\n✓ No auto-fixable issues found")
+    
+    # Exit code
+    sys.exit(0 if report.error_count == 0 else 1)
+
+
 @cli.group()
 @click.pass_context
 def config(ctx: click.Context) -> None:

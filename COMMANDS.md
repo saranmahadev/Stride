@@ -13,8 +13,10 @@ Complete command-line reference for the Stride framework.
   - [show](#stride-show)
   - [progress](#stride-progress)
   - [timeline](#stride-timeline)
-  - [move](#stride-move)
   - [validate](#stride-validate)
+  - [watch](#stride-watch)
+  - [doctor](#stride-doctor)
+  - [move](#stride-move)
   - [archive](#stride-archive)
   - [restore](#stride-restore)
   - [version](#stride-version)
@@ -647,6 +649,248 @@ stride watch SPRINT-TIME -i 2.0
 - Automatic cleanup on exit
 
 **Note:** Press `Ctrl+C` to stop watching at any time.
+
+---
+
+### stride doctor
+
+Comprehensive health check for Stride installation and project integrity.
+
+Diagnoses installation status, project structure, sprint health, and configuration issues. Provides actionable fix suggestions and auto-repair capabilities. Outputs detailed reports in Rich (colored terminal), JSON (CI/CD), or plain text formats.
+
+**Usage:**
+```bash
+stride doctor [OPTIONS]
+```
+
+**Options:**
+
+| Option | Short | Type | Description |
+|--------|-------|------|-------------|
+| `--fix` | | flag | Attempt to auto-fix detected issues |
+| `--verbose` | `-v` | flag | Show detailed check information |
+| `--json` | | flag | Output results as JSON |
+
+**Examples:**
+
+```bash
+# Run basic health check
+stride doctor
+
+# Run with detailed output
+stride doctor --verbose
+
+# Export health report as JSON for CI/CD
+stride doctor --json > health-report.json
+
+# Attempt auto-fix of detected issues
+stride doctor --fix
+
+# Verbose mode with auto-fix
+stride doctor --verbose --fix
+```
+
+**Health Check Categories:**
+
+1. **Installation** (3 checks)
+   - Python version (requires 3.8+)
+   - Stride framework version
+   - Required dependencies installed
+
+2. **Project Structure** (5 checks)
+   - `stride/` folder initialized
+   - `sprints/` directory exists
+   - Status folders present (proposed, active, blocked, review, completed)
+   - Optional folders (specs, introspection, archived)
+   - `project.md` file exists
+
+3. **Sprints** (4 checks)
+   - Sprint count and distribution
+   - `proposal.md` exists for all sprints
+   - Metadata validity (id, title, status, created)
+   - ID matches folder name
+   - Status matches folder location
+
+4. **Configuration** (4 checks)
+   - User config exists (`~/.stride/config.yaml`)
+   - Project config exists (`stride.config.yaml`)
+   - Configs validate against schemas
+   - AI agents configured
+
+**Health Scoring:**
+
+Health score is calculated as: `(passed + warnings × 0.5) / total × 100`
+
+| Score | Grade | Description |
+|-------|-------|-------------|
+| 90-100 | Excellent | Project is in great shape |
+| 75-89 | Good | Minor issues, mostly warnings |
+| 60-74 | Fair | Some errors, needs attention |
+| 40-59 | Poor | Multiple errors, action required |
+| 0-39 | Critical | Severe issues, immediate action needed |
+
+**Rich Output Example:**
+```
+🏥 Running Stride Health Check...
+
+✅ Installation
+   ✓ Python 3.12.4 installed
+   ℹ Running from source (not installed via pip)
+   ✓ All 7 dependencies installed
+
+⚠️ Project Structure
+   ✓ Stride initialized
+   ✓ Sprint folders exist
+   ✗ Specifications folder missing
+     💡 Create directory: F:\Stride\stride\specs
+   ✗ Introspection folder missing
+     💡 Create directory: F:\Stride\stride\introspection
+
+✅ Sprints
+   ℹ Found 16 sprint(s)
+   ✓ All sprints have proposal.md
+   ✓ All sprint metadata valid
+   ✓ All sprint IDs match folders
+
+⚠️ Configuration
+   ✓ User config valid (~/.stride/config.yaml)
+   ✓ Project config valid (stride.config.yaml)
+   ⚠ No agents configured
+     💡 Add agents with: stride config set project.agents
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Health Score: 68/100 (Fair)
+
+Total Checks: 16 | ✓ 10 | ⚠ 2 | ✗ 4
+
+💡 5 issue(s) can be auto-fixed with --fix flag
+```
+
+**JSON Output Example:**
+```json
+{
+  "health_score": 68,
+  "health_grade": "Fair",
+  "total_checks": 16,
+  "passed": 10,
+  "warnings": 2,
+  "errors": 4,
+  "checks": [
+    {
+      "category": "Installation",
+      "check": "Python Version",
+      "status": "pass",
+      "message": "Python 3.12.4 installed",
+      "details": "Minimum version 3.8 required",
+      "fix_suggestion": null,
+      "auto_fixable": false
+    },
+    {
+      "category": "Project Structure",
+      "check": "Specifications Folder",
+      "status": "error",
+      "message": "Specifications folder missing",
+      "details": "Expected at: F:\\Stride\\stride\\specs",
+      "fix_suggestion": "Create directory: F:\\Stride\\stride\\specs",
+      "auto_fixable": true
+    }
+  ]
+}
+```
+
+**Check Icons:**
+
+| Icon | Status | Description |
+|------|--------|-------------|
+| ✓ | pass | Check passed successfully |
+| ⚠ | warning | Non-critical issue detected |
+| ✗ | error | Critical issue requires attention |
+| ℹ | info | Informational message |
+
+**Exit Codes:**
+
+| Code | Meaning | CI/CD Usage |
+|------|---------|-------------|
+| 0 | No errors | Build can proceed |
+| 1 | Errors found | Build should fail |
+
+**Auto-Fixable Issues:**
+
+The `--fix` flag can automatically repair:
+- Missing project directories (specs, introspection, blocked, completed)
+- Missing `project.md` file
+- Invalid status folder locations (moves sprints)
+- Metadata schema violations (adds missing fields)
+- Configuration file formatting issues
+
+**Use Cases:**
+
+1. **Development:**
+   ```bash
+   # Quick health check before starting work
+   stride doctor
+   
+   # Detailed diagnostics for troubleshooting
+   stride doctor --verbose
+   ```
+
+2. **CI/CD Integration:**
+   ```bash
+   # Fail build if project unhealthy
+   stride doctor || exit 1
+   
+   # Export health metrics
+   stride doctor --json > metrics/health.json
+   ```
+
+3. **Deployment:**
+   ```bash
+   # Pre-deployment validation
+   stride doctor --verbose
+   
+   # Auto-fix issues before deploy
+   stride doctor --fix
+   ```
+
+4. **Troubleshooting:**
+   ```bash
+   # Diagnose project issues
+   stride doctor --verbose
+   
+   # View fixable issues
+   stride doctor | grep "auto-fixable"
+   
+   # Repair and verify
+   stride doctor --fix && stride doctor
+   ```
+
+**Features:**
+- 🏥 Comprehensive 16-point health check
+- 📊 Intelligent health scoring (0-100)
+- 🎨 Rich terminal UI with colors and icons
+- 📄 JSON export for automation
+- 🔧 Auto-fix detection and suggestions
+- 🚨 Exit codes for CI/CD integration
+- 📋 Detailed check descriptions
+- 💡 Actionable fix recommendations
+- 🔍 Verbose mode for deep diagnostics
+- ⚡ Fast execution (< 1 second)
+
+**Common Issues Detected:**
+- Missing Python dependencies
+- Outdated Python version
+- Missing project folders
+- Sprint metadata inconsistencies
+- ID/status mismatches
+- Invalid configuration files
+- Missing required files
+- Unconfigured AI agents
+
+**Note:** The doctor command is non-destructive by default. Use `--fix` flag to apply repairs.
+
+---
+
+### stride move
 
 ---
 

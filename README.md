@@ -170,10 +170,19 @@ python -m stride.cli.main watch SPRINT-7K9P
 # 13a. Watch with custom refresh interval
 python -m stride.cli.main watch SPRINT-7K9P --interval 0.5
 
-# 14. Move to review when ready
+# 14. Run health check on project
+python -m stride.cli.main doctor
+
+# 14a. Get detailed health check output
+python -m stride.cli.main doctor --verbose
+
+# 14b. Export health report as JSON for CI/CD
+python -m stride.cli.main doctor --json > health-report.json
+
+# 15. Move to review when ready
 python -m stride.cli.main move SPRINT-7K9P review
 
-# 15. Complete the sprint
+# 16. Complete the sprint
 python -m stride.cli.main move SPRINT-7K9P completed
 ```
 

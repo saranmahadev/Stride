@@ -1,0 +1,226 @@
+# Stride Documentation Configuration
+# Beautiful red-themed documentation site
+
+site_name: Stride
+site_description: Sprint-Powered, Spec-Driven Development for AI Agents
+site_author: Stride Development Team
+site_url: https://saranmahadev.github.io/Stride
+
+# Repository
+repo_name: saranmahadev/Stride
+repo_url: https://github.com/saranmahadev/Stride
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2025 Stride Development Team
+
+# Theme Configuration
+theme:
+  name: material
+  custom_dir: docs/overrides
+  language: en
+  
+  # Color Palette - Red Theme
+  palette:
+    # Light mode
+    - scheme: default
+      primary: red
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    
+    # Dark mode  
+    - scheme: slate
+      primary: red
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  # Font
+  font:
+    text: Roboto
+    code: Roboto Mono
+  
+  # Features
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+  
+  # Icons
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/speedometer
+    edit: material/pencil
+    view: material/eye
+  
+  # Favicon
+  favicon: assets/favicon.png
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+
+# Extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      toc_depth: 3
+  
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Extra CSS/JS
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
+
+# Extra Configuration
+extra:
+  version:
+    provider: mike
+    default: latest
+  
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/saranmahadev/Stride
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/stride-ai/
+  
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+  
+  consent:
+    title: Cookie consent
+    description: >- 
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
+
+# Navigation
+nav:
+  - Home: index.md
+  
+  - Getting Started:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Your First Sprint: getting-started/first-sprint.md
+    - Core Concepts: getting-started/concepts.md
+  
+  - User Guide:
+    - user-guide/index.md
+    - Sprint Lifecycle: user-guide/sprint-lifecycle.md
+    - CLI Commands: user-guide/cli-commands.md
+    - AI Agent Integration: user-guide/ai-agents.md
+    - Configuration: user-guide/configuration.md
+    - Validation: user-guide/validation.md
+    - Monitoring: user-guide/monitoring.md
+    - Export & Reporting: user-guide/export.md
+  
+  - AI Agents:
+    - ai-agents/index.md
+    - Overview: ai-agents/overview.md
+    - Claude Code: ai-agents/claude.md
+    - Cursor: ai-agents/cursor.md
+    - Windsurf: ai-agents/windsurf.md
+    - GitHub Copilot: ai-agents/copilot.md
+    - Cline: ai-agents/cline.md
+    - All Agents: ai-agents/all-agents.md
+  
+  - Tutorials:
+    - tutorials/index.md
+    - Building a REST API: tutorials/rest-api.md
+    - Adding Authentication: tutorials/authentication.md
+    - Team Workflow: tutorials/team-workflow.md
+    - CI/CD Integration: tutorials/cicd.md
+    - Best Practices: tutorials/best-practices.md
+  
+  - API Reference:
+    - api/index.md
+    - CLI Commands: api/cli.md
+    - Configuration Schema: api/configuration.md
+    - Sprint Structure: api/sprint-structure.md
+    - Template Variables: api/templates.md
+  
+  - Development:
+    - development/index.md
+    - Contributing: development/contributing.md
+    - Architecture: development/architecture.md
+    - Testing: development/testing.md
+    - Release Process: development/releases.md
+  
+  - About:
+    - about/index.md
+    - Roadmap: about/roadmap.md
+    - Changelog: about/changelog.md
+    - License: about/license.md
+    - FAQ: about/faq.md

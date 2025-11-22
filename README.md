@@ -1,350 +1,693 @@
-![Stride Banner](./assets/banner.png)
+# **Stride**# **Stride**
 
-# **Stride**
 
-> **Sprint-Powered, Spec-Driven Development for AI Agents**
 
----
+> **Sprint-Powered, Spec-Driven Development for AI Agents**> **Sprint-Powered, Spec-Driven Development for AI Agents**
 
-**Stride** is the **sprint-powered, spec-driven development engine** that turns AI agents into reliable product teams—delivering features, not just code.
 
-We combine **OpenSpec’s clarity**, **SpecKit’s rigor**, and **agile velocity** into a unified workflow that works for:
-- Solo indie hackers shipping MVPs
-- Small teams iterating on greenfield apps
-- Enterprises retrofitting legacy systems
 
-**Mission:** Make AI-assisted development *predictable*, *auditable*, and *fast* without meetings, without drift, without rework.
+------
 
----
 
-## **2. Core Principles**
 
-| Principle | Description |
-|--------|-------------|
-| **Spec-First, Sprint-Second** | Every change starts with a locked spec; every spec becomes a time-boxed sprint. |
-| **Agent-Agnostic** | Works with any Coding Agents such as Claude Code, Github Copilot, Gemini CLI, Kilo Code. |
-| **Human-in-the-Loop** | Feedback is a first-class command; AI learns, adapts, and improves. |
-| **Lightweight by Default, Rigorous on Demand** | Lite mode for quick fixes; full validation for production. |
-| **Living Artifacts** | Specs, plans, and code evolve together—never stale. |
+**Stride** is a **sprint-powered, spec-driven development engine** that turns AI agents into reliable product teams—delivering features, not just code.**Stride** is the **sprint-powered, spec-driven development engine** that turns AI agents into reliable product teams—delivering features, not just code.
 
----
 
-## **3. Target Users**
 
-| Persona | Pain Point | Stride Solution |
-|-------|-----------|-----------------|
-| **Indie Hacker** | "AI writes code, but I lose context in 3 chats." | `/stride:init` → sprint → ship in one flow |
-| **Startup CTO** | "We use Cursor + Claude, but outputs don’t align." | `AGENTS.md` + `/stride:plan` → unified tasks |
-| **Enterprise Dev Lead** | "Can’t trust AI in legacy repos." | `/stride:introspect` + validation pipelines |
+We combine **agile velocity**, **spec-first discipline**, and **multi-agent coordination** into a unified workflow for:We combine **OpenSpec’s clarity**, **SpecKit’s rigor**, and **agile velocity** into a unified workflow that works for:
 
----
+- Solo indie hackers shipping MVPs- Solo indie hackers shipping MVPs
 
-## **4. Key Features**
+- Small teams iterating on greenfield apps- Small teams iterating on greenfield apps
 
-### AI Agent Commands (In-Editor)
+- Developers working with AI coding assistants- Enterprises retrofitting legacy systems
 
-| Feature | Command | Description | Inspired By |
+
+
+**Mission:** Make AI-assisted development *predictable*, *auditable*, and *fast* without meetings, without drift, without rework.**Mission:** Make AI-assisted development *predictable*, *auditable*, and *fast* without meetings, without drift, without rework.
+
+
+
+------
+
+
+
+## **Core Principles**## **2. Core Principles**
+
+
+
+| Principle | Description || Principle | Description |
+
+|--------|-------------||--------|-------------|
+
+| **Spec-First, Sprint-Second** | Every change starts with a locked spec; every spec becomes a time-boxed sprint. || **Spec-First, Sprint-Second** | Every change starts with a locked spec; every spec becomes a time-boxed sprint. |
+
+| **Agent-Agnostic** | Works with 20+ AI coding agents: Claude, Cursor, Windsurf, GitHub Copilot, Cline, and more. || **Agent-Agnostic** | Works with any Coding Agents such as Claude Code, Github Copilot, Gemini CLI, Kilo Code. |
+
+| **Human-in-the-Loop** | Feedback is a first-class command; track changes and maintain control. || **Human-in-the-Loop** | Feedback is a first-class command; AI learns, adapts, and improves. |
+
+| **Status-Driven Workflow** | Visual sprint management through folder-based status transitions. || **Lightweight by Default, Rigorous on Demand** | Lite mode for quick fixes; full validation for production. |
+
+| **Living Artifacts** | Specs, plans, and code evolve together—never stale. || **Living Artifacts** | Specs, plans, and code evolve together—never stale. |
+
+
+
+------
+
+
+
+## **Target Users**## **3. Target Users**
+
+
+
+| Persona | Pain Point | Stride Solution || Persona | Pain Point | Stride Solution |
+
+|-------|-----------|-----------------||-------|-----------|-----------------|
+
+| **Indie Hacker** | "AI writes code, but I lose context in 3 chats." | `stride init` → sprint → ship in one flow || **Indie Hacker** | "AI writes code, but I lose context in 3 chats." | `/stride:init` → sprint → ship in one flow |
+
+| **Startup CTO** | "We use Cursor + Claude, but outputs don't align." | Multi-agent workflow + unified tasks || **Startup CTO** | "We use Cursor + Claude, but outputs don’t align." | `AGENTS.md` + `/stride:plan` → unified tasks |
+
+| **AI-First Developer** | "Need to track what AI agents actually implemented." | Sprint history + validation + exports || **Enterprise Dev Lead** | "Can’t trust AI in legacy repos." | `/stride:introspect` + validation pipelines |
+
+
+
+------
+
+
+
+## **Key Features**## **4. Key Features**
+
+
+
+### AI Agent Commands (In-Editor)### AI Agent Commands (In-Editor)
+
+
+
+Stride integrates with 20 AI coding agents through native slash commands:| Feature | Command | Description | Inspired By |
+
 |-------|--------|-------------|-------------|
-| **Project Initialization** | `/stride:init` | Initialize project context and introspect repository | Stride Original |
-| **Sprint Planning** | `/stride:plan <feature>` | Creates sprint in `proposed/` with tasks, estimates, risks | Stride + SpecKit |
-| **Plan Presentation** | `/stride:present <ID>` | Renders plan as Markdown + Mermaid diagrams | Stride |
-| **Automated Implementation** | `/stride:implement <ID>` | Moves to `active/`, executes sprint, outputs notes | Stride + OpenSpec |
-| **Real-Time Feedback** | `/stride:feedback <ID> "note"` | Agent corrects course, updates plan mid-sprint | Stride Original |
-| **Sprint Blocking** | `/stride:block <ID> "reason"` | Moves to `blocked/` folder, tracks impediments | Agile Workflows |
-| **Sprint Unblocking** | `/stride:unblock <ID>` | Returns sprint to `active/` folder | Agile Workflows |
-| **Review Submission** | `/stride:submit <ID>` | Moves to `review/` for testing/approval | Agile Workflows |
-| **Sprint Closure** | `/stride:complete <ID>` | Moves to `completed/`, merges specs, creates retrospective | OpenSpec + Stride |
 
-### CLI Commands (Terminal)
+| Command | Description || **Project Initialization** | `/stride:init` | Initialize project context and introspect repository | Stride Original |
 
-| Feature | Command | Description | Inspired By |
-|-------|--------|-------------|-------------|
-| **Framework Setup** | `stride init` | Initialize Stride framework and configure AI agents | Stride Original |
-| **User Authentication** | `stride login` | Authenticate for sprint authorship tracking | Team Workflows |
-| **Status Dashboard** | `stride status` | Sprint distribution and team analytics | Agile Dashboards |
+|---------|-------------|| **Sprint Planning** | `/stride:plan <feature>` | Creates sprint in `proposed/` with tasks, estimates, risks | Stride + SpecKit |
+
+| `/stride:init` | Initialize project context || **Plan Presentation** | `/stride:present <ID>` | Renders plan as Markdown + Mermaid diagrams | Stride |
+
+| `/stride:plan <feature>` | Create sprint with tasks and estimates || **Automated Implementation** | `/stride:implement <ID>` | Moves to `active/`, executes sprint, outputs notes | Stride + OpenSpec |
+
+| `/stride:present <ID>` | View plan with diagrams || **Real-Time Feedback** | `/stride:feedback <ID> "note"` | Agent corrects course, updates plan mid-sprint | Stride Original |
+
+| `/stride:implement <ID>` | Execute sprint implementation || **Sprint Blocking** | `/stride:block <ID> "reason"` | Moves to `blocked/` folder, tracks impediments | Agile Workflows |
+
+| `/stride:feedback <ID> "note"` | Apply real-time corrections || **Sprint Unblocking** | `/stride:unblock <ID>` | Returns sprint to `active/` folder | Agile Workflows |
+
+| `/stride:block <ID> "reason"` | Mark sprint as blocked || **Review Submission** | `/stride:submit <ID>` | Moves to `review/` for testing/approval | Agile Workflows |
+
+| `/stride:unblock <ID>` | Resume blocked sprint || **Sprint Closure** | `/stride:complete <ID>` | Moves to `completed/`, merges specs, creates retrospective | OpenSpec + Stride |
+
+| `/stride:submit <ID>` | Submit for review |
+
+| `/stride:complete <ID>` | Finalize and archive sprint |### CLI Commands (Terminal)
+
+
+
+**Supported AI Agents (20):**| Feature | Command | Description | Inspired By |
+
+- **High Priority:** Claude Code, Cursor, Windsurf, GitHub Copilot, Cline|-------|--------|-------------|-------------|
+
+- **Medium Priority:** Auggie, RooCode, CodeBuddy, CoStrict, Crush, Factory Droid, Gemini CLI, OpenCode| **Framework Setup** | `stride init` | Initialize Stride framework and configure AI agents | Stride Original |
+
+- **Low Priority:** Kilo Code, Qoder, Antigravity, Codex, Amazon Q Developer, Qwen Code| **User Authentication** | `stride login` | Authenticate for sprint authorship tracking | Team Workflows |
+
+- **Universal:** Fallback AGENTS.md for any tool| **Status Dashboard** | `stride status` | Sprint distribution and team analytics | Agile Dashboards |
+
 | **Progress Monitoring** | `stride progress <ID>` | Detailed sprint progress with task breakdown | Stride Original |
-| **Live Monitoring** | `stride watch <ID>` | Real-time sprint implementation streaming | DevOps Workflows |
+
+### CLI Commands (Terminal)| **Live Monitoring** | `stride watch <ID>` | Real-time sprint implementation streaming | DevOps Workflows |
+
 | **Sprint Timeline** | `stride timeline <ID>` | Complete activity history with timestamps | Audit Trails |
-| **Sprint Listing** | `stride list` | List/filter sprints by status, user, or date | Project Management |
+
+Complete command-line interface for sprint management:| **Sprint Listing** | `stride list` | List/filter sprints by status, user, or date | Project Management |
+
 | **Sprint Details** | `stride show <ID>` | Display complete sprint information | Stride Original |
-| **Spec Comparison** | `stride diff <ID>` | Show specification changes made in sprint | Git Workflows |
-| **Quality Validation** | `stride validate <ID>` | Comprehensive sprint quality validation with detailed reports | CI/CD Pipelines |
-| **Agent Management** | `stride agent` | Manage AI agents for your project | AI Integration |
-| **Configuration** | `stride config` | Manage project and user settings | Stride Original |
-| **Health Check** | `stride doctor` | Validate installation and project health | Package Managers |
-| **Data Export** | `stride export` | Export sprint data for reporting/integration | Enterprise Tools |
-| **Updates** | `stride update` | Update Stride framework to latest version | Package Managers |
 
----
+| Category | Commands | Description || **Spec Comparison** | `stride diff <ID>` | Show specification changes made in sprint | Git Workflows |
 
-## **5. Advanced Features**
+|----------|----------|-------------|| **Quality Validation** | `stride validate <ID>` | Comprehensive sprint quality validation with detailed reports | CI/CD Pipelines |
 
-| Feature | Description | Priority |
+| **Setup** | `init`, `login`, `logout`, `whoami` | Framework initialization and authentication || **Agent Management** | `stride agent` | Manage AI agents for your project | AI Integration |
+
+| **Sprint Management** | `create`, `list`, `show`, `status`, `move` | Core sprint operations || **Configuration** | `stride config` | Manage project and user settings | Stride Original |
+
+| **Monitoring** | `progress`, `watch`, `timeline` | Real-time sprint tracking || **Health Check** | `stride doctor` | Validate installation and project health | Package Managers |
+
+| **Quality** | `validate`, `doctor` | Health checks and validation || **Data Export** | `stride export` | Export sprint data for reporting/integration | Enterprise Tools |
+
+| **Maintenance** | `archive`, `restore`, `export` | Sprint lifecycle and reporting || **Updates** | `stride update` | Update Stride framework to latest version | Package Managers |
+
+| **Configuration** | `config` (init/get/set/list/validate/reset) | Settings management |
+
+| **AI Agents** | `agent` (list/add/remove/info/init/update/validate) | Multi-agent coordination |---
+
+
+
+---## **5. Advanced Features**
+
+
+
+## **Quick Start**| Feature | Description | Priority |
+
 |-------|-------------|----------|
-| **Lite Mode** | `/stride:lite "Add dark mode"` → plan + implement in <200 lines | High |
+
+### Installation| **Lite Mode** | `/stride:lite "Add dark mode"` → plan + implement in <200 lines | High |
+
 | **User Authentication** | `stride login` → track authorship and team activity | High |
-| **Live Monitoring** | `stride watch <ID>` → real-time sprint progress streaming | High |
-| **Status Dashboard** | `stride status` → team analytics and sprint distribution | High |
-| **Validation Pipelines** | `stride validate` → auto-run tests, lint, semantic checks | High |
-| **Sprint Timeline** | `stride timeline <ID>` → complete activity history | High |
+
+```bash| **Live Monitoring** | `stride watch <ID>` → real-time sprint progress streaming | High |
+
+# Clone the repository| **Status Dashboard** | `stride status` → team analytics and sprint distribution | High |
+
+git clone https://github.com/saranmahadev/Stride.git| **Validation Pipelines** | `stride validate` → auto-run tests, lint, semantic checks | High |
+
+cd Stride| **Sprint Timeline** | `stride timeline <ID>` → complete activity history | High |
+
 | **Introspection Engine** | AI scans legacy code → generates migration sprints | High |
-| **Auto-Retrospectives** | AI generates retrospectives on `/stride:complete` | Medium |
-| **Blocker Analytics** | Track time in `blocked/`, common impediments via `stride status` | Medium |
-| **Export & Reporting** | `stride export` → Markdown/HTML/JSON reports for stakeholders | Medium |
+
+# Create virtual environment| **Auto-Retrospectives** | AI generates retrospectives on `/stride:complete` | Medium |
+
+python -m venv venv| **Blocker Analytics** | Track time in `blocked/`, common impediments via `stride status` | Medium |
+
+source venv/bin/activate  # Windows: venv\Scripts\activate| **Export & Reporting** | `stride export` → Markdown/HTML/JSON reports for stakeholders | Medium |
+
 | **Health Monitoring** | `stride doctor` → validate installation and project health | Medium |
-| **Provenance Scores** | 0–100 badge: "Spec Alignment: 94%" | Low |
 
----
+# Install dependencies| **Provenance Scores** | 0–100 badge: "Spec Alignment: 94%" | Low |
 
-## **6. CLI Quick Start**
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/stride.git
-cd stride
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
 
+---
+
 # Verify installation
-python -m stride.cli.main --version
+
+stride --version## **6. CLI Quick Start**
+
 ```
+
+### Installation
 
 ### Your First Sprint
 
 ```bash
+
+```bash# Clone the repository
+
+# 1. Initialize Stride in your projectgit clone https://github.com/yourusername/stride.git
+
+cd your-projectcd stride
+
+stride init
+
+# Create virtual environment
+
+# 2. Configure AI agents you're usingpython -m venv venv
+
+stride agent initsource venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Select: Claude, Cursor, Windsurf (interactive wizard)
+
+# Install dependencies
+
+# 3. Create a new sprintpip install -r requirements.txt
+
+stride create --title "Add user authentication" --priority high
+
+# Output: ✓ Created: SPRINT-7K9P# Verify installation
+
+python -m stride.cli.main --version
+
+# 4. Move to active and start working```
+
+stride move SPRINT-7K9P active
+
+### Your First Sprint
+
+# 5. Monitor progress in real-time
+
+stride watch SPRINT-7K9P```bash
+
 # 1. Initialize Stride in your project
-cd your-project
-python -m stride.cli.main init
+
+# 6. Check sprint statuscd your-project
+
+stride status SPRINT-7K9Ppython -m stride.cli.main init
+
+stride timeline SPRINT-7K9P
 
 # 2. Create a new sprint
-python -m stride.cli.main create \
-  --title "Add user authentication" \
+
+# 7. Validate quality before completionpython -m stride.cli.main create \
+
+stride validate SPRINT-7K9P --detailed  --title "Add user authentication" \
+
   --tags "feature,security" \
-  --priority high
 
-# Output: ✓ Created: SPRINT-7K9P
+# 8. Complete the sprint  --priority high
 
-# 3. Start working on it
+stride move SPRINT-7K9P completed
+
+```# Output: ✓ Created: SPRINT-7K9P
+
+
+
+### AI Agent Workflow# 3. Start working on it
+
 python -m stride.cli.main move SPRINT-7K9P active
 
+After running `stride agent init`, use these commands in your AI coding assistant:
+
 # 4. Check status anytime
-python -m stride.cli.main status SPRINT-7K9P
 
-# 5. View complete sprint details
-python -m stride.cli.main show SPRINT-7K9P
+```bashpython -m stride.cli.main status SPRINT-7K9P
 
-# 6. View a specific document (proposal, plan, design, implementation, retrospective)
-python -m stride.cli.main show SPRINT-7K9P --file proposal
+# In Claude Code, Cursor, Windsurf, etc.
+
+/stride:init              # Understand project context# 5. View complete sprint details
+
+/stride:plan "Add login"  # Create detailed sprint planpython -m stride.cli.main show SPRINT-7K9P
+
+/stride:implement SPRINT-7K9P  # Execute implementation
+
+/stride:feedback SPRINT-7K9P "Use bcrypt for passwords"  # Apply changes# 6. View a specific document (proposal, plan, design, implementation, retrospective)
+
+/stride:complete SPRINT-7K9P   # Finalize workpython -m stride.cli.main show SPRINT-7K9P --file proposal
+
+```
 
 # 7. List all active sprints
-python -m stride.cli.main list --status active
 
-# 8. Filter sprints by author
+---python -m stride.cli.main list --status active
+
+
+
+## **Technical Architecture**# 8. Filter sprints by author
+
 python -m stride.cli.main list --user alice@example.com
 
-# 9. Sort sprints by priority
-python -m stride.cli.main list --sort priority
+### Sprint Status Workflow
 
-# 10. Validate your work (basic)
+# 9. Sort sprints by priority
+
+```python -m stride.cli.main list --sort priority
+
+proposed/ → active/ → blocked/ → review/ → completed/ → .archive/
+
+```# 10. Validate your work (basic)
+
 python -m stride.cli.main validate SPRINT-7K9P
 
+Sprints move through clearly defined status folders, providing visual tracking and git-friendly state management.
+
 # 10a. Validate with detailed quality report
-python -m stride.cli.main validate SPRINT-7K9P --detailed
 
-# 10b. Validate all sprints
-python -m stride.cli.main validate --all
+### Folder Structurepython -m stride.cli.main validate SPRINT-7K9P --detailed
 
-# 11. View sprint timeline (event history)
-python -m stride.cli.main timeline SPRINT-7K9P
 
-# 12. Show recent 5 events only
-python -m stride.cli.main timeline SPRINT-7K9P --limit 5
 
-# 13. Watch sprint for real-time file changes
-python -m stride.cli.main watch SPRINT-7K9P
+```# 10b. Validate all sprints
 
-# 13a. Watch with custom refresh interval
-python -m stride.cli.main watch SPRINT-7K9P --interval 0.5
+your-project/python -m stride.cli.main validate --all
 
-# 14. Run health check on project
-python -m stride.cli.main doctor
+├── stride/
 
-# 14a. Get detailed health check output
+│   ├── sprints/# 11. View sprint timeline (event history)
+
+│   │   ├── proposed/    # New sprint ideaspython -m stride.cli.main timeline SPRINT-7K9P
+
+│   │   ├── active/      # In-progress work
+
+│   │   ├── blocked/     # Waiting on dependencies# 12. Show recent 5 events only
+
+│   │   ├── review/      # Pending approvalpython -m stride.cli.main timeline SPRINT-7K9P --limit 5
+
+│   │   ├── completed/   # Finished sprints
+
+│   │   └── .archive/    # Archived sprints# 13. Watch sprint for real-time file changes
+
+│   ├── specs/           # Specification documentspython -m stride.cli.main watch SPRINT-7K9P
+
+│   ├── config/          # Project configuration
+
+│   └── project.md       # Project context# 13a. Watch with custom refresh interval
+
+├── CLAUDE.md            # Claude Code integrationpython -m stride.cli.main watch SPRINT-7K9P --interval 0.5
+
+├── CURSOR.md            # Cursor integration
+
+└── .windsurf/           # Windsurf workflows# 14. Run health check on project
+
+```python -m stride.cli.main doctor
+
+
+
+### Technology Stack# 14a. Get detailed health check output
+
 python -m stride.cli.main doctor --verbose
 
-# 14b. Export health report as JSON for CI/CD
-python -m stride.cli.main doctor --json > health-report.json
+- **Language:** Python 3.11+
 
-# 15. Manage AI agents
-python -m stride.cli.main agent list
+- **CLI Framework:** Click# 14b. Export health report as JSON for CI/CD
 
-# 15a. Add AI agent to track which tools you use
+- **Configuration:** YAML (project) + TOML (agents)python -m stride.cli.main doctor --json > health-report.json
+
+- **Templates:** Jinja2
+
+- **Output:** Rich (terminal UI)# 15. Manage AI agents
+
+- **Testing:** pytest (454 tests, 73% coverage)python -m stride.cli.main agent list
+
+
+
+---# 15a. Add AI agent to track which tools you use
+
 python -m stride.cli.main agent add claude
 
+## **Advanced Features**
+
 # 15b. Get details about an agent
-python -m stride.cli.main agent info copilot
 
-# 15c. Remove an agent
-python -m stride.cli.main agent remove claude
+| Feature | Description | Status |python -m stride.cli.main agent info copilot
 
-# 16. Export sprint data for reporting
-python -m stride.cli.main export --format markdown --output report.md
+|---------|-------------|--------|
 
-# 16a. Export completed sprints as JSON
-python -m stride.cli.main export --format json --status completed --output completed-sprints.json
+| **User Authentication** | Track authorship with `stride login` | ✅ Implemented |# 15c. Remove an agent
 
-# 16b. Export HTML report with filters
+| **Live Monitoring** | Real-time sprint progress with `stride watch` | ✅ Implemented |python -m stride.cli.main agent remove claude
+
+| **Multi-Agent Support** | 20 AI tools with unified workflows | ✅ Implemented |
+
+| **Validation Pipelines** | Comprehensive quality checks | ✅ Implemented |# 16. Export sprint data for reporting
+
+| **Sprint Timeline** | Complete activity history | ✅ Implemented |python -m stride.cli.main export --format markdown --output report.md
+
+| **Export & Reporting** | JSON/Markdown/CSV/HTML reports | ✅ Implemented |
+
+| **Health Monitoring** | `stride doctor` for project health | ✅ Implemented |# 16a. Export completed sprints as JSON
+
+| **Configuration System** | User + project-level settings | ✅ Implemented |python -m stride.cli.main export --format json --status completed --output completed-sprints.json
+
+
+
+---# 16b. Export HTML report with filters
+
 python -m stride.cli.main export --format html --since 2025-01-01 --priority high --output high-priority-report.html
 
+## **Command Reference**
+
 # 17. Move to review when ready
-python -m stride.cli.main move SPRINT-7K9P review
 
-# 18. Complete the sprint
+For detailed documentation of all commands, see **[COMMANDS.md](COMMANDS.md)**.python -m stride.cli.main move SPRINT-7K9P review
+
+
+
+### Most Used Commands# 18. Complete the sprint
+
 python -m stride.cli.main move SPRINT-7K9P completed
-```
 
-### Complete Command Reference
+```bash```
 
-For detailed documentation of all CLI commands, options, and examples, see **[COMMANDS.md](COMMANDS.md)**.
+# Setup
 
-Key commands:
-- `init` - Initialize Stride in a project
-- `create` - Create new sprints
-- `list` - List and filter sprints (with --user, --since, --until, --sort options)
-- `show` - Display complete sprint details with file viewer
+stride init                        # Initialize framework### Complete Command Reference
+
+stride login                       # Authenticate user
+
+stride agent init                  # Configure AI agentsFor detailed documentation of all CLI commands, options, and examples, see **[COMMANDS.md](COMMANDS.md)**.
+
+
+
+# Sprint OperationsKey commands:
+
+stride create --title "Feature"    # Create new sprint- `init` - Initialize Stride in a project
+
+stride list --status active        # List active sprints- `create` - Create new sprints
+
+stride move SPRINT-ID active       # Change sprint status- `list` - List and filter sprints (with --user, --since, --until, --sort options)
+
+stride validate SPRINT-ID          # Check sprint quality- `show` - Display complete sprint details with file viewer
+
 - `status` - Show sprint metadata
-- `timeline` - View complete event history with timestamps
-- `watch` - Monitor sprint for real-time file changes with live display
-- `move` - Change sprint status
-- `validate` - Comprehensive sprint quality validation with detailed reports
-- `archive` - Archive completed sprints
+
+# Monitoring- `timeline` - View complete event history with timestamps
+
+stride status                      # Dashboard overview- `watch` - Monitor sprint for real-time file changes with live display
+
+stride watch SPRINT-ID             # Live monitoring- `move` - Change sprint status
+
+stride timeline SPRINT-ID          # Activity history- `validate` - Comprehensive sprint quality validation with detailed reports
+
+stride progress SPRINT-ID          # Task completion- `archive` - Archive completed sprints
+
 - `restore` - Restore archived sprints
 
----
+# Reporting
 
-## **7. Technical Architecture**
+stride export --format markdown    # Generate reports---
 
-```
+stride doctor                      # Health check
+
+```## **7. Technical Architecture**
+
+
+
+---```
+
 ┌─────────────────────┐
-│   Agent Interface   │
+
+## **Development Status**│   Agent Interface   │
+
 │  (Claude Code,      |
-│   Gemini CLI, Github|
+
+### v1.0 Release (Ready)│   Gemini CLI, Github|
+
 |       Copilot       │
-└───────┬─────────────┘
-        │ /stride:*
-        │
-        │
+
+**Test Coverage:**└───────┬─────────────┘
+
+- 454 tests passing        │ /stride:*
+
+- 73% code coverage        │
+
+- Zero known critical bugs        │
+
         ▼
-┌─────────────────────┐
-│   LLM Backends      │
-│  (Claude, Gemini,   │
-│   Grok, Local, etc.)│
-└───────┬─────────────┘
-        │
-        ▼
-┌─────────────────────┐
-│ Status-Based Folders│
+
+**Completed Features:**┌─────────────────────┐
+
+- ✅ Complete CLI suite (18 commands)│   LLM Backends      │
+
+- ✅ Sprint lifecycle management│  (Claude, Gemini,   │
+
+- ✅ Multi-agent integration (20 tools)│   Grok, Local, etc.)│
+
+- ✅ User authentication└───────┬─────────────┘
+
+- ✅ Configuration system        │
+
+- ✅ Validation & health checks        ▼
+
+- ✅ Export & reporting┌─────────────────────┐
+
+- ✅ Real-time monitoring│ Status-Based Folders│
+
 │  • proposed/        │
-│  • active/          │
+
+---│  • active/          │
+
 │  • blocked/         │
-│  • review/          │
+
+## **Roadmap**│  • review/          │
+
 │  • completed/       │
-└─────────────────────┘
+
+### Future Enhancements (Post v1.0)└─────────────────────┘
+
 ```
 
-- **State**: Status-based folder structure (git-tracked)
-- **Specs**: Markdown + YAML frontmatter in `stride/specs/`
-- **Sprints**: Organized by lifecycle state in `stride/sprints/`
-- **Metadata**: Frontmatter tracks dates, status, completion
-- **Extensible**: Plugins via `stride.config.js`
+| Feature | Priority | Target |
 
-### Sprint Workflow Diagram
+|---------|----------|--------|- **State**: Status-based folder structure (git-tracked)
 
-```mermaid
-graph TD
+| **Diff Command** | High | v1.1 |- **Specs**: Markdown + YAML frontmatter in `stride/specs/`
+
+| **Framework Update Command** | High | v1.1 |- **Sprints**: Organized by lifecycle state in `stride/sprints/`
+
+| **Auto-Retrospectives** | Medium | v1.2 |- **Metadata**: Frontmatter tracks dates, status, completion
+
+| **VS Code Extension** | Medium | v1.3 |- **Extensible**: Plugins via `stride.config.js`
+
+| **Introspection Engine** | Low | v2.0 |
+
+| **Lite Mode** | Low | v2.0 |### Sprint Workflow Diagram
+
+| **Provenance Scores** | Low | v2.0 |
+
+| **CI/CD Integrations** | Medium | v1.4 |```mermaid
+
+| **Team Collaboration** | Medium | v1.5 |graph TD
+
     Start([Developer Starts Feature]) --> Init[/stride:init<br/>Initialize Context/]
-    Init --> Plan[/stride:plan<br/>Create Sprint Plan/]
+
+See **[ROADMAP.md](ROADMAP.md)** for detailed planning.    Init --> Plan[/stride:plan<br/>Create Sprint Plan/]
+
     Plan --> Proposed[(proposed/<br/>SPRINT-ID)]
-    
+
+---    
+
     Proposed --> Review{Human<br/>Review?}
-    Review -->|Approve| Present[/stride:present<br/>View Plan/]
+
+## **Competitive Position**    Review -->|Approve| Present[/stride:present<br/>View Plan/]
+
     Review -->|Reject| Revise[Revise Plan]
-    Revise --> Proposed
+
+**Stride vs Traditional Tools:**    Revise --> Proposed
+
     
-    Present --> Implement[/stride:implement<br/>Execute Sprint/]
-    Implement --> Active[(active/<br/>SPRINT-ID)]
-    
-    Active --> Progress{Check<br/>Progress}
-    Progress -->|Monitor| Watch[stride watch<br/>Live Updates]
-    Progress -->|Status| StatusCmd[stride status<br/>Dashboard]
-    Watch --> Active
-    StatusCmd --> Active
-    
-    Active --> Feedback{Need<br/>Changes?}
-    Feedback -->|Yes| ApplyFeedback[/stride:feedback<br/>Apply Corrections/]
+
+| | **OpenSpec** | **SpecKit** | **Stride v1.0** |    Present --> Implement[/stride:implement<br/>Execute Sprint/]
+
+|---|--------------|-------------|-----------------|    Implement --> Active[(active/<br/>SPRINT-ID)]
+
+| **Greenfield** | Good | Weak | Excellent |    
+
+| **Speed** | Medium | Slow | Fast |    Active --> Progress{Check<br/>Progress}
+
+| **Rigor** | Medium | High | High |    Progress -->|Monitor| Watch[stride watch<br/>Live Updates]
+
+| **Feedback Loop** | Weak | Weak | Excellent |    Progress -->|Status| StatusCmd[stride status<br/>Dashboard]
+
+| **Multi-Agent** | Excellent | Medium | Excellent (20 tools) |    Watch --> Active
+
+| **Status Tracking** | Weak | Weak | Excellent |    StatusCmd --> Active
+
+| **Live Monitoring** | None | None | Built-in |    
+
+| **CLI Tools** | Limited | Limited | Comprehensive (18 commands) |    Active --> Feedback{Need<br/>Changes?}
+
+| **Reporting** | Weak | Medium | Excellent |    Feedback -->|Yes| ApplyFeedback[/stride:feedback<br/>Apply Corrections/]
+
     ApplyFeedback --> Active
-    
+
+**Stride = OpenSpec's portability + SpecKit's validation + Agile velocity + DevOps monitoring**    
+
     Active --> BlockCheck{Blocked?}
-    BlockCheck -->|Yes| Block[/stride:block<br/>Mark Blocked/]
+
+---    BlockCheck -->|Yes| Block[/stride:block<br/>Mark Blocked/]
+
     Block --> Blocked[(blocked/<br/>SPRINT-ID)]
-    Blocked --> Unblock[/stride:unblock<br/>Resume Sprint/]
+
+## **Contributing**    Blocked --> Unblock[/stride:unblock<br/>Resume Sprint/]
+
     Unblock --> Active
-    
+
+Stride is open for contribution. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.    
+
     BlockCheck -->|No| Feedback
-    Feedback -->|No| Submit[/stride:submit<br/>Submit for Review/]
+
+### Development Setup    Feedback -->|No| Submit[/stride:submit<br/>Submit for Review/]
+
     Submit --> ReviewFolder[(review/<br/>SPRINT-ID)]
-    
-    ReviewFolder --> Validate[stride validate<br/>Quality Check]
-    Validate --> TestReview{Tests<br/>Pass?}
-    TestReview -->|Fail| FixIssues[Fix Issues]
+
+```bash    
+
+# Install development dependencies    ReviewFolder --> Validate[stride validate<br/>Quality Check]
+
+pip install -r requirements.txt    Validate --> TestReview{Tests<br/>Pass?}
+
+pip install -e .    TestReview -->|Fail| FixIssues[Fix Issues]
+
     FixIssues --> Active
-    
-    TestReview -->|Pass| Complete[/stride:complete<br/>Finalize Sprint/]
+
+# Run tests    
+
+pytest tests/ -v    TestReview -->|Pass| Complete[/stride:complete<br/>Finalize Sprint/]
+
     Complete --> Completed[(completed/<br/>SPRINT-ID)]
-    Completed --> Retro[Auto-Generate<br/>Retrospective]
-    Retro --> MergeSpecs[Merge Spec Deltas<br/>to stride/specs/]
-    MergeSpecs --> Export[stride export<br/>Generate Reports]
+
+# Check coverage    Completed --> Retro[Auto-Generate<br/>Retrospective]
+
+pytest tests/ --cov=stride --cov-report=html    Retro --> MergeSpecs[Merge Spec Deltas<br/>to stride/specs/]
+
+```    MergeSpecs --> Export[stride export<br/>Generate Reports]
+
     Export --> End([Sprint Completed])
-    
+
+---    
+
     style Start fill:#e1f5e1
-    style End fill:#e1f5e1
+
+## **License**    style End fill:#e1f5e1
+
     style Proposed fill:#fff4e6
-    style Active fill:#e3f2fd
+
+MIT License - see [LICENSE](LICENSE) for details.    style Active fill:#e3f2fd
+
     style Blocked fill:#ffebee
-    style ReviewFolder fill:#f3e5f5
+
+---    style ReviewFolder fill:#f3e5f5
+
     style Completed fill:#e8f5e9
-    style Block fill:#ff6b6b
+
+## **Quick Reference Card**    style Block fill:#ff6b6b
+
     style Complete fill:#51cf66
+
+### AI Agent Commands```
+
 ```
 
-### CLI Monitoring Flow
+/stride:init                       # Initialize context### CLI Monitoring Flow
 
-```mermaid
-graph LR
-    User([Developer]) --> CLI{Stride CLI}
-    
+/stride:plan "feature"             # Create sprint
+
+/stride:implement SPRINT-ID        # Execute sprint```mermaid
+
+/stride:feedback SPRINT-ID "note"  # Apply correctionsgraph LR
+
+/stride:complete SPRINT-ID         # Finalize    User([Developer]) --> CLI{Stride CLI}
+
+```    
+
     CLI --> Setup[Setup Commands]
-    Setup --> Init[stride init]
-    Setup --> Login[stride login]
+
+### CLI Commands    Setup --> Init[stride init]
+
+```    Setup --> Login[stride login]
+
+stride init                        # Setup framework    
+
+stride agent init                  # Configure AI tools    CLI --> Monitor[Monitoring Commands]
+
+stride create --title "Feature"    # New sprint    Monitor --> StatusCmd[stride status]
+
+stride watch SPRINT-ID             # Live monitor    Monitor --> Progress[stride progress]
+
+stride validate SPRINT-ID          # Quality check    Monitor --> Watch[stride watch]
+
+stride export                      # Generate reports    Monitor --> Timeline[stride timeline]
+
+```    Monitor --> List[stride list]
+
     
-    CLI --> Monitor[Monitoring Commands]
-    Monitor --> StatusCmd[stride status]
-    Monitor --> Progress[stride progress]
-    Monitor --> Watch[stride watch]
-    Monitor --> Timeline[stride timeline]
-    Monitor --> List[stride list]
-    
-    CLI --> Quality[Quality Commands]
+
+---    CLI --> Quality[Quality Commands]
+
     Quality --> Validate[stride validate]
-    Quality --> Diff[stride diff]
-    
+
+> **"Code is easy. Shipping is hard. Stride makes shipping inevitable."**      Quality --> Diff[stride diff]
+
+> — *Stride v1.0*    
+
     CLI --> Config[Configuration]
     Config --> ConfigCmd[stride config]
     Config --> Doctor[stride doctor]

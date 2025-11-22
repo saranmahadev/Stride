@@ -48,6 +48,7 @@ dmypy.json
 .stride/
 stride/sprints/
 stride.config.yaml
+*.backup
 
 # Documentation build
 site/
@@ -61,3 +62,4 @@ logs/
 Thumbs.db
 Desktop.ini
 stride.config.yaml
+

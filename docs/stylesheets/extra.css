@@ -1,0 +1,226 @@
+/* Stride Custom Styles - Red Theme */
+
+:root {
+  --stride-red: #d32f2f;
+  --stride-red-light: #ef5350;
+  --stride-red-dark: #c62828;
+  --stride-red-accent: #ff5252;
+  --stride-orange: #ff6e40;
+}
+
+/* Hero section on homepage */
+.md-typeset h1 {
+  font-weight: 700;
+  color: var(--stride-red);
+}
+
+/* Cards styling */
+.md-typeset .grid.cards {
+  margin-top: 2rem;
+}
+
+.md-typeset .grid.cards > * {
+  border-left: 4px solid var(--stride-red);
+  transition: all 0.3s ease;
+}
+
+.md-typeset .grid.cards > *:hover {
+  border-left-color: var(--stride-red-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
+}
+
+/* Admonition customization */
+.md-typeset .admonition.tip {
+  border-left-color: var(--stride-red);
+}
+
+.md-typeset .admonition.tip > .admonition-title {
+  background-color: rgba(211, 47, 47, 0.1);
+}
+
+/* Code blocks */
+.md-typeset code {
+  background-color: rgba(211, 47, 47, 0.05);
+  color: var(--stride-red-dark);
+}
+
+.md-typeset pre > code {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Tables */
+.md-typeset table:not([class]) thead {
+  background-color: rgba(211, 47, 47, 0.1);
+}
+
+.md-typeset table:not([class]) tbody tr:hover {
+  background-color: rgba(211, 47, 47, 0.05);
+}
+
+/* Links */
+.md-typeset a {
+  color: var(--stride-red);
+}
+
+.md-typeset a:hover {
+  color: var(--stride-red-accent);
+}
+
+/* Navigation tabs */
+.md-tabs {
+  background-color: var(--stride-red);
+}
+
+/* Search highlighting */
+.md-search-result__article--document .md-search-result__title {
+  color: var(--stride-red);
+}
+
+/* Buttons */
+.md-button {
+  background-color: var(--stride-red);
+  border-color: var(--stride-red);
+}
+
+.md-button:hover {
+  background-color: var(--stride-red-light);
+  border-color: var(--stride-red-light);
+}
+
+.md-button--primary {
+  background-color: var(--stride-red);
+  border-color: var(--stride-red);
+  color: white;
+}
+
+.md-button--primary:hover {
+  background-color: var(--stride-red-dark);
+  border-color: var(--stride-red-dark);
+}
+
+/* Status badges */
+.md-tag {
+  background-color: rgba(211, 47, 47, 0.1);
+  color: var(--stride-red-dark);
+  border: 1px solid var(--stride-red);
+}
+
+/* Terminal/command examples */
+.md-typeset .highlight .gp {
+  -webkit-user-select: none;
+  user-select: none;
+  color: var(--stride-red);
+}
+
+/* Footnotes */
+.md-typeset .footnote {
+  border-left: 4px solid var(--stride-red);
+}
+
+/* Progress bars (if any) */
+progress::-webkit-progress-value {
+  background-color: var(--stride-red);
+}
+
+progress::-moz-progress-bar {
+  background-color: var(--stride-red);
+}
+
+/* Custom callout boxes */
+.callout-red {
+  border-left: 4px solid var(--stride-red);
+  background-color: rgba(211, 47, 47, 0.05);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.callout-red .callout-title {
+  color: var(--stride-red);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Sprint status colors */
+.status-proposed {
+  color: #ff6f00;
+  background-color: rgba(255, 111, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.status-active {
+  color: #1976d2;
+  background-color: rgba(25, 118, 210, 0.1);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.status-blocked {
+  color: #d32f2f;
+  background-color: rgba(211, 47, 47, 0.1);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.status-review {
+  color: #7b1fa2;
+  background-color: rgba(123, 31, 162, 0.1);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.status-completed {
+  color: #388e3c;
+  background-color: rgba(56, 142, 60, 0.1);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 76.1875em) {
+  .md-nav--primary .md-nav__title[for="__drawer"] {
+    background-color: var(--stride-red);
+  }
+}
+
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #d32f2f;
+  --md-accent-fg-color: #ff5252;
+}
+
+[data-md-color-scheme="slate"] .md-typeset code {
+  background-color: rgba(255, 82, 82, 0.1);
+}
+
+[data-md-color-scheme="slate"] .md-typeset a {
+  color: var(--stride-red-accent);
+}
+
+/* Announcement bar */
+.md-banner {
+  background-color: var(--stride-red);
+  color: white;
+}
+
+/* Version warning/info */
+.md-version {
+  color: var(--stride-red);
+}
+
+/* Back to top button */
+.md-top {
+  background-color: var(--stride-red);
+}
+
+.md-top:hover {
+  background-color: var(--stride-red-light);
+}

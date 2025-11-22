@@ -17,7 +17,6 @@ copyright: Copyright &copy; 2025 Stride Development Team
 # Theme Configuration
 theme:
   name: material
-  custom_dir: docs/overrides
   language: en
   
   # Color Palette - Red Theme

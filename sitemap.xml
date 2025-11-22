@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://saranmahadev.github.io/Stride/</loc>
+         <loc>https://stride.saranmahadev.in/</loc>
          <lastmod>2025-11-22</lastmod>
     </url>
     <url>
-         <loc>https://saranmahadev.github.io/Stride/getting-started/</loc>
+         <loc>https://stride.saranmahadev.in/getting-started/</loc>
          <lastmod>2025-11-22</lastmod>
     </url>
     <url>
-         <loc>https://saranmahadev.github.io/Stride/getting-started/installation/</loc>
+         <loc>https://stride.saranmahadev.in/getting-started/installation/</loc>
          <lastmod>2025-11-22</lastmod>
     </url>
     <url>
-         <loc>https://saranmahadev.github.io/Stride/getting-started/quickstart/</loc>
-         <lastmod>2025-11-22</lastmod>
-    </url>
-    <url>
-         <loc>https://saranmahadev.github.io/Stride/sprints/completed/SPRINT-0001/retrospective/</loc>
+         <loc>https://stride.saranmahadev.in/getting-started/quickstart/</loc>
          <lastmod>2025-11-22</lastmod>
     </url>
 </urlset>

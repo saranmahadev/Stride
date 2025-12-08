@@ -1,73 +1,33 @@
 # Stride
 
-<div class="hero" markdown>
-
-## Agent-First Framework for Sprint-Powered, Spec-Driven Development
+**Agent-First Framework for Sprint-Powered, Spec-Driven Development**
 
 Transform chaotic AI coding sessions into structured, trackable workflows.
 
 [Get Started](#installation){ .md-button .md-button--primary }
 [View on GitHub](https://github.com/saranmahadev/Stride){ .md-button }
 
-</div>
-
 ---
 
 ## What is Stride?
 
-**Stride** enables 20+ AI coding agents (Claude, Cursor, Windsurf, etc.) to autonomously plan, implement, and document software features while you monitor progress from the terminal.
+Stride enables 20+ AI coding agents (Claude, Cursor, Windsurf, etc.) to autonomously plan, implement, and document software features while you monitor progress from the terminal.
 
 ### The Problem
 
-<div class="feature-grid" markdown>
+AI coding has three major issues:
 
-<div class="feature-card" markdown>
-### Context Loss
-AI forgets everything after 3-5 chat turns
-</div>
+- **Context Loss** - AI forgets everything after a few chat turns
+- **No Structure** - No methodology for AI-driven development
+- **Can't Track** - Difficult to see what the AI actually implemented
 
-<div class="feature-card" markdown>
-### No Structure
-No methodology for AI-driven development
-</div>
+### The Solution
 
-<div class="feature-card" markdown>
-### Can't Track
-What did the AI actually implement?
-</div>
+Stride provides:
 
-<div class="feature-card" markdown>
-### Agent Chaos
-Multiple agents produce inconsistent outputs
-</div>
-
-</div>
-
-### Stride's Solution
-
-<div class="feature-grid" markdown>
-
-<div class="feature-card" markdown>
-### Sprint-Based
-Persistent context in markdown files
-</div>
-
-<div class="feature-card" markdown>
-### Slash Commands
-Clear workflows for 20+ AI agents
-</div>
-
-<div class="feature-card" markdown>
-### CLI Monitoring
-Real-time visibility from your terminal
-</div>
-
-<div class="feature-card" markdown>
-### Unified Methodology
-All agents follow the same process
-</div>
-
-</div>
+- **Sprint-Based Workflow** - Persistent context in markdown files
+- **Slash Commands** - Clear workflows for 20+ AI agents
+- **CLI Monitoring** - Real-time visibility from your terminal
 
 ---
 
@@ -178,46 +138,17 @@ stride show SPRINT-XXXXX  # Detailed sprint view
 
 ---
 
-## Next Steps
+## Learn More
 
-<div class="feature-grid" markdown>
-
-<div class="feature-card" markdown>
-### [CLI Commands →](cli-commands.md)
-Learn all CLI commands for monitoring
-</div>
-
-<div class="feature-card" markdown>
-### [Agent Commands →](agent-commands.md)
-Understand agent slash commands
-</div>
-
-<div class="feature-card" markdown>
-### [Sprint Lifecycle →](sprint-lifecycle.md)
-Master the sprint workflow
-</div>
-
-<div class="feature-card" markdown>
-### [Philosophy →](philosophy.md)
-Understand Stride's principles
-</div>
-
-</div>
+- [CLI Commands](cli-commands.md) - Learn all CLI commands for monitoring
+- [Agent Commands](agent-commands.md) - Understand agent slash commands
+- [Sprint Lifecycle](sprint-lifecycle.md) - Master the sprint workflow
+- [Philosophy](philosophy.md) - Understand Stride's principles
 
 ---
 
-## Community
+## Links
 
-- **GitHub**: [github.com/saranmahadev/Stride](https://github.com/saranmahadev/Stride)
-- **PyPI**: [pypi.org/project/stridekit](https://pypi.org/project/stridekit/)
-- **Issues**: [Report bugs or request features](https://github.com/saranmahadev/Stride/issues)
-
----
-
-<div align="center" markdown>
-
-**Made with ❤️ by [Saran Mahadev](https://stride.saranmahadev.in)**
-
-⭐ Star us on [GitHub](https://github.com/saranmahadev/Stride) if you find Stride useful!
-
-</div>
+- [GitHub Repository](https://github.com/saranmahadev/Stride)
+- [PyPI Package](https://pypi.org/project/stridekit/)
+- [Report Issues](https://github.com/saranmahadev/Stride/issues)

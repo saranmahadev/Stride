@@ -48,8 +48,8 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
-  logo: assets/logo-white.png
-  favicon: assets/favicon.ico
+  logo: assets/images/logo.png
+  favicon: assets/images/logo.png
 
 extra_css:
   - stylesheets/extra.css

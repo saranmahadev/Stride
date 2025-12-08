@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Stride"
-version = "0.1.0"
+name = "stridekit"
+version = "1.0.0"
 description = "An Agent-First Framework for Sprint-Powered, Spec-Driven Development"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -12,9 +12,9 @@ license = {text = "MIT"}
 authors = [
     {name = "Saran Mahadev"}
 ]
-keywords = ["cli", "sprint", "agile", "ai-agent", "development"]
+keywords = ["cli", "sprint", "agile", "ai-agent", "development", "stride", "workflow"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
     "License :: OSI Approved :: MIT License",
@@ -48,10 +48,11 @@ dev = [
 stride = "stride.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/saranmahadev/Stride"
-Documentation = "https://github.com/saranmahadev/Stride#readme"
+Homepage = "https://stride.saranmahadev.in"
+Documentation = "https://stride.saranmahadev.in"
 Repository = "https://github.com/saranmahadev/Stride.git"
 Issues = "https://github.com/saranmahadev/Stride/issues"
+Source = "https://github.com/saranmahadev/Stride"
 
 [tool.setuptools.packages.find]
 where = ["."]

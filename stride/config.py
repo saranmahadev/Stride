@@ -1,16 +1,19 @@
 """
 Configuration management for Stride.
 Handles reading/writing .stride/config.yaml and environment variables.
+
+Note: Currently returns empty config. Configuration is managed through
+.stride directory structure and agent-specific files.
 """
 
-import os
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-# TODO: Implement Config class
-# TODO: Implement load_config()
-# TODO: Implement save_config()
 
 def get_config() -> Dict[str, Any]:
-    """Retrieve current configuration."""
+    """
+    Retrieve current configuration.
+
+    Returns:
+        Empty dict (configuration managed via .stride directory)
+    """
     return {}

@@ -89,7 +89,6 @@ class Project(BaseModel):
     """Model representing the Stride project configuration."""
     name: str
     version: str = "0.1.0"
-    # TODO: Add more project fields
 
 
 @dataclass

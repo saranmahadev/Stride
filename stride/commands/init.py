@@ -222,7 +222,8 @@ def init(
         console.print("  [green]stride list[/green]     - View all sprints")
         console.print("  [green]stride show[/green]     - Display sprint details")
         console.print("  [green]stride status[/green]   - Check project status")
-        console.print("  [green]stride validate[/green] - Verify project structure\n")
+        console.print("  [green]stride validate[/green] - Verify project structure")
+        console.print("  [green]stride metrics[/green]  - Sprint analytics and statistics\n")
         
         console.print("[bold cyan]🚀 Ready to Start?[/bold cyan]")
         console.print("  Open your AI agent and run the [bold cyan]init[/bold cyan] command to begin!\n")

@@ -55,6 +55,5 @@ def main(
         )
         console.print(panel)
 
-    # TODO: Configure logging/verbosity based on verbose flag
     if verbose:
         console.print("[dim]Verbose mode enabled[/dim]")

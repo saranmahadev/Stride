@@ -5,13 +5,16 @@ Helper utilities for Stride CLI.
 import uuid
 from datetime import datetime
 from typing import List
-from rich.progress import BarColumn, Progress, TaskID
 from rich.text import Text
 
 
 def generate_sprint_id() -> str:
-    """Generate a unique sprint ID."""
-    # TODO: Implement ID generation logic (e.g., SPRINT-XXXXX)
+    """
+    Generate a unique sprint ID.
+
+    Returns:
+        Sprint ID in format: SPRINT-XXXXX (5 uppercase hex chars)
+    """
     return f"SPRINT-{uuid.uuid4().hex[:5].upper()}"
 
 

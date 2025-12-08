@@ -5,6 +5,34 @@ All notable changes to Stride will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-01-08
+
+### Added
+
+- **Documentation Website** - Complete MkDocs documentation site
+  - Custom red, white, and black theme
+  - 8 comprehensive documentation pages
+  - Deployed at stride.saranmahadev.in
+  - Automatic deployment via GitHub Actions
+
+### Changed
+
+- **README Badge** - Fixed PyPI version badge display
+- **Package Metadata** - Added docs optional dependencies
+
+### Documentation
+
+- **Introduction** - Complete getting started guide
+- **CLI Commands** - Detailed command reference with examples
+- **Agent Commands** - In-depth agent workflow documentation
+- **Sprint Lifecycle** - Complete lifecycle explanation
+- **Philosophy** - Design principles and rationale
+- **Features** - Comprehensive feature overview
+- **License** - MIT License documentation
+- **Code of Conduct** - Community guidelines
+
+---
+
 ## [1.0.0] - 2024-12-08
 
 ### Added - Core Features

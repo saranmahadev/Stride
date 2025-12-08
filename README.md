@@ -1,13 +1,13 @@
 <div align="center">
 
-![Stride Banner](assets/images/banner.png)
+![Stride Banner](https://raw.githubusercontent.com/saranmahadev/Stride/main/assets/images/banner.png)
 
 # Stride
 
 **Agent-First Framework for Sprint-Powered, Spec-Driven Development**
 
-[![PyPI version](https://img.shields.io/pypi/v/stridekit.svg)](https://pypi.org/project/stridekit/)
-[![Python 3.12](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI version](https://img.shields.io/badge/pypi-v1.0.1-blue.svg)](https://pypi.org/project/stridekit/)
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [Website](https://stride.saranmahadev.in) • [Documentation](https://stride.saranmahadev.in) • [GitHub](https://github.com/saranmahadev/Stride)
@@ -369,6 +369,6 @@ Built with:
 
 **Made with ❤️ by [Saran Mahadev](https://stride.saranmahadev.in)**
 
-⭐ Star us on GitHub if you find Stride useful!
+⭐ Star us on [GitHub](https://github.com/saranmahadev/Stride) if you find Stride useful!
 
 </div>

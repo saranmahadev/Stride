@@ -261,15 +261,15 @@ Next Tasks:
 
 ## `/stride:lite`
 
-**Purpose:** Quick reference to all commands
+**Purpose:** Execute small changes without sprint files
 
-**When to use:** Need reminder of commands
+**When to use:** Small bug fixes, styling tweaks, or config changes (< 50 lines)
 
-**What it shows:**
+**What it does:**
 
-- All 10 commands with descriptions
-- Current sprint context
-- Quick links to documentation
+- Follows a lightweight 5-stage workflow (Talk → Plan → Confirm → Implement → Complete)
+- Operates entirely within the chat (no sprint files created)
+- Validates eligibility (must be < 50 lines, < 3 files, single concern)
 
 ---
 

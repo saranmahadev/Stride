@@ -61,7 +61,7 @@ Stride supports 20 different AI coding agents across 5 categories:
 - **10 Agent Commands**: Automatically generated for each agent
   - `/stride:init` - Create project spec and start first sprint
   - `/stride:derive` - Create new sprints from existing ones
-  - `/stride:lite` - Quick reference to all commands
+  - `/stride:lite` - Lightweight changes without sprint files
   - `/stride:status` - Check current sprint progress
   - `/stride:plan` - Define sprint goals and break down tasks
   - `/stride:present` - Generate sprint presentations

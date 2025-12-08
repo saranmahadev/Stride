@@ -43,8 +43,11 @@
 ### Installation
 
 ```bash
-# Install from PyPI
+# Using pip
 pip install stridekit
+
+# Using uv (faster)
+uv pip install stridekit
 
 # Verify installation
 stride --version
@@ -177,7 +180,7 @@ When you run `stride init`, slash commands are installed:
 | `/stride:complete` | Archive and retrospective |
 | `/stride:present` | Generate presentations |
 | `/stride:derive` | Create sprint from existing |
-| `/stride:lite` | Quick command reference |
+| `/stride:lite` | Lightweight changes (< 50 lines) |
 | `/stride:feedback` | Collect feedback |
 
 ### 3. CLI Monitoring

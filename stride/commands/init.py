@@ -215,7 +215,7 @@ def init(
         console.print("  [cyan]complete[/cyan]   - Archive sprint and document learnings")
         console.print("  [cyan]present[/cyan]    - Generate sprint presentations")
         console.print("  [cyan]derive[/cyan]     - Create new sprints from existing ones")
-        console.print("  [cyan]lite[/cyan]       - Quick reference to all commands")
+        console.print("  [cyan]lite[/cyan]       - Lightweight changes (no sprint files)")
         console.print("  [cyan]feedback[/cyan]   - Collect and organize feedback\n")
         
         console.print("[bold]CLI Commands[/bold] (run in your terminal):")

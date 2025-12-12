@@ -297,11 +297,17 @@ Summarize the work and close the lite session.
    - Note any manual validation performed
    - Highlight any edge cases addressed
 
+   **Optional: Quick Validation**
+   For code changes that affect functionality:
+   - If tests exist for affected code, run them quickly
+   - Note: For comprehensive validation, use `/stride:validate` in a full sprint
+
 4. **Offer Follow-Up**
    Ask if:
-   - User wants to validate manually
+   - User wants to run tests manually
    - Related changes needed
    - Any concerns or questions
+   - Should create a full sprint for more comprehensive work
 
 5. **No Files Created**
    - Confirm no sprint files were generated

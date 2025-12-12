@@ -229,8 +229,12 @@ Completed Recently:
 
 Recommendations:
 1. Focus on resolving blocker in sprint-ui-polish (request mobile design specs)
-2. sprint-auth will be ready for /stride-review in the next session
+2. sprint-auth will be ready for /stride:review in the next session
 3. Plan to start one of the proposed sprints after auth completes
+
+Documentation Status:
+- 3 completed sprints available for documentation
+- Run `/stride:docs` to generate/update project documentation
 
 Would you like me to dive deeper into any specific sprint?
 ```

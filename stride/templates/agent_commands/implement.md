@@ -107,10 +107,14 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - At the end of the final Stride, write a log entry:  
      *“All Strides completed successfully.”*
 
-8. **Prompt Next Steps**  
-   After finishing all tasks, instruct the user to run:  
-   - `/stride-review sprint-[NAME]`  
-   to begin validation.
+8. **Prompt Next Steps**
+   After finishing all tasks, instruct the user to run:
+   ```
+   All strides completed! Next steps:
+   1. `/stride:review` - Validate sprint documents and alignment
+   2. `/stride:validate` - Run quality gates (tests, linting, type checking, security)
+   3. `/stride:complete` - Finalize sprint and generate retrospective
+   ```
 
 ---
 

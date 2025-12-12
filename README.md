@@ -153,6 +153,27 @@ stride docs      # Serve documentation with MkDocs
 - Serves interactive documentation at http://127.0.0.1:8000
 - No sprint process details - only final product documentation
 
+### ✅ Quality Gates & Validation
+
+```bash
+/stride:validate # Run comprehensive quality checks (in agent)
+stride validate  # Validate sprint document structure (CLI)
+```
+
+- **Pre-completion quality gates** - Validates before `/stride:complete`
+- **Auto-detection** - Detects project type and available tools
+- **Comprehensive checks**:
+  - Type checking (TypeScript, mypy, etc.)
+  - Linting (ESLint, Pylint, Clippy, etc.)
+  - Unit and integration tests
+  - Security scanning for secrets and vulnerabilities
+- **Smart status system**:
+  - ✅ PASS - All checks passed
+  - ❌ FAIL - Critical issues blocking completion
+  - 🔜 UPCOMING - Will be fixed in future strides
+- **Actionable reports** - Clear recommendations for fixing issues
+- **Prevents broken completions** - Blocks sprint completion until critical issues resolved
+
 ### 🎨 Beautiful Terminal UI
 
 - Color-coded status indicators
@@ -191,6 +212,7 @@ When you run `stride init`, slash commands are installed:
 | `/stride:implement` | Build with implementation tracking |
 | `/stride:status` | Check progress |
 | `/stride:review` | Validate work |
+| `/stride:validate` | Quality gates before completion |
 | `/stride:complete` | Archive and retrospective |
 | `/stride:docs` | Generate project documentation |
 | `/stride:present` | Generate presentations |
@@ -353,7 +375,7 @@ This creates **persistent context**, **cross-agent consistency**, and a **comple
 - **20 AI Agents** supported
 - **9 Template Formats** for agent compatibility
 - **7 CLI Commands** for monitoring
-- **11 Agent Commands** for workflow
+- **12 Agent Commands** for workflow
 - **6 Sprint Documents** for each sprint
 
 ---

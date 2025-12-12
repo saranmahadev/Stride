@@ -53,8 +53,14 @@ If `$ARGUMENTS` (sprint name) is not provided:
 1. **Verify Sprint Completion**
    - All tasks in `plan.md` are checked: `- [x]`
    - `implementation.md` has logs for all Strides
-   - `/stride-review` has been run successfully
+   - `/stride:review` has been run successfully
+   - `/stride:validate` has been run and passed (all critical issues resolved)
    - All acceptance criteria from `proposal.md` are satisfied
+
+   **IMPORTANT: If `/stride:validate` has not been run or has critical failures:**
+   - STOP immediately
+   - Inform user: "Quality validation required before completion. Run `/stride:validate` first to check code quality, tests, and security."
+   - Do NOT proceed with completion until validation passes
 
 2. **Analyze Sprint Learnings**
    Review `implementation.md` for insights that affect:
@@ -102,13 +108,23 @@ If `$ARGUMENTS` (sprint name) is not provided:
      - Reference specific Strides or implementation decisions
 
 5. **Provide Completion Summary**
-   
+
    Display in chat:
    - Sprint name and status (COMPLETED)
    - Strides completed (count)
    - Files generated
    - project.md sections updated (if any)
    - Key learnings summary (2-3 sentences)
+
+   **Next Steps Suggestion:**
+   ```
+   Sprint completed successfully! 🎉
+
+   Next steps:
+   1. If this was a major feature, run `/stride:docs` to update project documentation
+   2. Start a new sprint with `/stride:plan [sprint-name]`
+   3. Or review project status with `/stride:status`
+   ```
 
 ---
 
@@ -126,10 +142,11 @@ Trigger when user says:
 
 **When NOT to Trigger**
 
-- Tasks still incomplete → use `/stride-implement`
-- Need to add work → use `/stride-feedback`
-- Need validation → use `/stride-review`
-- Starting new sprint → use `/stride-plan`
+- Tasks still incomplete → use `/stride:implement`
+- Need to add work → use `/stride:feedback`
+- Need document review → use `/stride:review`
+- Need code validation → use `/stride:validate`
+- Starting new sprint → use `/stride:plan`
 
 ---
 

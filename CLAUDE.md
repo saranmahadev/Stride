@@ -307,3 +307,66 @@ docs/
 - **Exclusions**: No sprint IDs, strides, implementation logs, or process details
 - **Format**: Clean, user-facing documentation suitable for end users or API consumers
 - **Customization**: Users can extend the generated docs with additional pages
+
+## Quality Gates & Validation System
+
+Stride includes both document validation (CLI) and comprehensive quality gates (agent command).
+
+### Components
+
+1. **`/stride:validate` Agent Command** ([stride/templates/agent_commands/validate.md](stride/templates/agent_commands/validate.md))
+   - Runs comprehensive quality checks before sprint completion
+   - Auto-detects project type and available validation tools
+   - Executes: type checking, linting, tests, security scans
+   - Generates structured validation report with Pass/Fail/Upcoming status
+   - Prevents sprint completion if critical issues exist
+   - Maps failures to sprint strides (upcoming fixes)
+
+2. **`stride validate` CLI Command** ([stride/commands/validate.py](stride/commands/validate.py))
+   - Validates sprint document structure against templates
+   - Checks required sections, checkboxes, and content completeness
+   - Ensures cross-file consistency
+   - Detects template placeholders that need filling
+
+3. **Validator** ([stride/core/validator.py](stride/core/validator.py))
+   - Core logic for document structure validation
+   - Template compliance checking
+   - Section presence validation
+   - Content completeness checks
+
+### Quality Gate Categories
+
+The `/stride:validate` agent command checks:
+
+1. **Type Checking**: TypeScript (tsc), mypy, Flow, etc.
+2. **Linting**: ESLint, Pylint, Flake8, Clippy, golangci-lint, etc.
+3. **Tests**: Jest, pytest, JUnit, Cargo test, Go test, etc.
+4. **Security**: Secret detection, dependency auditing
+5. **Formatting**: Prettier, Black, rustfmt (warnings only)
+
+### Validation Status Levels
+
+- **✅ PASS**: All checks passed, ready for completion
+- **❌ FAIL**: Critical issues blocking sprint completion
+- **🔜 UPCOMING**: Will be fixed in future strides (documented in plan)
+- **⏭️ SKIP**: Tool not configured or not applicable
+
+### Workflow
+
+```bash
+# In AI agent (before completing sprint)
+/stride:validate    # Run comprehensive quality gates
+
+# In terminal (validate document structure)
+stride validate SPRINT-AAAAA    # Validate specific sprint
+stride validate --all           # Validate all sprints
+```
+
+### Key Principles
+
+- **Pre-completion**: Always run `/stride:validate` before `/stride:complete`
+- **Auto-detection**: Automatically detects project type and tools
+- **Actionable**: Provides specific recommendations for fixing issues
+- **Blocking**: Critical failures prevent sprint completion
+- **Smart mapping**: Links failures to upcoming strides when applicable
+- **Security-first**: Always checks for hardcoded secrets and vulnerabilities

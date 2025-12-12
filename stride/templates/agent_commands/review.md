@@ -148,9 +148,11 @@ If `$ARGUMENTS` (sprint name) is not provided:
 9. **Ask for Next Action**
 
    * If issues exist:
-     **“Corrections required. Use `/stride-feedback sprint-[NAME]` to apply changes.”**
+     **"Corrections required. Use `/stride:feedback sprint-[NAME]` to apply changes."**
    * If clean:
-     **“Review passed. You may now run `/stride-complete sprint-[NAME]`.”**
+     **"Review passed. Next steps:**
+     **1. Run `/stride:validate` to check code quality (type checking, tests, linting, security)**
+     **2. After validation passes, run `/stride:complete sprint-[NAME]`."**
 
 ---
 

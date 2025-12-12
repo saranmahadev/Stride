@@ -20,6 +20,7 @@ Stride follows a three-layer architecture:
 - **MarkdownParser** ([stride/core/markdown_parser.py](stride/core/markdown_parser.py)) - Parses sprint files (checkboxes, strides, implementation logs)
 - **AgentRegistry** ([stride/core/agent_registry.py](stride/core/agent_registry.py)) - Registry of 20 supported AI agents with their configurations
 - **TemplateConverter** ([stride/core/template_converter.py](stride/core/template_converter.py)) - Converts Stride templates to 9 different agent-specific formats
+- **DocumentationGenerator** ([stride/core/documentation_generator.py](stride/core/documentation_generator.py)) - Generates project documentation from completed sprints, creates MkDocs configuration
 - **Models** ([stride/models.py](stride/models.py)) - Pydantic models for Sprint, SprintProgress, StrideTask, CheckboxItem
 
 ### Sprint Lifecycle
@@ -48,6 +49,7 @@ stride status
 stride show SPRINT-AAAAA
 stride validate
 stride metrics
+stride docs          # Start MkDocs server (port 8000 by default)
 ```
 
 ### Testing
@@ -194,6 +196,10 @@ Dev dependencies:
 - **isort** - Import sorting
 - **mypy** - Type checking
 
+Docs dependencies (optional):
+- **mkdocs** - Documentation site generator
+- **mkdocs-material** - Material theme for MkDocs
+
 ## Project Structure
 
 ```
@@ -209,12 +215,14 @@ stride/
 │   ├── status.py            # Show sprint status
 │   ├── show.py              # Display sprint details
 │   ├── validate.py          # Validate project structure
-│   └── metrics.py           # Sprint analytics
+│   ├── metrics.py           # Sprint analytics
+│   └── docs.py              # Serve documentation
 ├── core/                     # Business logic
 │   ├── sprint_manager.py    # Sprint CRUD operations
 │   ├── markdown_parser.py   # Parse markdown files
 │   ├── agent_registry.py    # Agent configurations
 │   ├── template_converter.py # Convert templates
+│   ├── documentation_generator.py # Generate docs
 │   ├── file_manager.py      # File operations
 │   ├── validator.py         # Validation logic
 │   ├── analytics.py         # Analytics engine
@@ -246,3 +254,56 @@ stride/
 2. Update parsing logic in `MarkdownParser` if structure changes
 3. Update `SprintManager` if status/progress calculation changes
 4. Update models in `stride/models.py` if data structure changes
+
+## Documentation System
+
+Stride includes a documentation generation system that creates project documentation from completed sprints.
+
+### Components
+
+1. **`/stride:docs` Agent Command** ([stride/templates/agent_commands/docs.md](stride/templates/agent_commands/docs.md))
+   - Analyzes all completed sprints (those with `retrospective.md`)
+   - Extracts feature information, descriptions, and implementation details
+   - Generates `docs/` folder with MkDocs-compatible documentation
+   - Creates: `index.md`, `features.md`, `getting-started.md`, `mkdocs.yml`
+   - Focuses on final product documentation, NOT sprint process
+
+2. **`stride docs` CLI Command** ([stride/commands/docs.py](stride/commands/docs.py))
+   - Starts MkDocs development server
+   - Checks for `docs/mkdocs.yml` and creates basic config if missing
+   - Serves documentation at `http://127.0.0.1:8000` (configurable port)
+   - Requires MkDocs to be installed (`pip install mkdocs mkdocs-material`)
+
+3. **DocumentationGenerator** ([stride/core/documentation_generator.py](stride/core/documentation_generator.py))
+   - Core logic for documentation generation
+   - Methods: `validate_project()`, `get_completed_sprints()`, `extract_features_from_sprints()`
+   - Generates markdown files and MkDocs configuration
+   - Creates basic structure that users can extend
+
+### Workflow
+
+```bash
+# In AI agent (e.g., Claude, Cursor)
+/stride:docs    # Generate documentation from completed sprints
+
+# In terminal
+stride docs     # Start MkDocs server to view documentation
+```
+
+### Documentation Structure
+
+```
+docs/
+├── mkdocs.yml           # MkDocs configuration (Material theme)
+├── index.md             # Project overview and feature list
+├── features.md          # Detailed feature documentation
+└── getting-started.md   # Installation and setup guide
+```
+
+### Key Principles
+
+- **Source**: Only completed sprints (with `retrospective.md`)
+- **Focus**: Final product features, not development process
+- **Exclusions**: No sprint IDs, strides, implementation logs, or process details
+- **Format**: Clean, user-facing documentation suitable for end users or API consumers
+- **Customization**: Users can extend the generated docs with additional pages

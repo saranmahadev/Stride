@@ -87,6 +87,7 @@ stride list      # View all sprints
 stride status    # Check current state
 stride show SPRINT-XXXXX  # Detailed sprint view
 stride metrics   # Analytics and insights
+stride docs      # Serve documentation (MkDocs)
 ```
 
 ---
@@ -139,6 +140,19 @@ stride metrics
 - Quality indicators
 - Export to JSON/CSV
 
+### 📚 Documentation Generation
+
+```bash
+/stride:docs     # Generate docs from completed sprints (in agent)
+stride docs      # Serve documentation with MkDocs
+```
+
+- Automatically generates documentation from completed sprints
+- Creates MkDocs-compatible site structure
+- Extracts features, descriptions, and implementation details
+- Serves interactive documentation at http://127.0.0.1:8000
+- No sprint process details - only final product documentation
+
 ### 🎨 Beautiful Terminal UI
 
 - Color-coded status indicators
@@ -178,6 +192,7 @@ When you run `stride init`, slash commands are installed:
 | `/stride:status` | Check progress |
 | `/stride:review` | Validate work |
 | `/stride:complete` | Archive and retrospective |
+| `/stride:docs` | Generate project documentation |
 | `/stride:present` | Generate presentations |
 | `/stride:derive` | Create sprint from existing |
 | `/stride:lite` | Lightweight changes (< 50 lines) |
@@ -266,18 +281,20 @@ stride/
 ├── models.py           # Pydantic models
 ├── constants.py        # Constants and enums
 ├── utils.py            # Utility functions
-├── commands/           # CLI commands (6)
+├── commands/           # CLI commands (7)
 │   ├── init.py
 │   ├── list.py
 │   ├── status.py
 │   ├── show.py
 │   ├── validate.py
-│   └── metrics.py
+│   ├── metrics.py
+│   └── docs.py
 ├── core/               # Business logic
 │   ├── sprint_manager.py
 │   ├── markdown_parser.py
 │   ├── agent_registry.py
 │   ├── template_converter.py
+│   ├── documentation_generator.py
 │   └── analytics.py
 └── templates/          # Templates
     ├── sprint_files/
@@ -335,8 +352,8 @@ This creates **persistent context**, **cross-agent consistency**, and a **comple
 
 - **20 AI Agents** supported
 - **9 Template Formats** for agent compatibility
-- **6 CLI Commands** for monitoring
-- **10 Agent Commands** for workflow
+- **7 CLI Commands** for monitoring
+- **11 Agent Commands** for workflow
 - **6 Sprint Documents** for each sprint
 
 ---

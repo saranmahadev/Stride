@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
 from stride import __version__
-from stride.commands import init, list, status, show, validate, metrics, docs
+from stride.commands import init, list, status, show, validate, metrics, docs, auth
 
 # Initialize Typer app
 app = typer.Typer(
@@ -28,6 +28,11 @@ app.command(name="show")(show.show)
 app.command(name="validate")(validate.validate)
 app.command(name="metrics")(metrics.metrics)
 app.command(name="docs")(docs.docs)
+
+# Authentication commands
+app.command(name="login")(auth.login)
+app.command(name="logout")(auth.logout)
+app.command(name="whoami")(auth.whoami)
 
 @app.callback(invoke_without_command=True)
 def main(

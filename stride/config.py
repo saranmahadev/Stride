@@ -8,6 +8,11 @@ Note: Currently returns empty config. Configuration is managed through
 
 from typing import Any, Dict
 
+# Supabase Configuration (Hardcoded - Not user-configurable)
+SUPABASE_URL = "https://fzlnqnsiutubfcqfyjwf.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable__6BzETxBn1lC2ESAF65IQg_8xJ4anzL"
+REDIRECT_URI = "http://localhost:37777/callback"
+
 
 def get_config() -> Dict[str, Any]:
     """

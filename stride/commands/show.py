@@ -19,6 +19,7 @@ from ..utils import (
     create_progress_text, format_timestamp_relative, 
     format_checkbox, colorize_status, truncate_text
 )
+from ..core.user_context import get_user_greeting, get_progress_encouragement
 
 console = Console()
 
@@ -99,6 +100,9 @@ def show(
 
 def _show_header(sprint):
     """Display sprint header with metadata."""
+    # Get personalized greeting
+    greeting = get_user_greeting(time_based=True)
+    
     # Create header content
     status_colored = colorize_status(sprint.status.value)
     
@@ -117,6 +121,13 @@ def _show_header(sprint):
             bar_width=30
         )
         header_lines.append(f"[bold]Overall Progress:[/bold] {progress_text}")
+        
+        # Add personalized encouragement
+        encouragement = get_progress_encouragement(
+            sprint.progress.completed_tasks,
+            sprint.progress.total_tasks
+        )
+        header_lines.append(f"\\n[cyan]{encouragement}[/cyan]")
         header_lines.append(f"[dim]Tasks: {sprint.progress.completed_tasks}/{sprint.progress.total_tasks} | " +
                            f"Acceptance Criteria: {sprint.progress.acceptance_criteria_completed}/{sprint.progress.acceptance_criteria_total}[/dim]")
     

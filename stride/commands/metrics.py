@@ -10,6 +10,7 @@ from rich.layout import Layout
 from rich.text import Text
 from rich import box
 from ..core.analytics import get_metrics, get_cache_info, clear_analytics_cache
+from ..core.user_context import get_username_display, get_motivational_message
 
 console = Console()
 
@@ -70,11 +71,15 @@ def display_summary_metrics(data: dict):
     summary = data["summary"]
     trends = data.get("trends", {})
     
-    # Header
+    # Header with personalized title
+    username = get_username_display()
+    motivation = get_motivational_message("metrics")
+    
     console.print()
     console.print("═" * 60, style="cyan")
-    console.print("📊 SPRINT METRICS OVERVIEW", style="bold cyan", justify="center")
+    console.print(f"📊 {username.upper()}'S PERFORMANCE DASHBOARD", style="bold cyan", justify="center")
     console.print("═" * 60, style="cyan")
+    console.print(f"[dim]{motivation}[/dim]", justify="center")
     console.print()
     
     # Sprint Overview Panel

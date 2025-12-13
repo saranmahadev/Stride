@@ -10,6 +10,7 @@ from rich.console import Console
 from rich.panel import Panel
 from ..core.documentation_generator import DocumentationGenerator
 from ..constants import STRIDE_DIR, PROJECT_FILE
+from ..core.user_context import get_username_display
 
 console = Console()
 
@@ -78,11 +79,13 @@ def docs(
         console.print("  [cyan]pip install stridekit[docs][/cyan]")
         raise typer.Exit(code=1)
 
-    # Display startup message
+    # Display startup message with personalized greeting
+    username = get_username_display()
     info_panel = Panel(
-        f"[bold cyan]Starting MkDocs Server[/bold cyan]\n\n"
+        f"[bold cyan]Starting docs server for {username}...[/bold cyan]\n\n"
         f"[white]URL:[/white] [blue]http://127.0.0.1:{port}[/blue]\n"
         f"[white]Docs:[/white] {generator.docs_dir}\n\n"
+        f"[cyan]Happy reading, {username}! 📚[/cyan]\n\n"
         f"[dim]Press Ctrl+C to stop the server[/dim]",
         border_style="blue",
         title="[bold]Documentation Server[/bold]",

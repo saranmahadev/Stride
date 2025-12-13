@@ -12,6 +12,7 @@ from ..utils import (
     create_progress_text, format_timestamp_relative, 
     colorize_status, truncate_text, format_checkbox
 )
+from ..core.user_context import get_user_greeting, get_progress_encouragement
 
 console = Console()
 
@@ -37,12 +38,19 @@ def _show_sprint_status(manager: SprintManager, sprint_id: str):
         console.print(f"[red]Sprint '{sprint_id}' not found.[/red]")
         raise typer.Exit(code=1)
     
-    # Header
+    # Header with personalized greeting
     status_colored = colorize_status(sprint.status.value)
+    greeting = get_user_greeting(time_based=False)
     
-    header_text = f"[bold cyan]{sprint.id}[/bold cyan] - {sprint.title}\n"
+    header_text = f"[bold]{greeting}, here's your sprint status[/bold]\n\n"
+    header_text += f"[bold cyan]{sprint.id}[/bold cyan] - {sprint.title}\n"
     header_text += f"[bold]Status:[/bold] {status_colored}\n"
     header_text += f"[dim]Updated {format_timestamp_relative(sprint.updated_at)}[/dim]"
+    
+    # Add progress encouragement if available
+    if sprint.progress and sprint.progress.total_tasks > 0:
+        encouragement = get_progress_encouragement(sprint.progress.completed_tasks, sprint.progress.total_tasks)
+        header_text += f"\n\n[cyan]{encouragement}[/cyan]"
     
     console.print(Panel(header_text, border_style="blue", title="[bold]Sprint Status[/bold]"))
     console.print()

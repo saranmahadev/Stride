@@ -8,6 +8,7 @@ from rich.panel import Panel
 from rich.table import Table
 from ..core.sprint_manager import SprintManager
 from ..core.validator import Validator
+from ..core.user_context import get_username_display, get_motivational_message
 
 console = Console()
 
@@ -82,15 +83,20 @@ def validate(
         
         # Display results
         if not errors and not warnings and not info:
+            username = get_username_display()
+            success_msg = get_motivational_message("validate_success")
             console.print(Panel(
-                "[green]✓[/green] Sprint validation passed with no issues!",
+                f"[green]✓[/green] {success_msg} {username}! 🎉\n\n"
+                f"[white]Sprint validation passed with no issues![/white]",
                 border_style="green",
                 title="[bold green]✓ VALID[/bold green]"
             ))
         else:
-            # Show errors
+            # Show errors with personalized message
             if errors:
-                console.print("[bold red]ERRORS:[/bold red]")
+                username = get_username_display()
+                error_msg = get_motivational_message("validate_error")
+                console.print(f"[bold red]ERRORS:[/bold red] [yellow]{error_msg}[/yellow]")
                 for i, err in enumerate(errors, 1):
                     console.print(f"  [red]{i}. {err}[/red]")
                 console.print()

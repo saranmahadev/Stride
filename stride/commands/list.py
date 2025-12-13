@@ -11,6 +11,7 @@ from ..constants import (
 )
 from ..core.sprint_manager import SprintManager
 from ..utils import create_progress_text, truncate_text, format_timestamp_relative
+from ..core.user_context import get_username_display
 
 console = Console()
 
@@ -45,9 +46,11 @@ def list_sprints(
         SprintStatus.COMPLETED: COLOR_COMPLETED,
     }
 
+    username = get_username_display()
+    
     if verbose:
         # Verbose mode with more columns
-        table = Table(title="Stride Sprints", show_lines=True)
+        table = Table(title=f"{username}'s Sprint Dashboard", show_lines=True)
         table.add_column("ID", style="cyan", no_wrap=True)
         table.add_column("Title", style="bold")
         table.add_column("Status", style="bold", no_wrap=True)
@@ -104,7 +107,7 @@ def list_sprints(
             )
     else:
         # Compact mode
-        table = Table(title="Stride Sprints")
+        table = Table(title=f"{username}'s Sprints")
         table.add_column("ID", style="cyan", no_wrap=True)
         table.add_column("Title", style="bold")
         table.add_column("Status", style="bold", no_wrap=True)

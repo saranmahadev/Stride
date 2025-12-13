@@ -22,6 +22,8 @@ import pyfiglet
 from stride import __version__
 from ..core.agent_registry import AgentRegistry, AGENT_CATEGORIES, AGENT_ROOT_FILES
 from ..core.template_converter import TemplateConverter
+from ..core.user_context import get_welcome_message, get_personal_stats_message, get_motivational_message
+from ..core.sprint_manager import SprintManager
 
 console = Console()
 
@@ -65,6 +67,29 @@ def init(
         title="[bold yellow]Welcome[/bold yellow]",
     )
     console.print(panel)
+    
+    # Show personalized welcome message with sprint count
+    try:
+        manager = SprintManager()
+        sprint_count = len(manager.list_sprints())
+        is_returning = sprint_count > 0
+        
+        welcome_msg = get_welcome_message(is_returning)
+        stats_msg = get_personal_stats_message(sprint_count)
+        motivation_msg = get_motivational_message("init")
+        
+        welcome_panel = Panel(
+            f"[bold cyan]{welcome_msg}[/bold cyan]\n\n"
+            f"[white]{stats_msg}[/white]\n\n"
+            f"[dim]{motivation_msg}[/dim]",
+            border_style="cyan",
+            padding=(1, 2),
+        )
+        console.print(welcome_panel)
+        console.print()
+    except Exception:
+        # If sprint manager fails, continue without personalization
+        pass
 
     # 2. Interactive Selection
     agent_names = AgentRegistry.get_agent_names()

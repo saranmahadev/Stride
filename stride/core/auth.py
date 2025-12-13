@@ -41,75 +41,183 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
         self.end_headers()
         
         if self.server.auth_code:
-            html = """
-            <html>
-                <head>
-                    <title>Stride Authentication</title>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                            text-align: center;
-                            padding: 50px;
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            color: white;
-                            margin: 0;
-                        }
-                        .container {
-                            background: rgba(255, 255, 255, 0.1);
-                            border-radius: 20px;
-                            padding: 40px;
-                            backdrop-filter: blur(10px);
-                            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-                        }
-                        h1 { color: #4ade80; font-size: 3em; margin: 0; }
-                        p { font-size: 1.2em; margin-top: 20px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>✓</h1>
-                        <h2>Authentication Successful!</h2>
-                        <p>You can close this window and return to your terminal.</p>
-                    </div>
-                </body>
-            </html>
-            """
+            html = self._get_success_page()
         else:
-            html = """
-            <html>
-                <head>
-                    <title>Stride Authentication</title>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                            text-align: center;
-                            padding: 50px;
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            color: white;
-                            margin: 0;
-                        }
-                        .container {
-                            background: rgba(255, 255, 255, 0.1);
-                            border-radius: 20px;
-                            padding: 40px;
-                            backdrop-filter: blur(10px);
-                            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-                        }
-                        h1 { color: #ef4444; font-size: 3em; margin: 0; }
-                        p { font-size: 1.2em; margin-top: 20px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>✗</h1>
-                        <h2>Authentication Failed</h2>
-                        <p>Please try again in your terminal.</p>
-                    </div>
-                </body>
-            </html>
-            """
+            html = self._get_error_page()
         
         self.wfile.write(html.encode())
+    
+    def _get_success_page(self):
+        """Return unified success page HTML."""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Stride Authentication - Success</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                }
+                .container {
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 24px;
+                    padding: 60px 40px;
+                    backdrop-filter: blur(10px);
+                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                    border: 1px solid rgba(255, 255, 255, 0.18);
+                    max-width: 500px;
+                    text-align: center;
+                    animation: slideIn 0.5s ease-out;
+                }
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .icon {
+                    font-size: 80px;
+                    margin-bottom: 20px;
+                    animation: checkmark 0.6s ease-in-out;
+                }
+                @keyframes checkmark {
+                    0% { transform: scale(0); }
+                    50% { transform: scale(1.2); }
+                    100% { transform: scale(1); }
+                }
+                h1 {
+                    font-size: 32px;
+                    font-weight: 600;
+                    margin-bottom: 16px;
+                    color: #4ade80;
+                }
+                p {
+                    font-size: 18px;
+                    line-height: 1.6;
+                    opacity: 0.9;
+                }
+                .brand {
+                    margin-top: 30px;
+                    padding-top: 20px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.2);
+                    font-size: 14px;
+                    opacity: 0.7;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="icon">✓</div>
+                <h1>Authentication Successful!</h1>
+                <p>You can close this window and return to your terminal.</p>
+                <div class="brand">Stride CLI</div>
+            </div>
+        </body>
+        </html>
+        """
+    
+    def _get_error_page(self):
+        """Return unified error page HTML."""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Stride Authentication - Error</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                }
+                .container {
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 24px;
+                    padding: 60px 40px;
+                    backdrop-filter: blur(10px);
+                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                    border: 1px solid rgba(255, 255, 255, 0.18);
+                    max-width: 500px;
+                    text-align: center;
+                    animation: slideIn 0.5s ease-out;
+                }
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .icon {
+                    font-size: 80px;
+                    margin-bottom: 20px;
+                    animation: shake 0.5s ease-in-out;
+                }
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-10px); }
+                    75% { transform: translateX(10px); }
+                }
+                h1 {
+                    font-size: 32px;
+                    font-weight: 600;
+                    margin-bottom: 16px;
+                    color: #f87171;
+                }
+                p {
+                    font-size: 18px;
+                    line-height: 1.6;
+                    opacity: 0.9;
+                }
+                .brand {
+                    margin-top: 30px;
+                    padding-top: 20px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.2);
+                    font-size: 14px;
+                    opacity: 0.7;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="icon">✗</div>
+                <h1>Authentication Failed</h1>
+                <p>Please try again in your terminal.</p>
+                <div class="brand">Stride CLI</div>
+            </div>
+        </body>
+        </html>
+        """
     
     def log_message(self, format, *args):
         """Suppress server logs."""
@@ -134,62 +242,110 @@ class MagicLinkHandler(BaseHTTPRequestHandler):
             
             # HTML that extracts tokens from hash and sends to server
             html = """
+            <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Stride Authentication</title>
                 <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
                     body {
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                        text-align: center;
-                        padding: 50px;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                         color: white;
-                        margin: 0;
                     }
                     .container {
                         background: rgba(255, 255, 255, 0.1);
-                        border-radius: 20px;
-                        padding: 40px;
+                        border-radius: 24px;
+                        padding: 60px 40px;
                         backdrop-filter: blur(10px);
                         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                        border: 1px solid rgba(255, 255, 255, 0.18);
                         max-width: 500px;
-                        margin: 0 auto;
+                        text-align: center;
                     }
-                    h1 { margin: 0 0 20px 0; font-size: 2.5em; }
-                    p { font-size: 1.2em; margin: 10px 0; }
                     .spinner {
                         border: 4px solid rgba(255, 255, 255, 0.3);
                         border-radius: 50%;
                         border-top: 4px solid white;
-                        width: 40px;
-                        height: 40px;
+                        width: 50px;
+                        height: 50px;
                         animation: spin 1s linear infinite;
-                        margin: 30px auto;
+                        margin: 0 auto 30px;
                     }
                     @keyframes spin {
                         0% { transform: rotate(0deg); }
                         100% { transform: rotate(360deg); }
                     }
-                    .success { color: #4ade80; font-size: 3em; }
-                    .error { color: #f87171; font-size: 3em; }
+                    .icon {
+                        font-size: 80px;
+                        margin-bottom: 20px;
+                    }
+                    .success-icon {
+                        animation: checkmark 0.6s ease-in-out;
+                    }
+                    @keyframes checkmark {
+                        0% { transform: scale(0); }
+                        50% { transform: scale(1.2); }
+                        100% { transform: scale(1); }
+                    }
+                    .error-icon {
+                        animation: shake 0.5s ease-in-out;
+                    }
+                    @keyframes shake {
+                        0%, 100% { transform: translateX(0); }
+                        25% { transform: translateX(-10px); }
+                        75% { transform: translateX(10px); }
+                    }
+                    h1 {
+                        font-size: 32px;
+                        font-weight: 600;
+                        margin-bottom: 16px;
+                    }
+                    p {
+                        font-size: 18px;
+                        line-height: 1.6;
+                        opacity: 0.9;
+                    }
+                    .brand {
+                        margin-top: 30px;
+                        padding-top: 20px;
+                        border-top: 1px solid rgba(255, 255, 255, 0.2);
+                        font-size: 14px;
+                        opacity: 0.7;
+                    }
+                    .success-color { color: #4ade80; }
+                    .error-color { color: #f87171; }
                 </style>
             </head>
             <body>
                 <div class="container">
                     <div id="loading">
                         <div class="spinner"></div>
-                        <h1>🔐 Authenticating...</h1>
+                        <h1>Authenticating...</h1>
                         <p>Please wait while we complete your login.</p>
+                        <div class="brand">Stride CLI</div>
                     </div>
                     <div id="success" style="display:none;">
-                        <div class="success">✓</div>
-                        <h1>Authentication Successful!</h1>
+                        <div class="icon success-icon">✓</div>
+                        <h1 class="success-color">Authentication Successful!</h1>
                         <p>You can close this window and return to the terminal.</p>
+                        <div class="brand">Stride CLI</div>
                     </div>
                     <div id="error" style="display:none;">
-                        <div class="error">✗</div>
-                        <h1>Authentication Failed</h1>
+                        <div class="icon error-icon">✗</div>
+                        <h1 class="error-color">Authentication Failed</h1>
                         <p>Please try again or check your email link.</p>
+                        <div class="brand">Stride CLI</div>
                     </div>
                 </div>
                 <script>

@@ -1,9 +1,10 @@
 """
 Authentication commands for Stride CLI.
-Provides login, logout, and whoami functionality using GitHub OAuth via Supabase.
+Provides login, logout, and whoami functionality using Magic Link or GitHub OAuth via Supabase.
 """
 
 import typer
+import questionary
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -15,10 +16,10 @@ console = Console()
 
 def login():
     """
-    Authenticate with GitHub via Supabase.
+    Authenticate with Stride.
     
-    Opens browser for OAuth flow, prompts for username, and stores
-    credentials globally for all Stride projects.
+    Choose between Magic Link (email) or GitHub OAuth authentication.
+    Credentials are stored globally for all Stride projects.
     """
     auth = SupabaseAuth()
     
@@ -35,40 +36,62 @@ def login():
         auth.clear_credentials()
         console.print("[green]✓ Previous session cleared[/green]\n")
     
-    # Start OAuth flow
-    code = auth.start_oauth_flow()
+    # Display beautiful method selection
+    console.print()
+    method_panel = Panel(
+        "[bold cyan]Choose Authentication Method[/bold cyan]\n\n"
+        "1. 📧 [bold]Magic Link[/bold] - Email-based (passwordless)\n"
+        "   [dim]Receive a secure link in your email[/dim]\n\n"
+        "2. 🔗 [bold]GitHub[/bold] - OAuth login\n"
+        "   [dim]Sign in with your GitHub account[/dim]",
+        border_style="cyan",
+        padding=(1, 2),
+    )
+    console.print(method_panel)
     
-    if not code:
-        console.print("\n[red]✗ Authentication failed[/red]")
-        console.print("[yellow]Please try again or check your internet connection.[/yellow]")
+    # Prompt for choice using questionary
+    choice = questionary.select(
+        "Select method:",
+        choices=[
+            "📧 Magic Link (Email)",
+            "🔗 GitHub OAuth"
+        ]
+    ).ask()
+    
+    if not choice:
+        console.print("[dim]Login cancelled.[/dim]")
         return
     
-    # Exchange code for tokens
-    console.print("🔄 [cyan]Exchanging authorization code...[/cyan]")
-    token_data = auth.exchange_code_for_token(code)
+    # Route to appropriate authentication method
+    if "Magic Link" in choice:
+        token_data = auth.login_with_magic_link()
+    else:
+        token_data = auth.login_with_github()
     
+    # Handle authentication result
     if not token_data:
-        console.print("\n[red]✗ Failed to obtain access token[/red]")
-        console.print("[yellow]Please try again later.[/yellow]")
+        console.print("\n[red]✗ Authentication failed[/red]")
+        console.print("[yellow]Please try again.[/yellow]")
         return
     
     # Extract user info
     access_token = token_data.get("access_token")
     refresh_token = token_data.get("refresh_token")
     user_info = token_data.get("user", {})
-    github_email = user_info.get("email") or user_info.get("user_metadata", {}).get("email", "unknown@github.com")
+    email = user_info.get("email", "unknown@email.com")
     
     if not access_token:
         console.print("\n[red]✗ No access token received[/red]")
         return
     
-    console.print(f"[green]✓ Authenticated as:[/green] [bold]{github_email}[/bold]\n")
+    console.print(f"\n[green]✓ Authenticated as:[/green] [bold]{email}[/bold]")
     
-    # Prompt for username
-    username = auth.prompt_for_username()
+    # Prompt for username with email prefix as default
+    default_username = email.split("@")[0] if email else "developer"
+    username = auth.prompt_for_username(default=default_username)
     
     # Store credentials globally
-    auth.store_credentials(access_token, refresh_token, github_email, username)
+    auth.store_credentials(access_token, refresh_token, email, username)
     
     # Success message
     console.print()
@@ -144,7 +167,7 @@ def whoami():
     table.add_column("Value", style="white")
     
     table.add_row("👤 Username", f"[bold]{current_user['username']}[/bold]")
-    table.add_row("📧 GitHub", current_user['email'])
+    table.add_row("📧 Email", current_user['email'])
     table.add_row("🔑 Token", "[green]Active[/green]")
     
     # Display panel with table

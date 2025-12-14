@@ -65,13 +65,10 @@ jobs:
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
-          script-name: stride/__main__.py
+          script-name: stride
           mode: onefile
           
           # Include all required packages
-          enable-plugins: |
-            anti-bloat
-          
           include-package: |
             stride
             typer

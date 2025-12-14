@@ -66,8 +66,7 @@ jobs:
         with:
           nuitka-version: main
           script-name: stride/__main__.py
-          mode: standalone
-          onefile: true
+          mode: onefile
           
           # Include all required packages
           enable-plugins: |

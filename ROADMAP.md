@@ -48,173 +48,36 @@ Stride evolves **linearly**, not disruptively. Each phase builds on the previous
 
 ---
 
-## Phase 1: Navigation & Context Engineering (v1.1–v1.2)
-
-**Target:** All Stride users (solo developers, teams, enterprises)  
-**Infrastructure:** None required  
-**Goal:** Enable 50% faster agent navigation and 90% accuracy in finding entry points
-
-### Problem
-
-AI agents currently struggle with:
-- **No directory context** - Must infer purpose from filenames
-- **Linear file reading** - Read entire files to find relevant sections  
-- **Slow discovery** - 8-12 file reads to understand structure
-- **Context scatter** - Related information spread across files
-- **Scale issues** - Large projects overwhelm agents
-
-### Solution: Dual Navigation System
-
-**1. SPECS.md Files (v1.1)**
-- Directory-level documentation and navigation guides
-- One per significant directory
-- Lists key files, entry points, dependencies, patterns
-- Acts as "table of contents" for agents
-
-**2. Marker-Based Comments (v1.1)**
-- Inline navigation anchors: `<!-- STRIDE:MARKER:TYPE:id -->`
-- Section boundaries, entry points, decisions
-- Cross-references and dependencies
-- Language-agnostic HTML comments
-
-### Features
-
-#### v1.1: Foundation (Weeks 1-2)
-
-* `stride map init` - Initialize navigation system
-* SPECS.md template and specification
-* Marker syntax definition (9 types)
-* Updated agent instructions for navigation
-* Sample SPECS.md for stride/ codebase
-
-#### v1.2: Auto-Generation (Weeks 3-4)
-
-* `stride map generate` - AI-powered SPECS.md generation
-* Recursive directory analysis
-* Marker suggestion engine
-* Integration with existing project structure
-* Migration guide for users
-
-#### v1.3: Marker Management (Weeks 5-6)
-
-* `stride markers add` - Add markers to files
-* `stride markers validate` - Check marker consistency
-* Sprint templates with default markers
-* Marker linting and style guide
-* Auto-suggestion for appropriate markers
-
-#### v1.4: Navigation Commands (Weeks 7-8)
-
-* `stride navigate` - Search using markers and SPECS.md
-* `/stride:scan` agent command - Read navigation system
-* Enhanced `stride show` with marker visualization
-* Interactive navigation tutorial
-* Agent templates updated to use navigation
-
-#### v1.5: Maintenance (Weeks 9-10)
-
-* `stride map sync` - Detect and fix drift
-* Coverage reporting for markers
-* Pre-commit hooks for validation
-* Analytics dashboard for marker usage
-* Complete documentation and best practices
-
-### Success Metrics
-
-**Agent Efficiency:**
-- 50% reduction in files read per task (from 8-12 to 3-5)
-- 75% faster entry point discovery (from 45s to 10s)
-- 62% reduction in context loading overhead
-- <5% navigation errors (down from 15-20%)
-
-**Adoption:**
-- Month 1: 80% of directories have SPECS.md
-- Month 2: 100% coverage, 50+ community projects
-- Month 3: >80% marker coverage in core modules
-
-**Quality:**
-- SPECS.md accuracy: >95%
-- Marker reference accuracy: >98%
-- Developer NPS: >40
-
-### Agent Integration
-
-Agents will:
-1. Check SPECS.md before diving into directories
-2. Use markers to jump directly to relevant sections
-3. Follow explicit entry points instead of guessing
-4. Reference markers in implementation logs
-5. Suggest SPECS.md updates when structure changes
-
-### Benefits
-
-**For Agents:**
-- 50% faster context loading
-- 90% accuracy in finding entry points
-- Better understanding of dependencies
-- Reduced redundant discovery work
-
-**For Developers:**
-- Living documentation that evolves with code
-- Faster onboarding for new team members
-- Better agent collaboration
-- Enhanced audit trail with marker references
-
-**For Stride Ecosystem:**
-- Foundation for Phase 2 team features
-- Scalable to projects of any size
-- Standard approach across all 20 agents
-- Open standard for AI-navigable codebases
-
-**Outcome:**
-Navigation-first development. Agents navigate like experienced developers, not explorers.
-
-[📖 Full Phase 1 Specification](docs/phase-1-navigation.md)
-
----
-
 ## Phase 2: Repo-Based Team Collaboration (v1.3–v1.5)
 
 **Target:** Small teams using Git as the synchronization layer
 **Infrastructure:** None
 
-### 1. Identity & User Management (v1.3)
-
-* `stride whoami` with enhanced identity metadata
-* User preferences in `.stride/config.yaml`
-* Git-based attribution for authorship and actions
-
-### 2. Team Initialization (v1.3)
+### 1. Team Initialization (v1.3)
 
 * `stride team init` generates `.stride/team.yaml`
 * Defines members, roles, and policies
 * AI-assisted role suggestions derived from `project.md`
 
-### 3. Member Management (v1.4)
+### 2. Member Management (v1.4)
 
 * `stride team add | remove | edit`
 * Role-based permissions enforced in the CLI
 * Git-based onboarding (clone repo to join)
 
-### 4. Assignment & Workflow (v1.4)
+### 3. Assignment & Workflow (v1.4)
 
 * `stride assign` with AI-suggested assignees
 * Sprint metadata: ownership, approvals, workflow state
 * Approval gates (N required reviewers)
 * AI-assisted workload balancing
 
-### 5. Comments & Communication (v1.5)
+### 4. Comments & Communication (v1.5)
 
 * Threaded comments on files and lines
 * Sprint-scoped discussion
 * Feedback loop for AI learning
 * Stored in `.stride/sprints/<ID>/.comments.yaml`
-
-### 6. Git-Based Sync & Conflict Management (v1.5)
-
-* File locking to prevent destructive overlaps
-* Presence detection (who is editing what)
-* AI-assisted merge and conflict resolution
 
 **Outcome:**
 Teams collaborate entirely via Git. No servers. No SaaS dependency.

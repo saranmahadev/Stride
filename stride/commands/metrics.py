@@ -170,6 +170,31 @@ def display_summary_metrics(data: dict):
         )
         console.print(trend_panel)
     
+    # Workload metrics (if team configured)
+    try:
+        from ..core.workload_analyzer import analyze_workload_distribution
+        workload_dist = analyze_workload_distribution()
+        
+        if workload_dist["total_members"] > 0:
+            console.print()
+            workload_content = f"""[bold]Team Members:[/bold] {workload_dist['total_members']}
+[bold]Total Assigned Sprints:[/bold] {workload_dist['total_sprints']}
+[bold]Average Load:[/bold] {workload_dist['avg_load']}
+[bold]Load Range:[/bold] [{workload_dist['min_load']}-{workload_dist['max_load']}]
+[bold]Balance Score:[/bold] [{'green' if workload_dist['balance_score'] >= 70 else 'yellow'}]{workload_dist['balance_score']}/100[/{'green' if workload_dist['balance_score'] >= 70 else 'yellow'}]"""
+            
+            workload_panel = Panel(
+                workload_content,
+                title="[bold cyan]Team Workload[/bold cyan]",
+                border_style="cyan",
+                box=box.ROUNDED,
+                padding=(1, 2)
+            )
+            console.print(workload_panel)
+    except:
+        # Team not configured, skip workload metrics
+        pass
+    
     console.print()
     console.print("[dim]💡 Tip: Use --detailed for comprehensive metrics breakdown[/dim]")
     console.print()

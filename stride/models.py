@@ -3,10 +3,10 @@ Pydantic data models for Stride entities.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pathlib import Path
 from dataclasses import dataclass
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from .constants import SprintStatus
 
 
@@ -142,3 +142,172 @@ class SprintData:
             self.has_retrospective,
         ]
         return (sum(checks) / len(checks)) * 100
+
+
+# ============================================================================
+# Team Collaboration Models (v1.5)
+# ============================================================================
+
+
+class TeamMember(BaseModel):
+    """
+    Model representing a team member.
+    
+    Attributes:
+        username: Unique identifier (3-30 chars, alphanumeric + dash)
+        email: Valid email address
+        role: One of ["admin", "developer", "reviewer", "viewer"]
+        joined_at: Timestamp when member joined
+        active: Whether member is currently active
+    """
+    username: str = Field(..., min_length=3, max_length=30, pattern=r"^[a-z0-9\-]+$")
+    email: EmailStr
+    role: str = Field(..., pattern=r"^(admin|developer|reviewer|viewer)$")
+    joined_at: datetime = Field(default_factory=datetime.now)
+    active: bool = True
+
+
+class ApprovalPolicy(BaseModel):
+    """
+    Model representing approval workflow policy.
+    
+    Attributes:
+        required_approvers: Number of approvals required (0 = no approvals)
+        allow_self_approval: Whether sprint assignee can approve their own work
+        block_completion: Whether to block completion without sufficient approvals
+    """
+    required_approvers: int = Field(default=0, ge=0)
+    allow_self_approval: bool = False
+    block_completion: bool = True
+
+
+class TeamConfig(BaseModel):
+    """
+    Model representing team configuration stored in .stride/team.yaml.
+    
+    Attributes:
+        schema_version: Schema version for future migrations
+        project_name: Project name from project.md
+        created_at: Team initialization timestamp
+        members: List of team members
+        roles: Role definitions with permissions
+        approval_policy: Approval workflow configuration
+    """
+    schema_version: str = "1.5"
+    project_name: str = Field(..., min_length=3, max_length=100)
+    created_at: datetime = Field(default_factory=datetime.now)
+    members: List[TeamMember] = Field(default_factory=list)
+    roles: Dict[str, List[str]] = Field(default_factory=dict)
+    approval_policy: ApprovalPolicy = Field(default_factory=ApprovalPolicy)
+    
+    def get_member(self, username: str) -> Optional[TeamMember]:
+        """Get team member by username."""
+        for member in self.members:
+            if member.username == username:
+                return member
+        return None
+    
+    def has_member(self, username: str) -> bool:
+        """Check if username exists in team."""
+        return self.get_member(username) is not None
+
+
+class Approval(BaseModel):
+    """
+    Model representing a single approval.
+    
+    Attributes:
+        approver: Username of approver
+        approved_at: Timestamp of approval
+    """
+    approver: str
+    approved_at: datetime = Field(default_factory=datetime.now)
+
+
+class MetadataEvent(BaseModel):
+    """
+    Model representing a metadata history event.
+    
+    Attributes:
+        event: Event type (assigned, approved, unassigned, etc.)
+        user: Username who triggered the event
+        timestamp: When the event occurred
+        details: Optional additional details
+    """
+    event: str
+    user: str
+    timestamp: datetime = Field(default_factory=datetime.now)
+    details: Optional[str] = None
+
+
+class SprintMetadata(BaseModel):
+    """
+    Model representing sprint ownership and approval tracking.
+    Stored in .stride/sprints/<ID>/.metadata.yaml.
+    
+    Attributes:
+        sprint_id: Sprint identifier
+        assignee: Assigned team member username
+        created_at: Sprint creation timestamp
+        assigned_at: Assignment timestamp
+        status: Sprint status (proposed, active, completed)
+        approvals: List of approval records
+        tags: Optional tags for filtering
+        history: Assignment/approval history
+    """
+    sprint_id: str
+    assignee: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    assigned_at: Optional[datetime] = None
+    status: str = "proposed"
+    approvals: List[Approval] = Field(default_factory=list)
+    tags: List[str] = Field(default_factory=list)
+    history: List[MetadataEvent] = Field(default_factory=list)
+    
+    @property
+    def approval_count(self) -> int:
+        """Get number of approvals."""
+        return len(self.approvals)
+    
+    def has_approved(self, username: str) -> bool:
+        """Check if user has already approved."""
+        return any(approval.approver == username for approval in self.approvals)
+
+
+class Comment(BaseModel):
+    """
+    Model representing a threaded comment.
+    Stored in .stride/sprints/<ID>/.comments.yaml.
+    
+    Attributes:
+        id: Unique comment ID (e.g., "C1", "C2", "C1.1" for replies)
+        author: Username from team.yaml
+        timestamp: Comment creation time
+        message: Comment text (1-5000 chars)
+        file_path: Optional file anchor (relative path)
+        line_number: Optional line anchor (positive int)
+        status: One of ["open", "resolved"]
+        replies: Nested replies (recursive structure)
+    """
+    id: str
+    author: str
+    timestamp: datetime = Field(default_factory=datetime.now)
+    message: str = Field(..., min_length=1, max_length=5000)
+    file_path: Optional[str] = None
+    line_number: Optional[int] = Field(None, gt=0)
+    status: str = Field(default="open", pattern=r"^(open|resolved)$")
+    replies: List['Comment'] = Field(default_factory=list)
+    
+    @property
+    def has_replies(self) -> bool:
+        """Check if comment has replies."""
+        return len(self.replies) > 0
+    
+    @property
+    def is_resolved(self) -> bool:
+        """Check if comment is resolved."""
+        return self.status == "resolved"
+
+
+# Enable forward reference resolution for recursive Comment model
+Comment.model_rebuild()

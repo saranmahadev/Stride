@@ -1,100 +1,59 @@
-## 🔄 Development Workflow
+<!-- STRIDE:START -->
+# Stride Instructions
 
-This project follows a **talk → plan → confirm → implement** cycle:
+These instructions are for AI coding assistants working in this project.
 
-### 1. **Talk Phase** (Discussion)
-- Human explains what they want to build/change
-- AI asks clarifying questions
-- Explore requirements, edge cases, dependencies
-- No code is written yet
+**🛑 STOP & READ:** Before starting any task, you MUST read the full guidelines in:
+👉 `.stride/AGENTS.md`
 
-### 2. **Plan Phase** (Design)
-- AI creates a detailed implementation plan
-- Plan includes:
-  - What files will be created/modified
-  - What each change will accomplish
-  - Technical approach and alternatives
-  - Testing strategy
-  - File structure diagrams
-- Plan is presented in markdown format
-- **IMPORTANT**: Plan must be comprehensive and detailed
+**When to consult the full guidelines:**
+- **Starting a new feature?** → You need to run `/stride-plan`
+- **Writing code?** → You need to update `implementation.md` via `/stride-implement`
+- **Finished a task?** → You need to run `/stride-review`
+- **Unsure of the process?** → The workflow is strictly defined in `.stride/AGENTS.md`
 
-### 3. **Confirm Phase** (Approval)
-- Human reviews the plan
-- Human confirms: "Proceed" or requests changes
-- **NO IMPLEMENTATION HAPPENS UNTIL CONFIRMATION**
-- If changes needed, return to Plan phase
+**Core Workflow:**
 
-### 4. **Implement Phase** (Execution)
-- AI executes the approved plan exactly as specified
-- Makes all specified changes
-- Runs tests if applicable
-- Reports completion with summary
+1. **🗣️ Talk (Discussion)**
+   - Understand the goal.
+   - Ask clarifying questions.
+   - *Do not write code yet.*
 
-### Example Workflow
+2. **📅 Plan (Design)**
+   - Run `/stride-plan` to generate sprint docs.
+   - Create `proposal.md`, `plan.md`, and `design.md`.
+   - Define tasks, architecture, and risks.
 
-```
-Human: "Add a --verbose flag to stride list"
+3. **✅ Confirm (Approval)**
+   - Present the plan using `/stride-present`.
+   - Wait for explicit user approval ("Proceed").
+   - *No implementation until approved.*
 
-AI: [TALK] "Should verbose mode:
-       - Show full file paths?
-       - Include timestamps?
-       - Show descriptions?"
+4. **🔨 Implement (Execution)**
+   - Run `/stride-implement` to log progress.
+   - Execute tasks from `plan.md`.
+   - Update `implementation.md` with decisions/notes.
 
-Human: [CONFIRM] "Show paths and timestamps"
+5. **🏁 Complete (Retrospective)**
+   - Run `/stride-review` for final check.
+   - Run `/stride-complete` to archive and reflect.
 
-AI: [PLAN] "Implementation Plan:
-       1. Edit stride/commands/list.py
-       2. Add --verbose flag using Typer
-       3. Update output formatting with Rich
-       4. Add tests"
+**Quick Commands:**
+- `/stride-init` - Initialize project context
+- `/stride-derive` - Discover sprint ideas (AI-powered brainstorming) 🆕
+- `/stride-lite` - Quick fixes without sprint files (< 50 lines) 🆕
+- `/stride-status` - Get project status with blockers & recommendations 🆕
+- `/stride-plan` - Create a new sprint
+- `/stride-present` - Show sprint plan
+- `/stride-implement` - Log implementation details
+- `/stride-feedback` - Adjust mid-sprint
+- `/stride-review` - Submit for review
+- `/stride-complete` - Finalize sprint
 
-Human: [APPROVAL] "Proceed"
+**💡 Tips:**
+- Not sure what to work on next? Use `/stride-derive` to get AI-generated sprint proposals!
+- Small fix (< 50 lines)? Use `/stride-lite` for faster execution without creating sprint files!
+- Want a project update? Use `/stride-status` for progress, blockers, and recommendations!
+- Building a feature? Use `/stride-plan` for full sprint workflow!
 
-AI: [IMPLEMENT] Executes all changes, runs tests, reports completion
-```
-
----
-
-## 📝 Guidelines for AI Agents
-
-### When Working on Stride:
-
-1. **Always follow the talk → plan → confirm → implement workflow**
-2. **Never skip the planning phase** - users need to review before changes
-3. **Wait for explicit confirmation** before implementing
-4. **Make comprehensive plans** - include all affected files
-5. **Document decisions** in implementation notes
-6. **Run tests after changes** when applicable
-7. **Provide clear summaries** of what was done
-
-### Command Implementation Pattern:
-
-```python
-# stride/commands/example.py
-import typer
-from rich.console import Console
-
-console = Console()
-
-def example_command(
-    arg: str,
-    option: bool = False
-):
-    """
-    Brief description of what this command does.
-
-    Args:
-        arg: Description of argument
-        option: Description of option
-    """
-    # Implementation here
-    console.print("[green]Success![/green]")
-```
-
-### File Organization Rules:
-
-- **One command per file** in `stride/commands/`
-- **Business logic** in `stride/core/`
-- **Data models** in `stride/models.py`
-- **Constants** in `stride/constants.py`
+<!-- STRIDE:END -->

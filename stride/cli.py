@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
 from stride import __version__
-from stride.commands import init, list, status, show, validate, metrics, docs, auth
+from stride.commands import init, list, status, show, validate, metrics, docs, auth, team, assign, approve, comment
 
 # Initialize Typer app
 app = typer.Typer(
@@ -28,6 +28,12 @@ app.command(name="show")(show.show)
 app.command(name="validate")(validate.validate)
 app.command(name="metrics")(metrics.metrics)
 app.command(name="docs")(docs.docs)
+
+# Team collaboration commands
+app.add_typer(team.app, name="team")
+app.add_typer(assign.app, name="assign")
+app.add_typer(approve.app, name="approve")
+app.add_typer(comment.app, name="comment")
 
 # Authentication commands
 app.command(name="login")(auth.login)

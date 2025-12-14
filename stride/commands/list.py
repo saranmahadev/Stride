@@ -12,11 +12,13 @@ from ..constants import (
 from ..core.sprint_manager import SprintManager
 from ..utils import create_progress_text, truncate_text, format_timestamp_relative
 from ..core.user_context import get_username_display
+from ..core.team_file_manager import read_sprint_metadata, read_team_config
 
 console = Console()
 
 def list_sprints(
     status: SprintStatus = typer.Option(None, help="Filter by sprint status"),
+    assignee: str = typer.Option(None, "--assignee", "-a", help="Filter by assignee email"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed information"),
 ):
     """
@@ -32,11 +34,22 @@ def list_sprints(
         console.print("[yellow]No sprints found.[/yellow]")
         return
 
-    # Load progress data for each sprint
+    # Load progress data and assignment info for each sprint
     detailed_sprints = []
     for sprint in sprints:
         detailed = manager.get_sprint(sprint.id, include_progress=True)
         if detailed:
+            # Load assignment metadata
+            try:
+                metadata = read_sprint_metadata(sprint.id)
+                detailed.assignee = metadata.assigned_to if metadata else None
+            except:
+                detailed.assignee = None
+            
+            # Filter by assignee if specified
+            if assignee and detailed.assignee != assignee:
+                continue
+            
             detailed_sprints.append(detailed)
 
     status_colors = {
@@ -48,12 +61,20 @@ def list_sprints(
 
     username = get_username_display()
     
+    # Try to load team config for assignee names
+    team_config = None
+    try:
+        team_config = read_team_config()
+    except:
+        pass  # Team not configured
+    
     if verbose:
         # Verbose mode with more columns
         table = Table(title=f"{username}'s Sprint Dashboard", show_lines=True)
         table.add_column("ID", style="cyan", no_wrap=True)
         table.add_column("Title", style="bold")
         table.add_column("Status", style="bold", no_wrap=True)
+        table.add_column("Assignee", style="green", no_wrap=True)
         table.add_column("Progress", justify="left")
         table.add_column("Tasks", justify="center")
         table.add_column("Strides", justify="center")
@@ -66,6 +87,15 @@ def list_sprints(
             
             # Title (truncated)
             title = truncate_text(sprint.title, MAX_TITLE_LENGTH)
+            
+            # Assignee
+            assignee_text = "[dim]Unassigned[/dim]"
+            if sprint.assignee:
+                if team_config:
+                    member = team_config.get_member(sprint.assignee)
+                    assignee_text = member.name if member else sprint.assignee
+                else:
+                    assignee_text = sprint.assignee.split('@')[0]  # Username part
             
             # Progress bar
             if sprint.progress and sprint.progress.total_tasks > 0:
@@ -99,6 +129,7 @@ def list_sprints(
                 sprint.id,
                 title,
                 status_text,
+                assignee_text,
                 progress_text,
                 tasks_text,
                 strides_text,
@@ -111,6 +142,7 @@ def list_sprints(
         table.add_column("ID", style="cyan", no_wrap=True)
         table.add_column("Title", style="bold")
         table.add_column("Status", style="bold", no_wrap=True)
+        table.add_column("Assignee", style="green", no_wrap=True)
         table.add_column("Progress", justify="left")
         table.add_column("Tasks", justify="center", no_wrap=True)
         table.add_column("Updated", style="dim", no_wrap=True)
@@ -121,6 +153,15 @@ def list_sprints(
             
             # Title (truncated)
             title = truncate_text(sprint.title, MAX_TITLE_LENGTH)
+            
+            # Assignee
+            assignee_text = "[dim]—[/dim]"
+            if sprint.assignee:
+                if team_config:
+                    member = team_config.get_member(sprint.assignee)
+                    assignee_text = truncate_text(member.name if member else sprint.assignee, 15)
+                else:
+                    assignee_text = sprint.assignee.split('@')[0][:15]
             
             # Progress bar
             if sprint.progress and sprint.progress.total_tasks > 0:
@@ -142,6 +183,7 @@ def list_sprints(
                 sprint.id,
                 title,
                 status_text,
+                assignee_text,
                 progress_text,
                 tasks_text,
                 updated

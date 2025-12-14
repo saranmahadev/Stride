@@ -5,7 +5,26 @@ Helper utilities for Stride CLI.
 import uuid
 from datetime import datetime
 from typing import List
+from pathlib import Path
 from rich.text import Text
+
+
+def get_stride_dir() -> Path:
+    """
+    Get the .stride directory path in the current working directory.
+    
+    Returns:
+        Path to .stride directory.
+        
+    Raises:
+        FileNotFoundError: If .stride directory doesn't exist.
+    """
+    stride_dir = Path.cwd() / ".stride"
+    if not stride_dir.exists():
+        raise FileNotFoundError(
+            ".stride directory not found. Run '/stride-init' first."
+        )
+    return stride_dir
 
 
 def generate_sprint_id() -> str:

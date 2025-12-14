@@ -78,7 +78,6 @@ jobs:
             rich
             questionary
             pyfiglet
-            pyyaml
             yaml
             pydantic
             pydantic_core

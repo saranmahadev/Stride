@@ -153,6 +153,7 @@ def init(
         command_files = [
             "init", "derive", "lite", "status", "plan",
             "present", "implement", "feedback", "review", "complete",
+            "validate", "docs",
         ]
         
         with Progress(

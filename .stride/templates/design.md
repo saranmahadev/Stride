@@ -185,3 +185,58 @@ Include:
 All open questions MUST be resolved before implementation begins or during `/stride-feedback`.
 
 ---
+
+## Post-Planning User Interaction
+
+**After completing sprint planning** (creating proposal.md, plan.md, and design.md), the AI agent MUST present limitations and open questions to the user:
+
+### Presentation Format
+
+Display the "Limitations & Open Questions" section in a clear, structured format:
+
+```
+📋 Sprint Limitations & Open Questions
+
+LIMITATIONS:
+[List each limitation from the Limitations subsection above]
+
+OPEN QUESTIONS:
+[List each question from the Open Questions subsection above]
+```
+
+### User Prompt
+
+After presenting, ask the user:
+
+```
+Would you like to:
+1. Address these questions now (provide answers for each)
+2. Proceed with recommended approach (as documented above)
+
+Please respond with: 1 or 2
+```
+
+### Handling User Response
+
+**If user chooses "1" (Address questions now):**
+- Present all open questions at once in numbered format
+- Wait for user to provide answers/decisions for any or all questions
+- Acknowledge responses: "Noted. These decisions will guide implementation."
+- Suggest: "Answers will be referenced during `/stride-implement` and logged in implementation.md"
+- Note: Template files remain unchanged; answers inform implementation decisions
+
+**If user chooses "2" (Proceed with recommendations):**
+- Confirm: "Proceeding with recommended approaches as documented in design.md"
+- Note limitations for awareness: "Keep in mind the documented limitations during implementation"
+- Guide to next steps
+
+### Next Steps Guidance
+
+Always conclude the planning phase by informing user:
+```
+Next steps:
+- `/stride-present sprint-[name]` — Review complete sprint plan (optional)
+- `/stride-implement sprint-[name]` — Begin implementation
+```
+
+---

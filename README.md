@@ -92,6 +92,44 @@ stride docs      # Serve documentation (MkDocs)
 
 ---
 
+## 🤝 Team Collaboration (v1.5)
+
+**Stride v1.5** brings Git-based team collaboration with zero infrastructure required. Small teams (2-10 developers) can now collaborate entirely through Git—no external tools, servers, or databases needed.
+
+### Quick Team Setup
+
+```bash
+# 1. Initialize team configuration
+stride team init
+
+# 2. Add team members with roles
+stride team add "Alice" alice@example.com --roles lead,reviewer
+stride team add "Bob" bob@example.com --roles developer
+
+# 3. Assign sprints with AI recommendations
+stride assign sprint-feature-x
+# → Shows AI-powered recommendations based on workload and expertise
+
+# 4. Approve completed work
+stride approve sprint-feature-x --by alice@example.com
+stride approve status sprint-feature-x
+# → Shows approval progress (1/2 required)
+```
+
+**Key Features:**
+- 🏢 **Team Management** - Configure members, roles, and approval policies
+- 🎯 **Smart Assignment** - AI-powered recommendations based on workload and skills
+- ✅ **Approval Workflow** - N-reviewer policies with role-based permissions
+- 💬 **Sprint Comments** - Threaded discussions with file/line anchoring
+- ⚖️ **Workload Balancing** - Complexity scoring and distribution analysis
+- 📊 **Team Metrics** - Workload visualization and balance scoring
+
+All team data lives in `.stride/` directory, fully Git-versioned and portable. Works entirely offline—no cloud dependencies.
+
+👉 [Read the complete Team Workflow Guide](https://stride.saranmahadev.in/team-workflow)
+
+---
+
 ## ✨ Features
 
 ### 🤖 Multi-Agent Support (20 AI Agents)
@@ -105,6 +143,15 @@ stride docs      # Serve documentation (MkDocs)
 | **Specialized** | Crush |
 
 **9 Template Formats**: Automatically converts commands to each agent's format
+
+### 🤝 Team Collaboration (Git-Based)
+
+- **Zero Infrastructure**: Collaborate entirely through Git—no servers required
+- **Team Management**: Members, roles, and approval policies
+- **Smart Assignment**: AI-powered workload balancing
+- **Approval Workflows**: N-reviewer policies with permissions
+- **Sprint Comments**: Threaded discussions with code anchoring
+- **Fully Offline**: All data in `.stride/` directory, Git-versioned
 
 ### 📊 Sprint Management
 

@@ -5,6 +5,118 @@ All notable changes to Stride will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-12-14
+
+### Added
+
+#### Team Collaboration Features (ROADMAP.md Phase 2)
+
+Stride v1.5 introduces Git-based team collaboration for small teams (2-10 developers). Zero infrastructure required—all team data lives in `.stride/` directory, fully Git-versioned and portable.
+
+#### Team Management Commands
+- `stride team init` - Initialize team configuration with members and approval policies
+- `stride team add <name> <email>` - Add team member with roles
+- `stride team remove <email>` - Remove team member with safeguards
+- `stride team edit <email>` - Update member name or roles
+- `stride team list` - Display all members with roles and approval policy
+- `stride team show <email>` - Show detailed member information
+
+#### Sprint Assignment Commands
+- `stride assign <sprint-id>` - Assign sprint with AI-powered recommendations
+  - Interactive mode shows top 5 recommendations based on workload, roles, and history
+  - AI scoring factors: workload (0-3+ sprints), roles (lead +15, developer +5), recent assignments (-10)
+- `stride unassign <sprint-id>` - Remove sprint assignment
+- `stride assign workload [email]` - View workload distribution with complexity scoring
+  - Team-wide or individual member views
+  - Visual progress bars and balance scoring
+  - JSON export support via `--export` flag
+
+#### Approval Workflow Commands
+- `stride approve <sprint-id>` - Approve sprint with role-based permissions
+- `stride approve revoke <sprint-id> <email>` - Revoke approval
+- `stride approve status <sprint-id>` - Show approval progress with visual feedback
+- `stride approve pending` - List sprints awaiting approval
+
+#### Comment & Communication Commands
+- `stride comment add <sprint-id> <content>` - Add comment with optional file/line anchoring
+- `stride comment list <sprint-id>` - Display threaded comments with Rich Tree visualization
+- `stride comment resolve <sprint-id> <comment-id>` - Mark comment as resolved
+- `stride comment unresolve <sprint-id> <comment-id>` - Reopen resolved comment
+- `stride comment stats <sprint-id>` - Show comment statistics
+
+#### Core Modules
+- `stride/core/team_file_manager.py` - Atomic file operations for team.yaml, metadata.yaml, comments.yaml
+- `stride/core/assignment_manager.py` - Sprint assignment logic with AI recommendations
+- `stride/core/approval_manager.py` - Role-based approval workflow management
+- `stride/core/comment_manager.py` - Threaded comment system with resolution tracking
+- `stride/core/workload_analyzer.py` - Complexity scoring and workload distribution analysis
+
+#### Command Modules
+- `stride/commands/team.py` - Team management CLI (7 commands)
+- `stride/commands/assign.py` - Assignment and workload commands (3 commands)
+- `stride/commands/approve.py` - Approval workflow commands (4 commands)
+- `stride/commands/comment.py` - Comment system commands (6 commands)
+
+#### Data Models (Pydantic v2.0+)
+- `TeamConfig` - Team configuration with members, roles, approval policy
+- `TeamMember` - Member profile with email, name, roles, joined date
+- `SprintMetadata` - Sprint assignment, approvals, status, history
+- `Comment` - Threaded comments with optional file/line anchoring
+- `Approval` - Approval record with approver, timestamp, comment
+- `ApprovalPolicy` - Policy configuration (N reviewers, role restrictions)
+- `MetadataEvent` - History event tracking for assignments and approvals
+
+#### Workload Balancing System
+- **Complexity Scoring**: `(stride_count × 5) + task_count` normalized to 0-100 scale
+- **Balance Score**: `100 - (std_dev as % of mean)`, higher = more balanced distribution
+- Identifies overloaded members (>1.5× average load)
+- Identifies underutilized members (<0.5× average load)
+- Natural language recommendations for load balancing
+- Visual workload distribution with Rich progress bars
+
+### Changed
+
+#### Enhanced Commands
+- `stride list` - Added `--assignee <email>` filter to show sprints for specific member
+- `stride list` - Added assignee column in both verbose and compact views
+- `stride metrics` - Integrated team workload panel with balance scoring
+  - Shows team size, total sprints, average load, load range, balance score
+  - Gracefully skips if no team configuration (backward compatible)
+
+### Notes
+
+#### Backward Compatibility
+- **Fully compatible** with v1.0 solo workflows - all team features are optional
+- Projects without `team.yaml` work exactly like v1.0 (solo mode)
+- All existing sprint files fully compatible
+- All 10 agent commands work identically
+- No breaking changes to CLI or file formats
+
+#### Git-Based Collaboration Model
+- **Zero Infrastructure**: No servers, databases, or cloud dependencies required
+- **Fully Offline**: Complete team collaboration without internet connection
+- **Privacy-First**: All data stays in repository, no external services
+- **Portable**: Team data moves with repository (clone → collaborate)
+- **Audit Trail**: Full history tracked in Git commits
+
+#### Architecture
+- Atomic file operations prevent corruption (tempfile + shutil.move pattern)
+- YAML safe_load/safe_dump for security
+- Rich terminal formatting for all team commands
+- Comprehensive docstrings and type hints throughout
+
+#### Performance
+- All commands complete within 2-second threshold
+- Workload calculations cached for large teams
+- No database overhead (file-based state)
+
+#### ROADMAP Alignment
+- Completes Phase 2 (v1.5): Repo-Based Team Collaboration
+- Foundation for Phase 3 (v1.6-v1.8): Cloud-Optional Hybrid Collaboration
+- Scales gracefully: Solo → Team → Enterprise without rewrites
+
+---
+
 ## [1.0.1] - 2025-01-08
 
 ### Added

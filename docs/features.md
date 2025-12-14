@@ -275,6 +275,186 @@ Plugin system planned for v2.0
 
 ---
 
+## Team Collaboration (v1.5)
+
+**Git-Based, Zero-Infrastructure Team Workflows**
+
+### Philosophy
+
+Stride v1.5 introduces team collaboration without external services:
+
+- **Repo-First** - All data stored in `.stride/team.yaml`
+- **Zero-Infrastructure** - No servers, databases, or accounts
+- **Git-Powered** - Use your existing Git workflow
+- **Privacy-First** - Team data stays in your repository
+
+### Features
+
+#### 🏢 Team Management
+
+```bash
+stride team init              # Initialize team configuration
+stride team add <name> <email> --role <role>
+stride team remove <email>
+stride team edit <email>
+stride team list              # View all members + workload
+stride team show <email>      # Detailed member info
+```
+
+**Roles:** developer, reviewer, lead
+
+#### 🎯 Sprint Assignment
+
+```bash
+stride assign <sprint-id>     # AI-powered recommendations
+stride assign direct <sprint-id> <email>
+stride assign reassign <sprint-id> <email>
+```
+
+**AI Recommendations** analyze:
+- Current workload distribution
+- Skill/expertise match (from history)
+- Sprint complexity
+- Team balance score
+
+#### ✅ Approval Workflows
+
+```bash
+stride approve config <1|2>   # Require 1 or 2 approvals
+stride approve <sprint-id>
+stride approve status <sprint-id>
+stride approve pending        # View sprints awaiting your approval
+stride approve revoke <sprint-id>
+```
+
+**Policies:**
+- **1-approval:** Any single reviewer can approve
+- **2-approval:** Requires two independent reviewers
+
+#### 💬 Comments & Code Review
+
+```bash
+stride comment add <sprint-id> <text>
+stride comment code <sprint-id> <file> <line> <text>
+stride comment reply <sprint-id> <comment-id> <text>
+stride comment resolve <sprint-id> <comment-id>
+stride comment list <sprint-id>
+stride comment stats <sprint-id>
+```
+
+**Features:**
+- General and code-anchored comments
+- Threaded discussions
+- Resolution tracking
+- Author attribution
+
+#### ⚖️ Workload Balancing
+
+```bash
+stride metrics --team         # View team workload
+stride team list              # Balance score + distribution
+```
+
+**Complexity Scoring:**
+```
+workload = (stride_count × 5) + task_count
+```
+
+**Balance Score:**
+```
+balance = 100 - (std_dev as % of mean)
+```
+
+Higher balance score = more evenly distributed work
+
+#### 📊 Enhanced Commands
+
+```bash
+stride list --assignee <email>   # Filter by assignee
+stride metrics --team            # Team workload metrics
+stride show <sprint-id>          # Shows assignee + approvals
+```
+
+### Workflow Examples
+
+#### Small Team Setup
+
+```bash
+# 1. Initialize team
+stride team init
+
+# 2. Add members
+stride team add "Alice" "alice@example.com" --role lead
+stride team add "Bob" "bob@example.com" --role developer
+
+# 3. Assign sprint with AI
+stride assign sprint-auth
+
+# 4. Approve when ready
+stride approve sprint-auth --comment "LGTM!"
+```
+
+#### Code Review Process
+
+```bash
+# 1. Add code comment
+stride comment code sprint-auth src/auth.py 42 "Consider using bcrypt"
+
+# 2. Developer replies
+stride comment reply sprint-auth c1 "Good catch! Will update."
+
+# 3. Resolve after fix
+stride comment resolve sprint-auth c1
+
+# 4. Approve sprint
+stride approve sprint-auth
+```
+
+### Architecture
+
+**File Structure:**
+```
+.stride/
+  team.yaml           # Team configuration + member list
+  sprints/
+    sprint-abc123/
+      plan.md         # Includes assignee field
+      ...
+```
+
+**team.yaml Format:**
+```yaml
+approval_policy: 2
+members:
+  - name: Alice
+    email: alice@example.com
+    role: lead
+assignments:
+  sprint-abc123:
+    assignee: alice@example.com
+    approvals:
+      - reviewer: bob@example.com
+        timestamp: 2024-12-14T10:30:00
+        comment: "LGTM!"
+    comments:
+      - id: c1
+        author: bob@example.com
+        text: "Great work!"
+        timestamp: 2024-12-14T09:00:00
+        resolved: false
+```
+
+### Backward Compatibility
+
+- **100% Optional** - All team commands are opt-in
+- **Solo Mode** - Works exactly as before without `team.yaml`
+- **Progressive Adoption** - Add team features incrementally
+- **No Breaking Changes** - Existing sprints unaffected
+
+[Learn More →](team-workflow.md){ .md-button }
+
+---
+
 ## Comparison
 
 ### vs Manual Documentation
@@ -299,19 +479,20 @@ Plugin system planned for v2.0
 
 ## Roadmap
 
-### v1.x (Current)
+### v1.5 (Current) ✨
 
 - ✅ 20 AI agents
-- ✅ 6 CLI commands
-- ✅ 10 agent commands
-- ✅ Analytics engine
+- ✅ Team collaboration
+- ✅ Workload balancing
+- ✅ Approval workflows
+- ✅ Code review system
 
 ### v2.0 (Future)
 
-- Team collaboration
 - Plugin system
 - Web UI (optional)
 - More integrations
+- Advanced analytics
 
 ---
 

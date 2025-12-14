@@ -9,6 +9,13 @@ Transform chaotic AI coding sessions into structured, trackable workflows.
 
 ---
 
+!!! success "🎉 **New in v1.5: Team Collaboration**"
+    Stride now supports multi-developer workflows with **zero-infrastructure team collaboration**. Assign sprints, manage approvals, track workloads, and conduct code reviews—all stored in Git. No servers, no databases, just your repository.
+    
+    [Learn More →](features.md#team-collaboration-v15){ .md-button }
+
+---
+
 ## What is Stride?
 
 Stride enables 20+ AI coding agents (Claude, Cursor, Windsurf, etc.) to autonomously plan, implement, and document software features while you monitor progress from the terminal.
@@ -53,7 +60,15 @@ stride init
 
 Select your AI agents interactively (Cursor, Claude, Windsurf, etc.)
 
-### 2. Start Your First Sprint
+### 2. (Optional) Set Up Team Collaboration
+
+```bash
+stride team init
+```
+
+Configure approval policies and add team members. [Skip if working solo]
+
+### 3. Start Your First Sprint
 
 In your AI agent:
 
@@ -67,7 +82,7 @@ The agent will:
 2. Start your first sprint with `proposal.md`
 3. Guide you through planning and implementation
 
-### 3. Monitor Progress
+### 4. Monitor Progress
 
 ```bash
 stride list      # View all sprints
@@ -108,9 +123,17 @@ stride show SPRINT-XXXXX  # Detailed sprint view
 - Version control friendly
 - Human and AI readable
 
+### Team Collaboration (v1.5) ✨
+- Git-based team workflows
+- AI-powered sprint assignment
+- Approval workflows (1 or 2 reviewers)
+- Code-anchored comments
+- Workload balancing
+
 ### Analytics
 - Sprint metrics and insights
 - Process compliance scoring
+- Team workload tracking
 - Export to JSON/CSV
 
 ---
@@ -142,6 +165,7 @@ stride show SPRINT-XXXXX  # Detailed sprint view
 
 - [CLI Commands](cli-commands.md) - Learn all CLI commands for monitoring
 - [Agent Commands](agent-commands.md) - Understand agent slash commands
+- [Team Workflow](team-workflow.md) - Git-based team collaboration (v1.5)
 - [Sprint Lifecycle](sprint-lifecycle.md) - Master the sprint workflow
 - [Philosophy](philosophy.md) - Understand Stride's principles
 

@@ -92,6 +92,7 @@ nav:
   - Introduction: index.md
   - CLI Commands: cli-commands.md
   - Agent Commands: agent-commands.md
+  - Team Workflow: team-workflow.md
   - Sprint Lifecycle: sprint-lifecycle.md
   - Philosophy: philosophy.md
   - Features: features.md

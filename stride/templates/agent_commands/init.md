@@ -63,8 +63,14 @@ If project context is missing or incomplete:
 
 4. **Context Creation**
    - Generate `.stride/project.md` using the template.
-   - Ensure `learnings.md` is present (copy from template if missing).
-   - Ensure `marker.md` is present (copy from template if missing).
+   - **Initialize `learnings.md`**:
+     - Copy `.stride/templates/learnings.md` to `.stride/learnings.md`
+     - Add first learning entry with project context:
+       ```markdown
+       ## Architecture
+       - [Project: {name}] Tech stack: {stack}. Architecture: {pattern}. (sprint-init)
+       ```
+   - Ensure `marker.md` is present (copy from `.stride/templates/marker.md` if missing).
 
 ---
 

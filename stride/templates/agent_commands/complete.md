@@ -100,8 +100,12 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - **User-Session Relationship** (sprint-auth-refactor): Users may have multiple concurrent sessions; session tokens expire after 24h of inactivity.
    ```
 
-   **c) Update NICE Manifest**:
-   - Run `stride marker validate` to ensure markers are valid and up-to-date.
+   **c) Validate SPEC.md Consistency**:
+   - Verify all modules modified during sprint have up-to-date SPEC.md files
+   - Ensure root SPEC.md index includes all new modules added during sprint
+   - Check: Do SPEC.md files accurately reflect current code state (inputs, outputs, dependencies)?
+   - If inconsistencies found, update SPEC.md files before proceeding
+   - Run `stride marker validate` to check marker syntax is correct
 
 4. **Generate `retrospective.md`**
    

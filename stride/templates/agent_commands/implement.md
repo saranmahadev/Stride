@@ -93,6 +93,21 @@ If `$ARGUMENTS` (sprint name) is not provided:
      - [File Path]
      ```
 
+   **Stride Completion Checkpoint (MANDATORY)**:
+   
+   Before logging a Stride as complete, verify:
+   - ✅ All NICE markers added/updated for new/modified code
+   - ✅ Affected SPEC.md files updated (module-level and root if new modules added)
+   - ✅ Implementation log includes both required sections:
+     - "NICE Markers Added" (with specific markers listed, not empty)
+     - "SPEC.md Files Updated" (with file paths listed, not empty)
+   
+   **If any checklist item is incomplete:**
+   - DO NOT log the Stride as complete
+   - Complete the missing items first
+   - Then log with all required sections properly filled
+   - Empty or "N/A" entries are not acceptable unless explicitly justified
+
 4. **Learnings Recording**
    - If a significant lesson is learned (e.g., "Library X is incompatible with Y"), record it in `learnings.md`.
    - Use the format: `[YYYY-MM-DD] [Category]: [Lesson Learned]`.

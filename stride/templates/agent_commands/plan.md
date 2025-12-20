@@ -54,7 +54,9 @@ If `$ARGUMENTS` is not provided or is unclear:
    - Verify `.stride/project.md` exists
    - If missing, stop and instruct: "Run `/stride-init` first"
    - Read all 11 sections to understand project scope and constraints
-   - **Learnings Check**: Read `learnings.md` for relevant insights or past mistakes.
+   - **Learnings Check**: 
+     - Ensure `.stride/learnings.md` exists (if missing, copy from `.stride/templates/learnings.md` and seed with project context from `project.md`)
+     - Read `learnings.md` for relevant insights, patterns, and anti-patterns
 
 2. **Resolve Sprint Name** (use Argument Resolution above)
 

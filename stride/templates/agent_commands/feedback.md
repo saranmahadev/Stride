@@ -114,14 +114,24 @@ If `$ARGUMENTS` (sprint name and/or feedback details) is not provided:
 
    ### Changes Applied
    - plan.md: [Description]
-   - design.md: [Description or “No changes required”]
-   - NICE Markers: [Description or “No changes required”]
+   - design.md: [Description or "No changes required"]
+   - NICE Markers: [Description or "No changes required"]
 
    ### Notes
    - [Any clarifications, constraints, or follow-up requirements]
     ```
 
-6. **Reconfirm Stride Integrity**
+6. **Capture Learnings (Conditional)**
+   If feedback reveals a critical insight that should be remembered:
+   - Append to `.stride/learnings.md` under the appropriate category
+   - Format: `- [Category] Learning from feedback (sprint-{id})`
+   - Examples of feedback-worthy learnings:
+     - User clarifies a misunderstood requirement → **Domain Knowledge**
+     - Performance issue discovered mid-sprint → **Technical Patterns**
+     - Scope creep identified → **Workflow**
+     - Architecture decision requiring project-wide change → **Architecture**
+
+7. **Reconfirm Stride Integrity**
    After applying feedback:
 
    * Ensure all existing Strides remain coherent.

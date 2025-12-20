@@ -108,10 +108,14 @@ If `$ARGUMENTS` (sprint name) is not provided:
      - Logs with unclear work summaries  
      - Incomplete or incorrect formatting
 
-7. **NICE Marker & SPEC Review**
-   - Verify that NICE markers were added/updated as planned.
-   - Verify that SPEC.md files were created/updated for modified components.
-   - Check for any "TODO" or "FIXME" markers left in the code.
+7. **NICE Marker & SPEC Review (BLOCKING)**
+   - **REQUIRED**: All implementation logs MUST have "NICE Markers Added" and "SPEC.md Files Updated" sections filled
+   - Empty, "N/A", or missing entries are **CRITICAL ISSUES** (unless explicitly justified)
+   - Verify NICE markers exist for all new/modified code blocks (ENTRY, FLOW, LOGIC, TRANSFORM, IO, etc.)
+   - Verify SPEC.md files updated for all modified modules
+   - Verify root SPEC.md index is current if new modules were added
+   - **If missing or incomplete**: Flag as CRITICAL - cannot proceed to completion without proper documentation
+   - Check for any "TODO" or "FIXME" markers left in the code
 
 8. **Check Against Project-Level Rules**
    Validate adherence to `.stride/project.md`:  
@@ -122,7 +126,16 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - Constraints & domain logic  
    Flag any violations.
 
-9. **Generate a Discrepancy Report**
+9. **Extract Review Learnings (Conditional)**
+   If review reveals reusable insights, append to `.stride/learnings.md`:
+   - **Code quality issues** → Add to **Patterns** or **Gotchas**
+   - **Testing gaps** → Add to **Workflow**
+   - **Security vulnerabilities** → Add to **Architecture**
+   - **Performance bottlenecks** → Add to **Technical Patterns**
+   - Format: `- [Category] Lesson from review (sprint-{id})`
+   - Example: `- [Gotchas] Always validate user input before database queries to prevent SQL injection (sprint-auth)`
+
+10. **Generate a Discrepancy Report**
    Provide a structured report:
 
    ```markdown

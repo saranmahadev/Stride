@@ -121,6 +121,75 @@ A **Stride** is a *logical, reviewable milestone* within a sprint that:
 
 ---
 
+# **1.2 The NICE Marker System**
+
+### **Concept**
+The **NICE** (Name, Intent, Context, Example) Marker System allows agents to semantically annotate code to generate live documentation and specifications. This replaces stale external documentation with code-resident truth.
+
+### **Syntax**
+Markers are comment blocks in the code:
+
+```python
+# @intent <TYPE> <ID>
+# @desc Description of what this block does
+# @inputs param1: type, param2: type
+# @outputs return_type
+# @end
+def my_function():
+    ...
+```
+
+**Common Types:** `ENTRY`, `FLOW`, `LOGIC`, `TRANSFORM`, `IO`, `MODEL`.
+
+### **Distributed SPEC Architecture**
+Instead of one giant spec file, Stride uses a distributed approach:
+1. **Root `SPEC.md`**: Located in project root. Acts as a map/index.
+2. **Module `SPEC.md`**: Located in each subdirectory (e.g., `stride/core/SPEC.md`). Contains detailed specs for that module.
+
+### **Agent Behaviour**
+* **Read**: Use `stride marker view` to explore the codebase semantically.
+* **Write**: Add markers when writing new code.
+* **Update**: Run `stride annotate` to regenerate `SPEC.md` files after changes.
+
+### **Enforcement**
+**MANDATORY CHECKPOINT**: After completing each Stride during implementation:
+1. Update all NICE markers for code changes
+2. Regenerate affected SPEC.md files (module-level and root if needed)
+3. Log markers and SPEC files in implementation entry
+4. **Cannot proceed to next Stride without completing 1-3**
+
+Empty or missing "NICE Markers Added" / "SPEC.md Files Updated" sections in logs are blocking issues.
+
+---
+
+# **1.3 Global Learnings System**
+
+### **Concept**
+`.stride/learnings.md` is the project's collective memory. It prevents repeating mistakes and promotes successful patterns.
+
+### **Structure**
+The file is organized by categories:
+* **Architecture**: System-level decisions.
+* **Patterns**: Preferred coding styles and idioms.
+* **Gotchas**: Known issues and anti-patterns.
+* **Workflow**: Process improvements.
+
+### **Agent Behaviour**
+1. **Check Existence**: Always verify `.stride/learnings.md` exists before reading/writing.
+2. **If Missing**: 
+   - Copy `.stride/templates/learnings.md` to `.stride/learnings.md`
+   - Seed with **first learning entry** from project context (`.stride/project.md`)
+   - Example first entry:
+     ```markdown
+     ## Architecture
+     - [Project: {name}] Tech stack: {stack}. Architecture: {pattern}. (sprint-init)
+     ```
+3. **Before Planning**: Read `learnings.md` to avoid past pitfalls.
+4. **During Feedback/Review**: Capture critical insights and append to `learnings.md`.
+5. **During Retrospective**: Extract new lessons and append them to `learnings.md`.
+
+---
+
 # **2. Project Context (`/stride-init`)**
 
 ### **Goal**

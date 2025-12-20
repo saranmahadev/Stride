@@ -142,11 +142,7 @@ def init(
     if not marker_md_dest.exists() and (agents_docs_dir / "marker.md").exists():
         shutil.copy(agents_docs_dir / "marker.md", marker_md_dest)
 
-    # Copy Learnings.md to .stride/learnings.md if it doesn't exist
-    learnings_md_dest = stride_dir / "learnings.md"
-    learnings_template_src = templates_dir / "learnings.md"
-    if not learnings_md_dest.exists() and learnings_template_src.exists():
-        shutil.copy(learnings_template_src, learnings_md_dest)
+    # Note: learnings.md is NOT copied here - agents will create it from template when first needed
 
     root_agents_md = cwd / "AGENTS.md"
     if not root_agents_md.exists() and (agents_docs_dir / "root.md").exists():

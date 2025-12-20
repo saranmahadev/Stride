@@ -137,6 +137,11 @@ def init(
     if not internal_agents_md.exists() and (agents_docs_dir / "internal.md").exists():
         shutil.copy(agents_docs_dir / "internal.md", internal_agents_md)
         
+    # Copy marker.md to .stride/marker.md
+    marker_md_dest = stride_dir / "marker.md"
+    if not marker_md_dest.exists() and (agents_docs_dir / "marker.md").exists():
+        shutil.copy(agents_docs_dir / "marker.md", marker_md_dest)
+
     root_agents_md = cwd / "AGENTS.md"
     if not root_agents_md.exists() and (agents_docs_dir / "root.md").exists():
         shutil.copy(agents_docs_dir / "root.md", root_agents_md)

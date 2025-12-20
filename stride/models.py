@@ -3,9 +3,9 @@ Pydantic data models for Stride entities.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Tuple, Dict, Any
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pydantic import BaseModel, Field
 from .constants import SprintStatus
 
@@ -142,3 +142,67 @@ class SprintData:
             self.has_retrospective,
         ]
         return (sum(checks) / len(checks)) * 100
+
+
+@dataclass
+class NiceBlock:
+    intent_type: str          # ENTRY, FLOW, LOGIC, TRANSFORM, IO, etc.
+    id: str                   # Human-readable identifier
+    uid: str                  # nice:{type}:{domain}:{id}:v{N}
+    file_path: str            # Absolute path to source file
+    line_range: Tuple[int, int]  # Start and end line numbers
+    tags: Dict[str, Any]      # All extracted tags (@desc, @inputs, etc.)
+    semantic_hash: str        # Hash of semantic content (for drift detection)
+
+@dataclass
+class NiceManifest:
+    blocks: List[NiceBlock]   # All parsed blocks
+    timestamp: str            # When manifest was generated
+    project_context: str      # Project root path
+    total_files: int          # Files scanned
+    coverage_stats: Dict      # Coverage by file/directory
+
+@dataclass
+class MarkerValidationResult:
+    is_valid: bool
+    errors: List[str]         # Blocking issues (missing required tags)
+    warnings: List[str]       # Non-blocking issues (missing recommended tags)
+    suggestions: List[str]    # Optimization suggestions
+
+@dataclass
+class Subtask:
+    description: str
+    completed: bool = False
+
+@dataclass
+class CategoryResult:
+    passed: int
+    failed: int
+    warnings: int
+    items: List[str]
+
+@dataclass
+class GeneratedTest:
+    name: str
+    file_path: str
+    status: str
+
+@dataclass
+class ValidationReport:
+    overall_status: str       # PASS, FAIL
+    duration: str
+    categories: Dict[str, CategoryResult]
+    generated_tests: List[GeneratedTest]
+    mutation_score: Optional[float]
+    recommendations: List[str]
+
+@dataclass
+class LearningEntry:
+    category: str             # Domain Knowledge, Technical Patterns, etc.
+    subcategory: str          # Auth, Database, API Design, etc.
+    content: str              # The actual learning
+    context: str              # Why it matters
+    sprint_id: str            # Sprint that discovered this
+    is_antipattern: bool      # True if this is what NOT to do
+    timestamp: str
+    pattern_code: Optional[str] = None  # Example code snippet

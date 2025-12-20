@@ -35,6 +35,12 @@
 * `stride status sprint-XYZ` — Show sprint phase
 * `stride validate sprint-XYZ` — Run quality gates
 
+### **NICE Marker System**
+
+This project uses the NICE (Navigation and Intent Context Engine) marker system.
+**You MUST read and understand `.stride/marker.md` before writing any code.**
+All significant code blocks (ENTRY, LOGIC, IO, etc.) MUST be annotated with NICE markers.
+
 ---
 
 # **1. Stride Workflow Overview**

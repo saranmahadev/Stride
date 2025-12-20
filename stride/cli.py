@@ -9,6 +9,7 @@ from rich.panel import Panel
 from rich.align import Align
 from stride import __version__
 from stride.commands import init, list, status, show, validate, metrics, docs, auth
+from stride.commands.marker import view as marker_view, validate as marker_validate
 
 # Initialize Typer app
 app = typer.Typer(
@@ -28,6 +29,13 @@ app.command(name="show")(show.show)
 app.command(name="validate")(validate.validate)
 app.command(name="metrics")(metrics.metrics)
 app.command(name="docs")(docs.docs)
+
+# Marker commands
+marker_app = typer.Typer(help="Manage and view NICE markers")
+app.add_typer(marker_app, name="marker")
+
+marker_app.command(name="view")(marker_view.view_markers)
+marker_app.command(name="validate")(marker_validate.validate_markers)
 
 # Authentication commands
 app.command(name="login")(auth.login)

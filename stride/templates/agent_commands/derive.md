@@ -26,6 +26,7 @@ $ARGUMENTS
      - Technical constraints (Section 4, 8.1)  
      - Domain knowledge (Section 7)  
      - Known risks (Section 11)  
+   - **Learnings Check**: Read `learnings.md` to avoid repeating past mistakes or to find inspiration.
 
 2. **Analyze Existing Sprints**  
    - Scan `.stride/sprints/` directory for existing sprint folders.  
@@ -44,7 +45,13 @@ $ARGUMENTS
    - Deprecated APIs → migration opportunities  
    - Documentation gaps → docs sprints  
 
-4. **Identify Technical Debt & Gaps**  
+4. **NICE Marker Analysis**
+   - Scan for NICE markers to understand system intent and coverage.
+   - Identify areas with missing markers (potential technical debt).
+   - Identify markers with `TODO` or `FIXME` tags.
+   - Use marker relationships to find coupled components that need joint refactoring.
+
+5. **Identify Technical Debt & Gaps**  
    - Analyze code patterns for:  
      - Duplicated logic → refactor opportunities  
      - Long functions/files → modularity improvements  
@@ -53,12 +60,12 @@ $ARGUMENTS
      - Security vulnerabilities → security hardening sprints  
      - Performance bottlenecks → optimization sprints  
 
-5. **Cross-Reference with Project Constraints**  
+6. **Cross-Reference with Project Constraints**  
    - Filter ideas against Section 8 (Constraints) to ensure feasibility.  
    - Ensure proposals respect Section 6 (Standards & Conventions).  
    - Verify alignment with Section 3 (Non-Functional Requirements).  
 
-6. **Generate 5-7 Sprint Proposals**  
+7. **Generate 5-7 Sprint Proposals**  
    For each proposal, define:  
    - **Sprint Name**: 4-12 chars, domain-relevant, unique (e.g., `auth`, `ui-polish`, `perf-opt`)  
    - **Priority**: P0 (critical), P1 (high), P2 (medium), P3 (low)  
@@ -79,31 +86,47 @@ $ARGUMENTS
    - L: < 500 lines, multiple modules, some complexity  
    - XL: > 500 lines, architectural changes, high complexity  
 
-7. **Rank Proposals**  
+8. **Rank Proposals**  
    Sort by:  
    1. Priority (P0 first)  
    2. Value/Effort ratio (quick wins higher)  
    3. Dependencies (independent sprints first)  
 
-8. **Present Sprint Proposals**  
-   Display using Rich table with columns:  
-   ```
-   | # | Sprint Name | Priority | Effort | Problem | Value | Dependencies |
-   ```
-   
-   Use color coding:  
-   - P0: [red]  
-   - P1: [yellow]  
-   - P2: [blue]  
-   - P3: [dim]  
+9. **Present Sprint Proposals**
+   Display proposals in a clean, presentable list format (no table for the main list). Use emojis and clear headings.
 
-9. **Provide Selection Guidance**  
+   **Example Format:**
+   
+   🚀 **Sprint 1: Auth Refactor** (P0 - High Priority)
+   - **Problem**: No authentication system currently exists.
+   - **Value**: Critical for security and user management.
+   - **Effort**: Medium (3-5 days)
+   - **Dependencies**: None
+
+   🛠️ **Sprint 2: Error Logging** (P1 - Medium Priority)
+   - **Problem**: Silent failures make debugging impossible.
+   - **Value**: Improves reliability and developer experience.
+   - **Effort**: Small (1-2 days)
+   - **Dependencies**: None
+
+   ...
+
+   **Summary Table** (at the end):
+   ```
+   | # | Name        | Pri | Effort | Value     |
+   |---|-------------|-----|--------|-----------|
+   | 1 | auth-jwt    | P0  | M      | Security  |
+   | 2 | error-log   | P1  | S      | Debug     |
+   ...
+   ```
+
+10. **Provide Selection Guidance**
    - Highlight P0/P1 items as recommended starting points.  
    - Suggest quick wins (P1/S or P2/S) for momentum.  
    - Note any blocking dependencies.  
    - Ask user: **"Which sprint would you like to plan? (Enter number or name)"**  
 
-10. **Guide to Next Step**  
+11. **Guide to Next Step**  
     After user selects a sprint (e.g., #3 or "auth"):  
     - Confirm selection  
     - Instruct: **"Run `/stride-plan sprint-[NAME]` to create this sprint."**  

@@ -24,6 +24,8 @@ class StrideTask(BaseModel):
     purpose: str = ""
     tasks: List[CheckboxItem] = Field(default_factory=list)
     completion_definition: str = ""
+    # Subtasks are ephemeral and not persisted in the model directly, 
+    # but agents use them during planning.
     
     @property
     def completed_tasks(self) -> int:

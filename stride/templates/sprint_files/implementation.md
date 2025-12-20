@@ -13,6 +13,12 @@
 - [Observations, unexpected findings, risk updates, blockers, user feedback, or technical insights.]
 - [State any deviations from plan.md and justification—must be approved via `/stride-feedback`.]
 
+### NICE Markers Added
+- `{uid}` - {intent_type}: {description} ({file_path}:{line_range})
+
+### SPEC.md Files Updated
+- {file_path} - {change_description}
+
 ### Changes Made
 - file/path: [High-level summary of modification]
 - file/path: [High-level summary of modification]

@@ -100,13 +100,20 @@ If `$ARGUMENTS` (sprint name) is not provided:
      - Decisions  
      - Notes  
      - Changes Made  
+     - NICE Markers Added
+     - SPEC.md Files Updated
    - Ensure logs are append-only, chronological, and free of speculative content.
    - Identify:  
      - Missing logs  
      - Logs with unclear work summaries  
      - Incomplete or incorrect formatting
 
-7. **Check Against Project-Level Rules**
+7. **NICE Marker & SPEC Review**
+   - Verify that NICE markers were added/updated as planned.
+   - Verify that SPEC.md files were created/updated for modified components.
+   - Check for any "TODO" or "FIXME" markers left in the code.
+
+8. **Check Against Project-Level Rules**
    Validate adherence to `.stride/project.md`:  
    - Coding conventions  
    - Testing strategy  
@@ -115,7 +122,7 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - Constraints & domain logic  
    Flag any violations.
 
-8. **Generate a Discrepancy Report**
+9. **Generate a Discrepancy Report**
    Provide a structured report:
 
    ```markdown
@@ -136,6 +143,11 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - [✓/✗] Implementation matches architectural expectations
    - Issues: [...]
 
+   ## NICE & SPEC Compliance
+   - [✓/✗] NICE markers added/updated
+   - [✓/✗] SPEC.md files updated
+   - Issues: [...]
+
    ## Project Rule Compliance
    - [✓/✗] Coding standards followed
    - [✓/✗] Testing & quality gates satisfied
@@ -145,7 +157,7 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - [List of fixes needed before completion]
 ```
 
-9. **Ask for Next Action**
+10. **Ask for Next Action**
 
    * If issues exist:
      **"Corrections required. Use `/stride:feedback sprint-[NAME]` to apply changes."**

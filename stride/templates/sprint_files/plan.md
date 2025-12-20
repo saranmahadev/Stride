@@ -60,6 +60,16 @@ Fill out each Stride as shown:
 
 ---
 
+## NICE Marker Plan
+### Stride {N}: {Name}
+- **File:** {path}
+  - **Intent:** {type} - {description}
+  - **UID:** {planned_uid}
+  - **Tags:** {expected_tags}
+
+## SPEC.md Files
+- `{module_path}/SPEC.md` - {module_description}
+
 ## Approach
 [Describe the technical strategy in detail.  
 Explain *how* the sprint will be executed across Strides.  

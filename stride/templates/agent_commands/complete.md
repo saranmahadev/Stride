@@ -70,9 +70,15 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - Performance characteristics (measured benchmarks)
    - Security considerations (vulnerabilities, patterns)
    - Risk assumptions (validated or invalidated)
+   - **NICE Markers**: Review new markers for system understanding.
 
-3. **Update `.stride/project.md` (Conditional)**
+3. **Update Project Context**
    
+   **a) Update `learnings.md`**:
+   - Append significant lessons learned to `learnings.md`.
+   - Categorize by type (Technical, Process, Domain).
+
+   **b) Update `.stride/project.md` (Conditional)**:
    If sprint revealed project-level insights:
    
    **When to update which section:**
@@ -94,6 +100,9 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - **User-Session Relationship** (sprint-auth-refactor): Users may have multiple concurrent sessions; session tokens expire after 24h of inactivity.
    ```
 
+   **c) Update NICE Manifest**:
+   - Run `stride marker validate` to ensure markers are valid and up-to-date.
+
 4. **Generate `retrospective.md`**
    
    Use template from `.stride/templates/retrospective.md`:
@@ -106,6 +115,7 @@ If `$ARGUMENTS` (sprint name) is not provided:
      - List each section updated
      - Explain what was added and why
      - Reference specific Strides or implementation decisions
+   - **NICE Marker Summary**: Count of markers added/updated.
 
 5. **Provide Completion Summary**
 

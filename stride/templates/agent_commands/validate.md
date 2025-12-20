@@ -54,7 +54,14 @@ $ARGUMENTS
 
    Based on project type, create validation checklist:
 
-   **Category 1: Type Checking** (if applicable)
+   **Category 1: NICE Markers**
+   ```
+   ALWAYS:
+       Run: stride marker validate
+       Check for: Malformed markers, Missing tags, Duplicate IDs, Invalid references
+   ```
+
+   **Category 2: Type Checking** (if applicable)
    ```
    IF TypeScript project:
        Run: npx tsc --noEmit
@@ -64,7 +71,7 @@ $ARGUMENTS
        Run appropriate type checker
    ```
 
-   **Category 2: Linting**
+   **Category 3: Linting**
    ```
    IF ESLint configured:
        Run: npx eslint .
@@ -76,7 +83,7 @@ $ARGUMENTS
        Run: golangci-lint run
    ```
 
-   **Category 3: Tests**
+   **Category 4: Tests**
    ```
    IF package.json has "test" script:
        Run: npm test
@@ -90,7 +97,7 @@ $ARGUMENTS
        Check for test files and suggest how to run tests
    ```
 
-   **Category 4: Security Scanning**
+   **Category 5: Security Scanning**
    ```
    ALWAYS:
        Run secret detection (detect-secrets, gitleaks, or manual scan)
@@ -104,7 +111,7 @@ $ARGUMENTS
        Run: pip-audit OR safety check
    ```
 
-   **Category 5: Code Formatting** (optional, warnings only)
+   **Category 6: Code Formatting** (optional, warnings only)
    ```
    IF Prettier configured:
        Run: npx prettier --check .

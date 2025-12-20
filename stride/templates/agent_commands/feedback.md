@@ -73,6 +73,7 @@ If `$ARGUMENTS` (sprint name and/or feedback details) is not provided:
      - Strides (ordering, clarity, missing tasks)
      - Tasks (corrections, additions, removals)
      - Design (architecture, API, data model, security)
+     - NICE Markers (missing, incorrect, or outdated markers)
    - If feedback is ambiguous, ask **one clarifying question** before editing files.
 
 3. **Update plan.md**
@@ -80,6 +81,7 @@ If `$ARGUMENTS` (sprint name and/or feedback details) is not provided:
      - Add/edit/remove tasks
      - Adjust Stride sequence or scope
      - Clarify tasks with more precise descriptions
+     - Update NICE Marker Plan if markers need to change
    - Ensure:
      - Strides remain sequential
      - Tasks remain atomic and outcome-driven
@@ -113,6 +115,7 @@ If `$ARGUMENTS` (sprint name and/or feedback details) is not provided:
    ### Changes Applied
    - plan.md: [Description]
    - design.md: [Description or “No changes required”]
+   - NICE Markers: [Description or “No changes required”]
 
    ### Notes
    - [Any clarifications, constraints, or follow-up requirements]

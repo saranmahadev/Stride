@@ -47,12 +47,9 @@ If `$ARGUMENTS` (change description) is not provided:
 
 Before proceeding, validate the change meets ALL criteria:
 
-✅ **Lines Changed**: < 50 lines total across all files
-✅ **Files Affected**: < 3 files
-✅ **Single Concern**: One specific fix/change, not multiple features
-✅ **No Architecture**: No design decisions, API changes, or data model changes
-✅ **No Security Impact**: No authentication, authorization, or sensitive data changes
-✅ **No New Features**: Bug fixes, styling, docs, configs only
+✅ **Complexity Check**: The change is straightforward and well-understood.
+✅ **No Deep Architecture**: Does not require significant architectural restructuring or new design documents.
+✅ **No High Risk**: Does not involve critical security or core infrastructure changes that need a full review process.
 
 If ANY criterion fails → **ABORT** and suggest `/stride-plan` instead.
 
@@ -72,25 +69,24 @@ Understand the change and validate it qualifies for lite mode.
    - Are there any edge cases?
 
 2. **Estimate Scope**
-   - Lines to change: ? (must be < 50)
-   - Files to modify: ? (must be < 3)
+   - Files to modify: ?
    - Complexity: Low/Medium/High
 
 3. **Validate Lite-Eligibility**
-   Check against all 6 criteria above.
+   Check against the complexity criteria above.
    
    **If ELIGIBLE**:
    - Confirm: "✅ Eligible for lite mode"
    - Proceed to PLAN stage
    
    **If NOT ELIGIBLE**:
-   - Explain which criteria failed
+   - Explain which criteria failed (e.g., "Too complex", "Requires architecture design")
    - Suggest: "This change requires a full sprint. Use `/stride-plan <sprint-name>` instead."
    - STOP (do not continue)
 
 4. **Present Estimate**
    ```
-   Estimated scope: X lines, Y files
+   Estimated scope: X files
    Complexity: [Low/Medium]
    ✅ Eligible for lite mode
    ```
@@ -116,6 +112,7 @@ State exactly what will change and get preliminary approval.
    - What will be added/modified/removed
    - Why this change is necessary
    - Expected outcome
+   - **NICE Markers**: Identify if markers need to be added or updated.
 
 3. **Explain Reasoning**
    - Technical justification
@@ -214,16 +211,16 @@ Make the approved changes and explain them clearly.
    - Execute the changes exactly as planned
    - One file at a time
    - Ensure correctness
+   - **Update NICE Markers**: Ensure markers reflect the new code state.
 
 2. **Monitor Scope**
-   - Track total lines changed
-   - If approaching 50 lines → warn user
-   - If exceeds 50 lines → STOP and abort:
+   - Track complexity and impact.
+   - If scope grows significantly (e.g., requires new architecture or major refactoring) → warn user.
+   - If complexity becomes unmanageable → STOP and abort:
      ```
      ⚠️ Scope exceeded during implementation.
      
-     Current: X lines changed
-     Limit: 50 lines
+     Reason: Change requires architectural design or full sprint planning.
      
      Changes rolled back. Use `/stride-plan` for this work.
      ```
@@ -234,6 +231,7 @@ Make the approved changes and explain them clearly.
    filename.ext (line N):
    - [What changed]
    - [Why it matters]
+   - [NICE Marker updates]
    ```
    
    **Do NOT dump full files** - show summaries or diffs only.
@@ -369,10 +367,9 @@ The command MUST trigger when the user says:
 
 Stop immediately and suggest `/stride-plan` if:
 
-1. **Scope Grows Beyond Limits**
-   - Lines exceed 50
-   - Files exceed 3
-   - Multiple concerns emerge
+1. **Complexity Explodes**
+   - Change turns out to require deep architectural changes.
+   - Multiple unrelated concerns emerge that need separate tracking.
 
 2. **Architecture Needed**
    - Design decisions required
@@ -384,18 +381,12 @@ Stop immediately and suggest `/stride-plan` if:
    - Authorization logic
    - Sensitive data handling
 
-4. **Complexity Emerges**
-   - Edge cases multiply
-   - Dependencies discovered
-   - Testing becomes complex
-
 **Abort Message Template**:
 ```
 ⚠️ This change is too complex for lite mode.
 
 Reason: [specific issue]
-Current scope: X lines, Y files
-Lite limit: 50 lines, 3 files
+Current scope: [Description]
 
 Let's create a proper sprint to handle this correctly.
 Use `/stride-plan <sprint-name>` to continue with full planning.
@@ -408,13 +399,13 @@ Use `/stride-plan <sprint-name>` to continue with full planning.
 - MUST validate lite-eligibility in TALK stage
 - MUST follow all 5 stages (no skipping)
 - MUST get explicit approval in CONFIRM stage
-- MUST abort if scope exceeds limits
+- MUST abort if complexity exceeds limits
 - MUST NOT create any files or directories
 - MUST NOT log to implementation.md
 - MUST NOT update project.md
 - MUST NOT generate retrospective.md
 - ALL communication happens in chat
-- Changes MUST be < 50 lines, < 3 files, single concern
+- Changes MUST be manageable without full sprint planning
 
 ---
 

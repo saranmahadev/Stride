@@ -48,6 +48,22 @@ $ARGUMENTS
      - Extract unique Stride names from logs
      - Count unique Strides that have been logged
      - Store as `completed_strides`
+     - **NICE Marker Status**: Count markers added/updated in logs.
+     - **SPEC.md Status**: Count SPEC files updated in logs.
+
+   **c) Identify Blockers**:
+   - Scan `implementation.md` for "Blocker Encountered" entries.
+   - If found, flag sprint as BLOCKED.
+
+4. **Learnings Analysis**
+   - Read `learnings.md` to summarize recent lessons learned.
+   - Highlight any learnings that might impact current or future sprints.
+
+5. **Generate Status Report**
+   - Present a summary of all sprints.
+   - For the active sprint, show detailed progress (Strides completed, Markers added, SPEC files updated).
+   - List any blockers or risks.
+   - Provide recommendations based on status (e.g., "Sprint is 80% complete, consider running `/stride:review` soon").
    
    - **Calculate Completion**:
      ```

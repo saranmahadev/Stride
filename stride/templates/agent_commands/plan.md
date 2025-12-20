@@ -54,6 +54,7 @@ If `$ARGUMENTS` is not provided or is unclear:
    - Verify `.stride/project.md` exists
    - If missing, stop and instruct: "Run `/stride-init` first"
    - Read all 11 sections to understand project scope and constraints
+   - **Learnings Check**: Read `learnings.md` for relevant insights or past mistakes.
 
 2. **Resolve Sprint Name** (use Argument Resolution above)
 
@@ -77,6 +78,8 @@ If `$ARGUMENTS` is not provided or is unclear:
      - **Approach**: Technical strategy
      - **Risks**: Potential blockers
      - **Validation Plan**: How to verify success
+     - **NICE Marker Plan**: Identify which markers will be added, modified, or removed.
+     - **SPEC.md Files**: List which SPEC.md files need to be created or updated.
    - Follow Section 6 conventions and Section 8 constraints
 
 6. **Generate design.md**
@@ -94,6 +97,7 @@ If `$ARGUMENTS` is not provided or is unclear:
    - No placeholder or TODO markers
    - Strides are sequential and atomic
    - Design aligns with project.md architecture
+   - NICE markers and SPEC.md updates are explicitly planned
 
 8. **Guide Next Steps**
    - Inform user: "Sprint planned successfully!"

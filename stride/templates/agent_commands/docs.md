@@ -48,6 +48,23 @@ $ARGUMENTS
    - **Key Decisions**: From retrospective.md "Decisions" section
 
    **c) Analyze Codebase**:
+   - Scan for NICE markers related to the sprint.
+   - Extract documentation from markers (e.g., `@desc`, `@inputs`, `@outputs`).
+
+4. **Generate Documentation**
+   - **Features**: Create/update `docs/features.md` with sprint features.
+   - **Architecture**: Create/update `docs/architecture.md` with design decisions.
+   - **API Reference**: Generate API docs from NICE markers.
+   - **Learnings**: Create/update `docs/learnings.md` from `learnings.md` and retrospectives.
+
+5. **Format Selection**
+   - Ask the user if they prefer a specific documentation format (e.g., pure Markdown, MkDocs, Sphinx, etc.).
+   - If pure Markdown (default): Ensure structure is navigable via links.
+   - If other format: Adapt file generation accordingly (e.g., add `mkdocs.yml` only if requested).
+
+6. **Build Documentation**
+   - Generate the documentation files in `docs/`.
+   - Inform user: "Documentation generated in `docs/` directory."
    - Find files mentioned in implementation.md logs
    - Read actual implemented code to verify functionality
    - Extract code examples for documentation

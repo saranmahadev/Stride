@@ -68,6 +68,11 @@ If `$ARGUMENTS` (sprint name) is not provided:
    For each Stride:  
    - Read the Stride description and its tasks.  
    - Perform the work one task at a time.  
+   - **NICE Marker Updates**: As code is modified, update or add NICE markers to reflect changes.
+   - **SPEC.md Maintenance**:
+     - **Module Level**: If a module's behavior or interface changes, update its local `SPEC.md`.
+     - **Root Level**: If a new module is added, create its `SPEC.md` and add a link to the Root `SPEC.md`.
+     - **Consistency**: Ensure `SPEC.md` accurately reflects the code state (inputs, outputs, dependencies).
    - After each task, write a new append-only entry in `implementation.md` using the template:
 
      ```markdown
@@ -80,14 +85,24 @@ If `$ARGUMENTS` (sprint name) is not provided:
 
      ### Changes Made
      - file/path: summary of change
+     
+     ### NICE Markers Added
+     - [Type] [ID] in [File]
+
+     ### SPEC.md Files Updated
+     - [File Path]
      ```
 
-4. **Respect Task Boundaries**  
+4. **Learnings Recording**
+   - If a significant lesson is learned (e.g., "Library X is incompatible with Y"), record it in `learnings.md`.
+   - Use the format: `[YYYY-MM-DD] [Category]: [Lesson Learned]`.
+
+5. **Respect Task Boundaries**  
    - Each task must produce one or more log entries.  
    - Do NOT merge multiple Strides or tasks into a single entry.  
    - Do NOT generate large code dumps—summaries only.
 
-5. **Validate Work Against Project Context**  
+6. **Validate Work Against Project Context**  
    - Continuously verify compliance with `.stride/project.md` rules:  
      - Coding conventions  
      - Architectural constraints  
@@ -95,19 +110,29 @@ If `$ARGUMENTS` (sprint name) is not provided:
      - Security and reliability rules  
    - If implementation requires context beyond the plan → pause and request `/stride-feedback`.
 
-6. **Track Blockers if Encountered**  
+7. **Track Blockers if Encountered**  
    - If a task cannot proceed due to ambiguity, missing context, or conflict:  
      - Add a log entry: “**Blocker Encountered**”  
      - Describe issue factually  
      - Stop and request clarification
 
-7. **Complete All Strides Before Finishing**  
+8. **Implementation Guidelines**
+   The agent MUST follow these generic guidelines during implementation:
+   - **SOLID Principles**: Adhere to Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion principles.
+   - **Error Handling**: Implement robust error handling. Do not swallow exceptions. Log errors appropriately.
+   - **Code Clarity**: Write self-documenting code. Add comments for complex logic or "why" decisions.
+   - **Function Size**: Keep functions small and focused on a single task.
+   - **Testing**: Ensure code is testable. Write unit tests for new logic if the sprint plan includes them.
+   - **No Magic Numbers**: Use constants or configuration for magic numbers/strings.
+   - **DRY (Don't Repeat Yourself)**: Extract common logic into reusable functions or modules.
+
+9. **Complete All Strides Before Finishing**  
    - Ensure every Stride and every task has a corresponding log.  
    - Confirm no pending tasks remain.  
    - At the end of the final Stride, write a log entry:  
      *“All Strides completed successfully.”*
 
-8. **Prompt Next Steps**
+10. **Prompt Next Steps**
    After finishing all tasks, instruct the user to run:
    ```
    All strides completed! Next steps:

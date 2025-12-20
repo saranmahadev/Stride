@@ -48,6 +48,8 @@ If `$ARGUMENTS` (sprint name) is not provided:
 
 **Steps**
 
+**Steps**
+
 1. **Locate Sprint Directory**  
    - Resolve the sprint via the argument (e.g., `sprint-auth`, `sprint-api`, etc.).  
    - Validate existence of:  
@@ -57,7 +59,7 @@ If `$ARGUMENTS` (sprint name) is not provided:
 
 2. **Verify Planning Completeness**  
    - Ensure `proposal.md` contains **Why**, **What**, acceptance criteria.  
-   - Ensure `plan.md` contains **Strides**, **Tasks**, **Approach**, **Risks**, and **Validation Plan**.  
+   - Ensure `plan.md` contains **Strides**, **Tasks**, **Approach**, **Risks**, **Validation Plan**, and **NICE Marker Plan**.  
    - Ensure `design.md` exists if project context or plan indicated architectural impact.  
    - If any file is incomplete or missing, return a corrective instruction for the user or agent.
 
@@ -69,6 +71,7 @@ If `$ARGUMENTS` (sprint name) is not provided:
    - Architectural decisions (from design.md)  
    - Risks and expected challenges  
    - Validation strategy  
+   - **NICE Marker Strategy**: Summary of markers to be added/updated.
 
 4. **Present Strides Sequentially**  
    - Display Stride-by-Stride:  

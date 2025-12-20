@@ -1,5 +1,7 @@
 # Module: {MODULE_NAME}
 
+[← Back to System Map](../../SPEC.md)
+
 ## Overview
 {2-3 sentence description of module purpose and responsibilities}
 {Extracted from file-level NICE marker @desc if available}
